@@ -1,0 +1,17 @@
+# Local config with real API keys — NEVER commit
+config.js
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Node
+node_modules/
+
+# Env files
+*.env
+.env
+
+# Wrangler / Cloudflare
+.wrangler/

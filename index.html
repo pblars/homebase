@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Home Base</title>
+
+  <!-- Config MUST load first — defines the global CONFIG used by all scripts -->
+  <script src="config.js"></script>
+
+  <!-- Base styles, then screen-specific styles (screens come in later phases) -->
+  <link rel="stylesheet" href="styles/base.css" />
+  <link rel="stylesheet" href="styles/sleep.css" />
+  <link rel="stylesheet" href="styles/dashboard.css" />
+  <link rel="stylesheet" href="styles/quest.css" />
+</head>
+<body>
+  <!-- ====================================================================== -->
+  <!-- Sky layer: two full-bleed <img> crossfaded by SkyManager.              -->
+  <!-- #sky-a starts visible, #sky-b hidden. Manager swaps their opacity.     -->
+  <!-- ====================================================================== -->
+  <div id="sky-stage">
+    <img id="sky-a" class="sky-layer" alt="" />
+    <img id="sky-b" class="sky-layer" alt="" />
+  </div>
+
+  <!-- Off-screen image used to warm the cache for the next slot's art -->
+  <img id="sky-preload" class="sky-preload" alt="" aria-hidden="true" />
+
+  <!-- ====================================================================== -->
+  <!-- Screen layer: screens mount on top of the sky in later phases.         -->
+  <!-- ====================================================================== -->
+  <div id="screen-root"></div>
+
+  <!-- ====================================================================== -->
+  <!-- Scripts, in dependency order.                                          -->
+  <!--   utils -> data -> sky systems -> screens -> main                       -->
+  <!-- ====================================================================== -->
+
+  <!-- utils -->
+  <script src="src/utils/store.js"></script>
+  <script src="src/utils/api.js"></script>
+  <script src="src/utils/router.js"></script>
+
+  <!-- data (static content; screens consume these later) -->
+  <script src="src/data/verses.js"></script>
+  <script src="src/data/chores.js"></script>
+  <script src="src/data/meals.js"></script>
+
+  <!-- sky systems -->
+  <script src="src/sky/TimeSystem.js"></script>
+  <script src="src/sky/WeatherSystem.js"></script>
+  <script src="src/sky/SkyManager.js"></script>
+
+  <!-- entry point -->
+  <script src="src/main.js"></script>
+</body>
+</html>
