@@ -171,9 +171,29 @@ Then open the served URL.
 
 ## Deploy
 
-```
-npx wrangler pages deploy . --project-name homebase
-```
+Cloudflare Pages is **git-connected** to `pblars/homebase` — pushing to `main`
+auto-deploys. (Manual upload still works: `npx wrangler pages deploy . --project-name homebase`.)
+
+### Secrets on the live site (`config.js` is gitignored)
+
+Because `config.js` holds API keys and is gitignored, it never reaches the
+git-connected build. `scripts/build-config.js` regenerates it on the build
+server from Pages **environment variables**, so secrets stay out of the repo
+but still ship.
+
+Configure once in the Cloudflare dashboard:
+
+- **Settings → Build & deployments → Build configuration**
+  - Build command: `node scripts/build-config.js`
+  - Build output directory: `/`
+- **Settings → Environment variables** (Production)
+  - `OPENWEATHERMAP_API_KEY` — required for live weather
+  - `GOOGLE_CALENDAR_ID`, `GOOGLE_API_KEY` — later phase
+  - `LAT` `LON` `ZIP` `LOCATION_LABEL` — optional; default to Franklin, TN
+
+Without `OPENWEATHERMAP_API_KEY` the build still succeeds but the site falls
+back to placeholder weather. Local dev is unaffected — keep your hand-written
+`config.js`; the script only runs on Cloudflare.
 
 ---
 
