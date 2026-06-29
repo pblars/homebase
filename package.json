@@ -1,0 +1,9 @@
+{
+  "name": "homebase",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Full-screen family home dashboard (vanilla HTML/CSS/JS, no framework).",
+  "scripts": {
+    "build": "node scripts/build-config.js"
+  }
+}
