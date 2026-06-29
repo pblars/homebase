@@ -46,12 +46,19 @@ const WeatherSystem = (() => {
     return `https://api.openweathermap.org/data/2.5/${path}`;
   }
 
+  // NOTE: config.js declares `const CONFIG`, which is reachable by bare name
+  // across classic <script> tags but is NOT a property of window. So reference
+  // CONFIG directly (guarded by typeof) — `window.CONFIG` would be undefined.
+  function _cfg() {
+    return typeof CONFIG !== 'undefined' ? CONFIG : {};
+  }
+
   function _zip() {
-    return (window.CONFIG && CONFIG.ZIP) || '37064';
+    return _cfg().ZIP || '37064';
   }
 
   function _key() {
-    return (window.CONFIG && CONFIG.OPENWEATHERMAP_API_KEY) || '';
+    return _cfg().OPENWEATHERMAP_API_KEY || '';
   }
 
   // Collapse the 3-hourly forecast list into per-day {high, low, condition, precipPct}.
