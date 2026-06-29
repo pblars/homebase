@@ -57,14 +57,20 @@ image is preloaded off-screen so the transition is instant.
 Drop illustrated images into **`/assets/sky/`** named exactly:
 
 ```
-{slot}_{condition}.webp
+{slot}_{condition}.{webp|png}
 ```
 
 **Slots** (8): `night` `predawn` `dawn` `morning` `midday` `afternoon` `golden` `dusk` `evening`
 
 **Conditions**: `sunny` `clear` `cloudy` `rainy` `stormy` `foggy` `snowy` `partly_cloudy`
 
-Examples: `golden_sunny.webp`, `night_clear.webp`, `midday_stormy.webp`
+Examples: `golden_sunny.webp`, `night_clear.png`, `midday_stormy.webp`
+
+**Format:** `.webp` and `.png` both work. `SkyManager` tries `.webp` first, then
+`.png` (see `EXTENSIONS` in `src/sky/SkyManager.js`). WebP is preferred — much
+smaller files mean faster loads and smoother crossfades on the wall tablet — but
+PNGs are fine to start with. You can mix formats; if both `foo.webp` and
+`foo.png` exist, the `.webp` wins.
 
 **No restart needed.** Just drop the file in. `SkyManager` re-resolves on the next
 slot change or weather refresh and crossfades it in. (To see it instantly, reload.)

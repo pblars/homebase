@@ -14,7 +14,9 @@
 
 const SkyManager = (() => {
   const ASSET_DIR = 'assets/sky/';
-  const EXT = '.webp';
+  // Extensions tried in order when loading a key. .webp is preferred (smaller,
+  // smoother crossfades) but .png works too — drop either into /assets/sky/.
+  const EXTENSIONS = ['.webp', '.png'];
   const DEFAULT_FADE_MS = 2500;
   const PLACEHOLDER_KEY = 'placeholder';
 
@@ -65,9 +67,26 @@ const SkyManager = (() => {
   let lastSlot = null;
   let lastCondition = null;
   let preloadTimer = null;
+  let preloadKey = null;        // key currently being warmed (dedupe)
 
-  function pathForKey(key) {
-    return `${ASSET_DIR}${key}${EXT}`;
+  function pathForKey(key, ext = EXTENSIONS[0]) {
+    return `${ASSET_DIR}${key}${ext}`;
+  }
+
+  // Load `key` into an <img>, trying each extension in EXTENSIONS order. Calls
+  // onLoaded(path) on the first success, or onFailed() if none load.
+  function _attemptLoad(el, key, onLoaded, onFailed) {
+    let i = 0;
+    const tryNext = () => {
+      if (i >= EXTENSIONS.length) { el.onload = null; el.onerror = null; onFailed(); return; }
+      const ext = EXTENSIONS[i++];
+      el.onload = () => { el.onload = null; el.onerror = null; onLoaded(pathForKey(key, ext)); };
+      el.onerror = () => { tryNext(); };
+      el.src = pathForKey(key, ext);
+      // cached images may not re-fire onload — resolve synchronously if ready
+      if (el.complete && el.naturalWidth > 0) el.onload();
+    };
+    tryNext();
   }
 
   // Build the ordered list of candidate conditions for a slot.
@@ -117,25 +136,26 @@ const SkyManager = (() => {
   // Set an image immediately on the active layer, no fade (used at startup).
   function _setImmediate(key) {
     const el = _activeEl();
-    el.onerror = () => _handleLoadError(el, key);
     el.style.transition = 'none';
-    el.src = pathForKey(key);
-    // force reflow so the transition:none takes effect before restoring it
-    void el.offsetWidth;
-    el.style.opacity = '1';
-    el.style.transition = '';
-    currentKey = key;
-  }
-
-  function _handleLoadError(el, key) {
-    if (key === PLACEHOLDER_KEY) {
-      console.error('[SkyManager] placeholder failed to load — check assets/sky/placeholder.webp');
-      return;
-    }
-    console.warn(`[SkyManager] image failed to load: ${key}${EXT} — falling back to placeholder`);
-    el.onerror = () => _handleLoadError(el, PLACEHOLDER_KEY);
-    el.src = pathForKey(PLACEHOLDER_KEY);
-    currentKey = PLACEHOLDER_KEY;
+    _attemptLoad(
+      el,
+      key,
+      () => {
+        // force reflow so transition:none takes effect before restoring it
+        void el.offsetWidth;
+        el.style.opacity = '1';
+        el.style.transition = '';
+        currentKey = key;
+      },
+      () => {
+        if (key !== PLACEHOLDER_KEY) {
+          console.warn(`[SkyManager] image not found: ${key} — falling back to placeholder`);
+          _setImmediate(PLACEHOLDER_KEY);
+        } else {
+          console.error('[SkyManager] placeholder failed to load — check assets/sky/placeholder.webp');
+        }
+      }
+    );
   }
 
   // Crossfade the hidden layer in and the active layer out.
@@ -146,39 +166,30 @@ const SkyManager = (() => {
     const outgoing = _activeEl();
     const fade = `${(durationMs / 1000).toFixed(2)}s`;
 
-    const finish = () => {
-      activeLayer = activeLayer === 'a' ? 'b' : 'a';
-      currentKey = key;
-    };
-
-    incoming.onerror = () => {
-      // load failed — swap to placeholder instead (unless that's what failed)
-      if (key !== PLACEHOLDER_KEY) {
-        console.warn(`[SkyManager] crossfade target failed: ${key}${EXT} — using placeholder`);
-        crossfadeTo(PLACEHOLDER_KEY, durationMs);
-      } else {
-        console.error('[SkyManager] placeholder failed to load.');
+    _attemptLoad(
+      incoming,
+      key,
+      () => {
+        incoming.style.transition = `opacity ${fade} ease-in-out`;
+        outgoing.style.transition = `opacity ${fade} ease-in-out`;
+        // next frame so the browser registers the starting opacities
+        requestAnimationFrame(() => {
+          incoming.style.opacity = '1';
+          outgoing.style.opacity = '0';
+        });
+        // settle bookkeeping after the fade completes
+        activeLayer = activeLayer === 'a' ? 'b' : 'a';
+        currentKey = key;
+      },
+      () => {
+        if (key !== PLACEHOLDER_KEY) {
+          console.warn(`[SkyManager] crossfade target not found: ${key} — using placeholder`);
+          crossfadeTo(PLACEHOLDER_KEY, durationMs);
+        } else {
+          console.error('[SkyManager] placeholder failed to load.');
+        }
       }
-    };
-
-    incoming.onload = () => {
-      incoming.style.transition = `opacity ${fade} ease-in-out`;
-      outgoing.style.transition = `opacity ${fade} ease-in-out`;
-      // next frame so the browser registers the starting opacities
-      requestAnimationFrame(() => {
-        incoming.style.opacity = '1';
-        outgoing.style.opacity = '0';
-      });
-      // settle bookkeeping after the fade completes
-      setTimeout(finish, durationMs + 50);
-    };
-
-    incoming.src = pathForKey(key);
-    // if the image is already cached, onload may not fire reliably across
-    // browsers — guard by checking complete synchronously
-    if (incoming.complete && incoming.naturalWidth > 0) {
-      incoming.onload();
-    }
+    );
   }
 
   // Compute the slot we will transition INTO next (for preloading).
@@ -195,10 +206,11 @@ const SkyManager = (() => {
     const nextSlot = _nextSlot();
     const cond = lastCondition || WeatherSystem.condition || 'sunny';
     const key = resolveKey(nextSlot, cond);
-    const path = pathForKey(key);
-    if (preloadImg.src.endsWith(path)) return; // already warming this one
+    if (preloadKey === key) return; // already warming this one
+    preloadKey = key;
     console.log(`[SkyManager] preloading next slot art: ${key} (slot change in ${mins} min)`);
-    preloadImg.src = path;
+    // warm whichever extension actually exists
+    _attemptLoad(preloadImg, key, () => {}, () => {});
   }
 
   // Public: called on slot change OR weather change. Crossfades only if the
