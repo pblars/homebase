@@ -212,7 +212,15 @@ homebase/
   - [x] `SkyManager` (fallback resolver, two-layer crossfade, preloading)
   - [x] `main.js` wiring + debug logging
   - [x] `placeholder.webp` generator
-- [ ] **Phase 2 — Screens** (not started)
+- [ ] **Phase 2 — Screens** (in progress)
+  - [x] `Router` wiring + screen mount into `#screen-root` (`main.js` shows `dashboard`)
+  - [x] **Dashboard** — live clock + date, current weather (icon/temp/desc/feels/location),
+        5-day forecast strip. Self-registers with the Router; manages its own 1s clock
+        tick and subscribes to `WeatherSystem.onUpdate`. Styled to stay legible over the
+        sky via soft text-shadows + edge scrim (`styles/dashboard.css`).
+  - [ ] SleepScreen, QuestTrail, CalendarDetail, MealsDetail, WeatherDetail (stubs)
+  - [ ] Navigation between Dashboard and detail screens
+  - [ ] Populate `CHORES` / `MEALS` / `VERSES` data
 
 ### Verify Phase 1 in the browser
 

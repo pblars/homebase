@@ -1,1 +1,139 @@
-/* dashboard.css — Dashboard + detail screen styles. Built in a later phase. */
+/* dashboard.css — Dashboard home screen.
+   Sits in #screen-root (z-index 10) over the illustrated sky. Everything is
+   light text with soft shadows so it stays legible over bright or dark art;
+   a gentle top+bottom scrim keeps contrast without hiding the sky. */
+
+.dashboard {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 5vh 6vw;
+  /* scrim: darken top & bottom edges where text lives, leave the middle clear */
+  background:
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0) 28%),
+    linear-gradient(to top, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0) 32%);
+  color: #f4f1ea;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
+}
+
+/* ----- Clock ------------------------------------------------------------- */
+
+.dash-clock-block {
+  line-height: 1;
+}
+
+.dash-time {
+  font-size: 16vw;
+  font-weight: 200;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.dash-ampm {
+  font-size: 0.28em;
+  font-weight: 400;
+  margin-left: 0.35em;
+  vertical-align: 0.9em;
+  letter-spacing: 0.05em;
+  opacity: 0.85;
+}
+
+.dash-date {
+  font-size: 3.2vw;
+  font-weight: 300;
+  margin-top: 0.4vh;
+  opacity: 0.92;
+}
+
+/* ----- Current weather --------------------------------------------------- */
+
+.dash-weather {
+  display: flex;
+  align-items: center;
+  gap: 1.6vw;
+}
+
+.dash-weather-now {
+  display: flex;
+  align-items: center;
+  gap: 1vw;
+}
+
+.dash-weather-icon {
+  font-size: 6vw;
+  line-height: 1;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
+}
+
+.dash-weather-temp {
+  font-size: 7vw;
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+}
+
+.dash-weather-meta {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.dash-weather-desc {
+  font-size: 2.6vw;
+  font-weight: 400;
+}
+
+.dash-weather-loc {
+  font-size: 1.9vw;
+  font-weight: 300;
+  opacity: 0.85;
+  margin-top: 0.2vh;
+}
+
+/* ----- 5-day forecast strip ---------------------------------------------- */
+
+.dash-forecast {
+  display: flex;
+  gap: 1.4vw;
+  align-self: stretch;
+}
+
+.fc-day {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6vh;
+  padding: 1.4vh 1vw;
+  border-radius: 1.2vw;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.fc-name {
+  font-size: 1.7vw;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.fc-icon {
+  font-size: 2.6vw;
+  line-height: 1;
+}
+
+.fc-temps {
+  font-size: 1.8vw;
+  font-variant-numeric: tabular-nums;
+}
+
+.fc-high { font-weight: 600; }
+.fc-low { font-weight: 300; opacity: 0.7; }
+
+.fc-precip {
+  font-size: 1.3vw;
+  font-weight: 400;
+  color: #acd5ff;
+  opacity: 0.95;
+}

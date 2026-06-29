@@ -30,6 +30,10 @@
     // Weather refreshed -> re-resolve the sky (condition may have changed).
     WeatherSystem.onUpdate(() => syncSky());
 
+    // Mount the home screen. Screens register themselves with the Router on
+    // load; the Dashboard manages its own clock + weather rendering.
+    Router.show('dashboard');
+
     // Clock tick — updates any time-display elements once a second.
     // (No display elements exist yet in Phase 1; the hook is here for later.)
     setInterval(() => {
