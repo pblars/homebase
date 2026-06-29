@@ -30,9 +30,10 @@
     // Weather refreshed -> re-resolve the sky (condition may have changed).
     WeatherSystem.onUpdate(() => syncSky());
 
-    // Mount the home screen. Screens register themselves with the Router on
-    // load; the Dashboard manages its own clock + weather rendering.
-    Router.show('dashboard');
+    // Mount the resting screen. Screens register themselves with the Router on
+    // load. The SleepScreen is the ambient default (time + temp); tapping it
+    // wakes to the full Dashboard.
+    Router.show('sleep');
 
     // Clock tick — updates any time-display elements once a second.
     // (No display elements exist yet in Phase 1; the hook is here for later.)

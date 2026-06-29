@@ -238,7 +238,11 @@ homebase/
         5-day forecast strip. Self-registers with the Router; manages its own 1s clock
         tick and subscribes to `WeatherSystem.onUpdate`. Styled to stay legible over the
         sky via soft text-shadows + edge scrim (`styles/dashboard.css`).
-  - [ ] SleepScreen, QuestTrail, CalendarDetail, MealsDetail, WeatherDetail (stubs)
+  - [x] **SleepScreen** — ambient resting screen (large clock + date + temp over
+        the sky). It's the default screen on boot; **tapping anywhere wakes to the
+        Dashboard** (`Router.show('dashboard')`). Styled dim/centered (`styles/sleep.css`).
+  - [ ] QuestTrail, CalendarDetail, MealsDetail, WeatherDetail (stubs)
+  - [ ] Return to SleepScreen from Dashboard (e.g. idle timeout) — not yet wired
   - [ ] Navigation between Dashboard and detail screens
   - [ ] Populate `CHORES` / `MEALS` / `VERSES` data
 

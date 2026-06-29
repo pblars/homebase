@@ -1,1 +1,79 @@
-/* sleep.css — SleepScreen styles. Built in a later phase. */
+/* sleep.css — SleepScreen: the ambient resting screen.
+   Sits in #screen-root (z-index 10) over the sky. Sparse and centered; the
+   whole surface is a tap target that wakes to the Dashboard. A soft dim veil
+   keeps the wall tablet calm (and easy on the eyes at night). */
+
+.sleep {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2vh;
+  cursor: pointer;
+  color: #f4f1ea;
+  text-align: center;
+  /* gentle full-screen dim so bright daytime art doesn't glare at rest */
+  background: radial-gradient(120% 90% at 50% 45%,
+    rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.45) 100%);
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.6);
+}
+
+.sleep-time {
+  font-size: 22vw;
+  font-weight: 200;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.sleep-ampm {
+  font-size: 0.26em;
+  font-weight: 400;
+  margin-left: 0.35em;
+  vertical-align: 1.1em;
+  letter-spacing: 0.06em;
+  opacity: 0.8;
+}
+
+.sleep-date {
+  font-size: 3.4vw;
+  font-weight: 300;
+  opacity: 0.9;
+}
+
+.sleep-temp {
+  display: flex;
+  align-items: center;
+  gap: 1vw;
+  font-size: 4.4vw;
+  font-weight: 300;
+  margin-top: 1vh;
+}
+
+.sleep-temp-icon {
+  font-size: 1.1em;
+  line-height: 1;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
+}
+
+.sleep-temp-val {
+  font-variant-numeric: tabular-nums;
+}
+
+.sleep-hint {
+  position: absolute;
+  bottom: 5vh;
+  font-size: 1.6vw;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.45;
+  animation: sleep-hint-pulse 3.5s ease-in-out infinite;
+}
+
+@keyframes sleep-hint-pulse {
+  0%, 100% { opacity: 0.25; }
+  50%      { opacity: 0.6; }
+}
