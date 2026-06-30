@@ -91,8 +91,10 @@ const Dashboard = (() => {
     const upcoming = (m.upcoming || []).map((u) =>
       '<div class="meal-row"><span class="meal-day">' + u.day + '</span>' +
       '<span class="meal-name">' + u.name + '</span></div>').join('');
+    // With a photo: layer it over the warm gradient so a missing file still
+    // looks intentional (gradient shows). Without: the fork/knife placeholder.
     const thumb = m.tonight && m.tonight.photo
-      ? '<div class="meal-thumb" style="background-image:url(' + m.tonight.photo + ')"></div>'
+      ? '<div class="meal-thumb" style="background-image:url(\'' + m.tonight.photo + '\'), linear-gradient(135deg,#e8a05f,#d2744f)"></div>'
       : '<div class="meal-thumb meal-thumb--placeholder">' + ICONS.nav.meals + '</div>';
     return (
       '<div class="card meals-card" data-nav="meals">' +

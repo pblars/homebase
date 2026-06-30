@@ -21,21 +21,30 @@ const SkyManager = (() => {
   const PLACEHOLDER_KEY = 'placeholder';
 
   // Hardcoded availability map — the art that actually ships in /assets/sky/.
-  // Must match the art actually present in /assets/sky/. predawn_* and
-  // evening_* are intentionally absent (no art uploaded for those slots) — the
-  // resolver falls back to adjacent slots (night/dawn, dusk/night) that do have
-  // art. Listing a key here whose file is missing makes the resolver pick it,
-  // the load 404s, and the sky drops to the dark placeholder.
+  // The full intended art matrix. A key here may not have a file yet (e.g.
+  // predawn_*/evening_* are still to be designed). That's safe: when an image
+  // fails to load it's recorded in MISSING below and the resolver re-resolves to
+  // the next-best art — so a missing file degrades to an adjacent slot, never the
+  // dark placeholder, and the moment the real .webp is dropped into /assets/sky/
+  // it simply shows on the next slot/weather change. Drop-in, no code change.
   const AVAILABLE = new Set([
     'night_clear', 'night_cloudy', 'night_rainy', 'night_snowy',
+    'predawn_clear', 'predawn_cloudy',
     'dawn_clear', 'dawn_cloudy', 'dawn_rainy',
     'morning_sunny', 'morning_cloudy', 'morning_rainy',
     'midday_sunny', 'midday_cloudy', 'midday_stormy', 'midday_rainy',
     'afternoon_sunny', 'afternoon_cloudy', 'afternoon_stormy', 'afternoon_foggy',
     'golden_sunny', 'golden_cloudy', 'golden_rainy',
     'dusk_clear', 'dusk_cloudy',
+    'evening_clear', 'evening_cloudy',
     'placeholder',
   ]);
+
+  // Keys whose image failed to load this session — skipped on re-resolve so a
+  // not-yet-designed art file degrades to the next-best art instead of the
+  // placeholder. Cleared on reload.
+  const MISSING = new Set();
+  function _avail(key) { return AVAILABLE.has(key) && !MISSING.has(key); }
 
   // Slot adjacency order (wraps: night <-> evening).
   const SLOT_ORDER = [
@@ -111,7 +120,7 @@ const SkyManager = (() => {
     // 1-3) same slot, condition chain (exact first, then synonyms/generic)
     for (const c of conds) {
       const key = `${slot}_${c}`;
-      if (AVAILABLE.has(key)) return key;
+      if (_avail(key)) return key;
     }
 
     // 4) adjacent slots, same condition chain
@@ -124,7 +133,7 @@ const SkyManager = (() => {
       for (const nb of neighbors) {
         for (const c of conds) {
           const key = `${nb}_${c}`;
-          if (AVAILABLE.has(key)) return key;
+          if (_avail(key)) return key;
         }
       }
     }
@@ -152,8 +161,10 @@ const SkyManager = (() => {
       },
       () => {
         if (key !== PLACEHOLDER_KEY) {
-          console.warn(`[SkyManager] image not found: ${key} — falling back to placeholder`);
-          _setImmediate(PLACEHOLDER_KEY);
+          MISSING.add(key);
+          const next = resolveKey(lastSlot, lastCondition);
+          console.warn(`[SkyManager] image not found: ${key} — re-resolving to ${next}`);
+          _setImmediate(next !== key ? next : PLACEHOLDER_KEY);
         } else {
           console.error('[SkyManager] placeholder failed to load — check assets/sky/placeholder.webp');
         }
@@ -186,8 +197,10 @@ const SkyManager = (() => {
       },
       () => {
         if (key !== PLACEHOLDER_KEY) {
-          console.warn(`[SkyManager] crossfade target not found: ${key} — using placeholder`);
-          crossfadeTo(PLACEHOLDER_KEY, durationMs);
+          MISSING.add(key);
+          const next = resolveKey(lastSlot, lastCondition);
+          console.warn(`[SkyManager] crossfade target not found: ${key} — re-resolving to ${next}`);
+          crossfadeTo(next !== key ? next : PLACEHOLDER_KEY, durationMs);
         } else {
           console.error('[SkyManager] placeholder failed to load.');
         }

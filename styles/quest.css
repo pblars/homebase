@@ -20,6 +20,23 @@
     linear-gradient(to bottom, #bfe0f2 0%, #cfe3ea 30%, #cfe6a8 56%, #8fbf6a 100%);
 }
 
+/* illustrated backdrop layer; sits above the qb-scene gradient, below the UI.
+   transparent (gradient shows) until /assets/quest/<theme>-banner.webp exists. */
+.qb-photo { position: absolute; inset: 0; z-index: 0; background-size: cover; background-position: center; background-repeat: no-repeat; }
+
+/* When a painted backdrop is in use it already has a signpost + path + chest, so
+   drop the duplicate code signposts and add legibility insurance to the text
+   overlays (title halo + a soft cream chip behind the percentage). */
+.qb-has-photo .qb-signposts { display: none; }
+.qb-has-photo .qb-kicker,
+.qb-has-photo .qb-title { text-shadow: 0 1px 10px rgba(255, 250, 240, 0.85), 0 1px 3px rgba(255, 250, 240, 0.9); }
+.qb-has-photo .qb-progress {
+  background: rgba(252, 248, 240, 0.66); border-radius: 12px;
+  padding: clamp(4px, 0.8vh, 10px) clamp(8px, 1vw, 14px);
+  backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+}
+.qb-has-photo .qb-track { stroke: rgba(255, 255, 255, 0.4); stroke-width: 4; }
+
 .qb-signposts { position: absolute; left: clamp(8px, 1.2vw, 18px); top: 42%; transform: translateY(-50%); display: flex; flex-direction: column; gap: clamp(4px, 0.8vh, 10px); z-index: 2; }
 .qb-signpost {
   font-family: var(--serif); font-size: clamp(8px, 0.95vw, 13px); font-weight: 600;
@@ -59,7 +76,8 @@
 .kcp-list { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: clamp(6px, 1vh, 12px); overflow: hidden; }
 .kcp-kid { position: relative; }
 .kcp-head { display: flex; align-items: center; gap: 8px; }
-.kcp-avatar { width: clamp(20px, 2vw, 28px); height: clamp(20px, 2vw, 28px); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: clamp(10px, 1.1vw, 14px); }
+.kcp-avatar { position: relative; overflow: hidden; width: clamp(20px, 2vw, 28px); height: clamp(20px, 2vw, 28px); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: clamp(10px, 1.1vw, 14px); }
+.avatar-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 .kcp-name { font-weight: 700; font-size: clamp(12px, 1.2vw, 15px); color: var(--ink); }
 .kcp-frac { margin-left: auto; font-size: clamp(10px, 1.1vw, 13px); font-weight: 600; color: var(--muted); }
 .kcp-bar { height: 6px; border-radius: 3px; background: var(--track); margin: clamp(3px, 0.5vh, 6px) 0; overflow: hidden; }
@@ -105,7 +123,7 @@
   padding: clamp(10px, 1.2vw, 18px);
 }
 .cs-kid-head { display: flex; align-items: center; gap: 10px; }
-.cs-avatar { width: clamp(34px, 3.4vw, 48px); height: clamp(34px, 3.4vw, 48px); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: clamp(16px, 1.8vw, 24px); }
+.cs-avatar { position: relative; overflow: hidden; width: clamp(34px, 3.4vw, 48px); height: clamp(34px, 3.4vw, 48px); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: clamp(16px, 1.8vw, 24px); }
 .cs-kid-meta { flex: 1; min-width: 0; }
 .cs-kid-name { font-weight: 700; font-size: clamp(14px, 1.5vw, 20px); color: var(--ink); }
 .cs-kid-acorns { display: flex; align-items: center; gap: 4px; font-size: clamp(11px, 1.1vw, 14px); font-weight: 600; color: #a9742f; }

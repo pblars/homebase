@@ -37,6 +37,7 @@ const QuestBanner = (() => {
       '<span class="qb-signpost qb-signpost--' + i + '">' + t + '</span>').join('');
     return (
       '<div class="qb-scene">' +
+        '<div class="qb-photo" data-photo></div>' +
         '<div class="qb-signposts">' + signposts + '</div>' +
         '<div class="qb-center">' +
           '<div class="qb-kicker">Our Family Adventure</div>' +
@@ -62,6 +63,7 @@ const QuestBanner = (() => {
     c.innerHTML = template(getCurrentQuest());
     els = {
       scene: c.querySelector('.qb-scene'),
+      photo: c.querySelector('[data-photo]'),
       title: c.querySelector('[data-title]'),
       pills: c.querySelector('[data-pills]'),
       pct: c.querySelector('[data-pct]'),
@@ -69,6 +71,16 @@ const QuestBanner = (() => {
       track: c.querySelector('.qb-track'),
       nodes: c.querySelector('[data-nodes]'),
     };
+    // Illustrated backdrop. Try the theme-specific banner first, then the shared
+    // questbackground, then (if neither file exists) the CSS meadow gradient shows
+    // through. The painted scene already has a signpost + path + chest, so we hide
+    // the code signposts and lean on the title + % + trail as the overlay.
+    const quest = getCurrentQuest();
+    const layers = [];
+    if (quest.banner) layers.push("url('assets/quest/" + quest.banner + "')");
+    layers.push("url('assets/quest/questbackground.png')");
+    els.photo.style.backgroundImage = layers.join(', ');
+    els.scene.classList.add('qb-has-photo');
     _buildTrail();
     update(QuestStore.getFamilyProgress(), getCurrentQuest());
   }

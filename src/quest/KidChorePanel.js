@@ -30,6 +30,14 @@ const KidChorePanel = (() => {
       ICONS.acorn + '<span class="acorn-num">' + QuestStore.getAcorns(kidId) + '</span></span>';
   }
 
+  // Avatar = initial circle, optionally with an illustrated image on top that
+  // removes itself (revealing the initial) if the file is missing.
+  function avatarInner(k) {
+    return k.initial + (k.avatar
+      ? '<img class="avatar-img" src="assets/avatars/' + k.avatar + '" alt="" onerror="this.remove()">'
+      : '');
+  }
+
   // ---- dashboard summary ----------------------------------------------------
 
   function kidSummaryHTML(k) {
@@ -41,7 +49,7 @@ const KidChorePanel = (() => {
     return (
       '<div class="kcp-kid" data-kid="' + k.id + '">' +
         '<div class="kcp-head">' +
-          '<span class="kcp-avatar" style="background:' + k.avatarBg + ';color:' + k.color + '">' + k.initial + '</span>' +
+          '<span class="kcp-avatar" style="background:' + k.avatarBg + ';color:' + k.color + '">' + avatarInner(k) + '</span>' +
           '<span class="kcp-name">' + k.name + '</span>' +
           acornChip(k.id) +
           '<span class="kcp-frac">' + p.done + '/' + p.total + '</span>' +
@@ -96,7 +104,7 @@ const KidChorePanel = (() => {
     return (
       '<section class="cs-kid" data-kid="' + k.id + '">' +
         '<div class="cs-kid-head">' +
-          '<span class="cs-avatar" style="background:' + k.avatarBg + ';color:' + k.color + '">' + k.initial + '</span>' +
+          '<span class="cs-avatar" style="background:' + k.avatarBg + ';color:' + k.color + '">' + avatarInner(k) + '</span>' +
           '<div class="cs-kid-meta">' +
             '<div class="cs-kid-name">' + k.name + '</div>' +
             '<div class="cs-kid-acorns">' + acornChip(k.id) + '<span class="cs-acorn-word">acorns</span></div>' +
