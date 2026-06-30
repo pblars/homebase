@@ -1,139 +1,321 @@
-/* dashboard.css — Dashboard home screen.
-   Sits in #screen-root (z-index 10) over the illustrated sky. Everything is
-   light text with soft shadows so it stays legible over bright or dark art;
-   a gentle top+bottom scrim keeps contrast without hiding the sky. */
+/* dashboard.css — Home Base dashboard hub.
+   Frosted cards float over the sky in a 3-column CSS Grid (left / center /
+   right) with a full-width pill nav as the bottom row. Warm natural palette,
+   serif display + sans data, botanical SVG accents. No scroll anywhere. */
+
+:root {
+  --serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --ink: #3a352d;          /* deep charcoal-brown display text */
+  --ink-soft: #6f675a;
+  --muted: #9a8f7d;
+
+  --card-bg: rgba(252, 248, 240, 0.88);
+  --card-border: rgba(180, 165, 140, 0.4);
+  --card-shadow: 0 4px 24px rgba(80, 60, 30, 0.12);
+  --radius: 16px;
+
+  --sage: #9bb38a;
+  --sage-deep: #7d9b6c;
+  --teal: #3a9d96;
+  --coral: #e2745f;
+
+  --kid-green: #6bbf73;
+  --kid-blue: #5b9bd5;
+  --kid-purple: #a47fd0;
+  --track: #e8e2d6;
+}
+
+/* ----- Grid shell -------------------------------------------------------- */
 
 .dashboard {
   position: absolute;
   inset: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 23%) minmax(0, 1fr) minmax(0, 23%);
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: clamp(8px, 1.1vw, 16px);
+  padding: clamp(10px, 1.4vw, 20px);
+  padding-bottom: clamp(8px, 1vw, 14px);
+  font-family: var(--sans);
+  color: var(--ink);
+  overflow: hidden;
+}
+
+.dash-left   { grid-column: 1; grid-row: 1; min-height: 0; }
+.dash-center { grid-column: 2; grid-row: 1; min-height: 0;
+  display: flex; flex-direction: column; align-items: center; gap: clamp(8px, 1.1vw, 16px); }
+.dash-right  { grid-column: 3; grid-row: 1; min-height: 0;
+  display: flex; flex-direction: column; gap: clamp(8px, 1.1vw, 16px); }
+.navbar      { grid-column: 1 / -1; grid-row: 2; }
+
+/* ----- Card base --------------------------------------------------------- */
+
+.card {
+  position: relative;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  box-shadow: var(--card-shadow);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  overflow: hidden;
+}
+
+.card-head {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   justify-content: space-between;
-  padding: 5vh 6vw;
-  /* scrim: darken top & bottom edges where text lives, leave the middle clear */
+  padding-bottom: clamp(6px, 0.8vh, 10px);
+  border-bottom: 1px solid rgba(180, 165, 140, 0.35);
+  margin-bottom: clamp(6px, 0.9vh, 12px);
+}
+.card-title {
+  display: flex; align-items: center; gap: 6px;
+  font-size: clamp(11px, 1.2vw, 15px);
+  font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.view-all {
+  background: none; border: none; cursor: pointer;
+  font-family: var(--sans); font-size: clamp(9px, 1vw, 12px);
+  font-weight: 600; color: var(--teal);
+}
+
+/* botanical corner decorations */
+.deco { position: absolute; width: clamp(34px, 4vw, 56px); pointer-events: none; z-index: 2; }
+.deco--tl { top: -8px; left: -8px; transform: rotate(-12deg); }
+.deco--br { bottom: -6px; right: -6px; transform: rotate(165deg); opacity: 0.8; }
+.deco-svg { width: 100%; height: auto; display: block; }
+.leaf-mini { display: inline-flex; width: clamp(12px, 1.2vw, 16px); }
+
+/* ----- Clock (on the sky, no card) --------------------------------------- */
+
+.clock-block { position: relative; text-align: center; padding-top: clamp(2px, 0.6vh, 10px); }
+.clock-time {
+  font-family: var(--serif); font-weight: 200;
+  font-size: clamp(54px, 8.6vw, 124px); line-height: 0.9;
+  letter-spacing: -0.02em; color: var(--ink);
+}
+.clock-ampm {
+  font-size: 0.26em; font-weight: 400; vertical-align: super;
+  margin-left: 0.12em; letter-spacing: 0.05em;
+}
+.clock-date {
+  margin-top: 0.35em; font-weight: 500;
+  font-size: clamp(13px, 1.5vw, 20px);
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft);
+}
+.bird { position: absolute; top: 16%; width: clamp(20px, 2.4vw, 34px); opacity: 0.8; }
+.bird--l { left: 16%; }
+.bird--r { right: 16%; transform: scaleX(-1); }
+.bird-svg { width: 100%; height: auto; display: block; }
+
+/* ----- Weather card ------------------------------------------------------ */
+
+.weather-card {
+  width: 100%;
+  display: flex; align-items: center; gap: clamp(12px, 1.8vw, 28px);
+  padding: clamp(12px, 1.6vw, 22px) clamp(16px, 2vw, 28px);
+  cursor: pointer;
+}
+.wc-now { display: flex; align-items: center; gap: clamp(8px, 1vw, 16px); flex: 0 0 auto; }
+.wc-icon { width: clamp(48px, 5.5vw, 84px); }
+.wx { width: 100%; height: auto; display: block; }
+.wc-temp { font-family: var(--serif); font-weight: 200; font-size: clamp(40px, 5vw, 72px); line-height: 0.95; }
+.wc-cond { font-size: clamp(12px, 1.3vw, 18px); font-weight: 500; color: var(--ink-soft); }
+.wc-forecast { display: flex; flex: 1; min-width: 0; }
+.fc-col {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  gap: clamp(2px, 0.4vh, 6px); padding: 0 clamp(3px, 0.5vw, 10px);
+  border-left: 1px solid rgba(180, 165, 140, 0.3);
+}
+.fc-col:first-child { border-left: none; }
+.fc-day { font-size: clamp(9px, 1vw, 13px); font-weight: 600; letter-spacing: 0.08em; color: var(--muted); }
+.fc-ic { width: clamp(22px, 2.4vw, 36px); }
+.fc-hi { font-size: clamp(11px, 1.2vw, 16px); font-weight: 600; }
+.fc-lo { font-size: clamp(10px, 1.1vw, 14px); color: var(--muted); }
+
+/* ----- Family Adventure quest banner ------------------------------------- */
+
+.quest-card { width: 100%; flex: 1; min-height: 0; padding: 0; }
+.quest-scene {
+  position: relative; width: 100%; height: 100%;
+  min-height: clamp(120px, 17vh, 200px);
+  display: flex; align-items: center; justify-content: center;
+  /* painted-meadow approximation: sky fading to a green foreground + a soft
+     lighter path glow at the bottom center where the trail leads away */
   background:
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0) 28%),
-    linear-gradient(to top, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0) 32%);
-  color: #f4f1ea;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
+    radial-gradient(55% 38% at 50% 96%, rgba(235, 224, 170, 0.75), transparent 70%),
+    radial-gradient(120% 80% at 50% 122%, #8bbf6a 0%, #a9cf86 40%, transparent 72%),
+    linear-gradient(to bottom, #bfe0f2 0%, #d8eaf0 36%, #cfe6a8 58%, #9ec57e 100%);
 }
 
-/* ----- Clock ------------------------------------------------------------- */
+.quest-signposts {
+  position: absolute; left: clamp(8px, 1.2vw, 18px); top: 46%;
+  transform: translateY(-50%); display: flex; flex-direction: column;
+  gap: clamp(4px, 0.8vh, 10px); z-index: 1;
+}
+.signpost {
+  font-family: var(--serif); font-size: clamp(8px, 0.95vw, 13px); font-weight: 600;
+  color: #5a4633; background: #d8b884; border: 1px solid #b58e5c;
+  padding: 2px clamp(12px, 1.1vw, 16px) 2px clamp(6px, 0.6vw, 9px);
+  box-shadow: 1px 1px 0 rgba(90, 60, 30, 0.25);
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%);
+}
+.signpost--1 { margin-left: clamp(6px, 0.8vw, 14px); }
+.signpost--2 { margin-left: clamp(12px, 1.6vw, 28px); }
 
-.dash-clock-block {
-  line-height: 1;
+.quest-center { text-align: center; padding: 0 12px; z-index: 1; }
+.quest-kicker {
+  font-size: clamp(8px, 0.9vw, 12px); font-weight: 700;
+  letter-spacing: 0.22em; text-transform: uppercase; color: #5a6b46;
+}
+.quest-title {
+  font-family: var(--serif); font-size: clamp(20px, 2.8vw, 40px);
+  font-weight: 600; color: #33422a; line-height: 1.05; margin: 0.1em 0;
+}
+.quest-tagline { font-style: italic; font-size: clamp(10px, 1.1vw, 15px); color: #56654a; }
+
+.quest-progress {
+  position: absolute; right: clamp(10px, 1.6vw, 26px); top: 44%;
+  transform: translateY(-50%); text-align: center; color: #33422a; z-index: 1;
+}
+.quest-pct { font-family: var(--serif); font-size: clamp(24px, 3.4vw, 50px); font-weight: 700; line-height: 1; }
+.quest-pct-label { font-size: clamp(8px, 0.9vw, 12px); font-weight: 600; opacity: 0.85; }
+
+.quest-trail {
+  position: absolute; left: 0; right: 0; bottom: clamp(6px, 1.3vh, 15px);
+  display: flex; align-items: center; justify-content: center;
+  gap: clamp(8px, 1.6vw, 26px); padding: 0 clamp(20px, 4vw, 60px);
+}
+.quest-trail::before {
+  content: ""; position: absolute; left: clamp(20px, 4vw, 60px);
+  right: clamp(20px, 4vw, 60px); top: 50%;
+  border-top: 2px dotted rgba(60, 70, 40, 0.5); z-index: 0;
+}
+.wp {
+  position: relative; z-index: 1;
+  width: clamp(14px, 1.6vw, 22px); height: clamp(14px, 1.6vw, 22px);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: #fff; border: 2px solid #8aa06f; color: #fff;
+}
+.wp--done { background: var(--kid-green); border-color: #4ea65a; }
+.wp--done .check-svg { width: 70%; color: #fff; }
+.wp--current { background: #f4c430; border-color: #d9a900; animation: wp-pulse 1.8s ease-out infinite; }
+.wp--future { background: rgba(255, 255, 255, 0.7); border-color: #9bbf86; }
+.check-svg { display: block; }
+@keyframes wp-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(244, 196, 48, 0.55); }
+  70%  { box-shadow: 0 0 0 10px rgba(244, 196, 48, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(244, 196, 48, 0); }
 }
 
-.dash-time {
-  font-size: 16vw;
-  font-weight: 200;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
+/* ----- Today's Agenda (left) --------------------------------------------- */
+
+.agenda-card { height: 100%; display: flex; flex-direction: column; padding: clamp(12px, 1.4vw, 20px); overflow: visible; cursor: pointer; }
+.agenda-list { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: clamp(6px, 1vh, 14px); overflow: hidden; }
+.ag-row { display: flex; align-items: center; gap: clamp(8px, 0.8vw, 12px); }
+.ag-ic {
+  flex: 0 0 auto; width: clamp(30px, 3vw, 42px); height: clamp(30px, 3vw, 42px);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: #eadfca; color: #5a5346;
+}
+.ev-ic { width: 58%; height: 58%; stroke: currentColor; stroke-width: 1.7; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.ag-ic--car    { background: #d8e8df; color: #3a8f78; }
+.ag-ic--soccer { background: #e7eedd; color: #6a9a3f; }
+.ag-ic--tooth  { background: #e6e3f3; color: #7a6bb0; }
+.ag-ic--heart  { background: #f6dfe0; color: #d2645f; }
+.ag-ic--trash  { background: #e7e2d6; color: #8a7b5f; }
+.ag-body { min-width: 0; }
+.ag-time { font-size: clamp(9px, 1vw, 12px); font-weight: 700; letter-spacing: 0.05em; }
+.ag-time--am  { color: var(--teal); }
+.ag-time--pm  { color: var(--coral); }
+.ag-time--all { color: var(--muted); }
+.ag-title { font-size: clamp(12px, 1.25vw, 16px); font-weight: 600; color: var(--ink); line-height: 1.15; }
+.ag-sub { font-size: clamp(10px, 1.05vw, 13px); color: var(--muted); }
+.agenda-foot {
+  margin-top: clamp(6px, 0.8vh, 12px); padding-top: clamp(6px, 0.7vh, 10px);
+  font-style: italic; font-size: clamp(10px, 1.05vw, 14px); color: var(--ink-soft);
+  display: flex; align-items: center; gap: 6px;
 }
 
-.dash-ampm {
-  font-size: 0.28em;
-  font-weight: 400;
-  margin-left: 0.35em;
-  vertical-align: 0.9em;
-  letter-spacing: 0.05em;
-  opacity: 0.85;
+/* ----- Chores (right, upper) --------------------------------------------- */
+
+.chores-card { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: clamp(10px, 1.2vw, 18px); }
+.chores-list { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: clamp(6px, 1vh, 12px); overflow: hidden; }
+.kid-head { display: flex; align-items: center; gap: 8px; }
+.kid-avatar {
+  width: clamp(20px, 2vw, 28px); height: clamp(20px, 2vw, 28px); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: clamp(10px, 1.1vw, 14px); font-weight: 700; color: #fff;
 }
-
-.dash-date {
-  font-size: 3.2vw;
-  font-weight: 300;
-  margin-top: 0.4vh;
-  opacity: 0.92;
+.kid-name { font-weight: 700; font-size: clamp(12px, 1.2vw, 15px); color: var(--ink); }
+.kid-frac { margin-left: auto; font-size: clamp(10px, 1.1vw, 13px); font-weight: 600; color: var(--muted); }
+.kid-bar { height: 6px; border-radius: 3px; background: var(--track); margin: clamp(3px, 0.5vh, 6px) 0; overflow: hidden; }
+.kid-bar-fill { height: 100%; border-radius: 3px; }
+.kid-items { display: flex; flex-wrap: wrap; gap: clamp(3px, 0.5vh, 6px) clamp(6px, 0.8vw, 12px); }
+.chore { display: inline-flex; align-items: center; gap: 4px; font-size: clamp(9px, 1vw, 12px); color: var(--ink-soft); }
+.chore-dot {
+  width: clamp(12px, 1.2vw, 15px); height: clamp(12px, 1.2vw, 15px); border-radius: 50%;
+  border: 1.5px solid #c9bfa9; display: inline-flex; align-items: center; justify-content: center; color: #fff;
 }
+.chore.is-done { color: var(--muted); text-decoration: line-through; }
+.chore.is-done .chore-dot { background: var(--kid-green); border-color: #4ea65a; }
+.chore.is-done .check-svg { width: 72%; }
+.kid--green  .kid-avatar { background: var(--kid-green); }  .kid--green  .kid-bar-fill { background: var(--kid-green); }
+.kid--blue   .kid-avatar { background: var(--kid-blue); }   .kid--blue   .kid-bar-fill { background: var(--kid-blue); }
+.kid--purple .kid-avatar { background: var(--kid-purple); } .kid--purple .kid-bar-fill { background: var(--kid-purple); }
 
-/* ----- Current weather --------------------------------------------------- */
+/* ----- Meal Plan (right, lower) ------------------------------------------ */
 
-.dash-weather {
-  display: flex;
-  align-items: center;
-  gap: 1.6vw;
+.meals-card { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: clamp(10px, 1.2vw, 18px); }
+.meal-tonight { display: flex; gap: clamp(8px, 1vw, 14px); align-items: center; margin-bottom: clamp(6px, 1vh, 12px); }
+.meal-thumb {
+  flex: 0 0 auto; width: clamp(56px, 5vw, 80px); height: clamp(56px, 5vw, 80px);
+  border-radius: 12px; background-size: cover; background-position: center;
 }
+.meal-thumb--placeholder { display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #e8a05f, #d2744f); }
+.meal-thumb--placeholder .nav-ic { width: 46%; height: 46%; stroke: #fff; stroke-width: 1.7; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.meal-tonight-kicker { font-size: clamp(8px, 0.9vw, 11px); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal); }
+.meal-tonight-name { font-family: var(--serif); font-weight: 700; font-size: clamp(13px, 1.5vw, 20px); color: var(--ink); line-height: 1.1; margin-top: 2px; }
+.meal-upcoming { display: flex; flex-direction: column; }
+.meal-row { display: flex; gap: 10px; padding: clamp(3px, 0.6vh, 7px) 0; border-top: 1px solid rgba(180, 165, 140, 0.3); font-size: clamp(10px, 1.1vw, 14px); }
+.meal-row:first-child { border-top: none; }
+.meal-day { flex: 0 0 auto; width: 34px; align-self: center; color: var(--muted); font-weight: 700; font-size: 0.85em; letter-spacing: 0.05em; }
+.meal-name { color: var(--ink); }
 
-.dash-weather-now {
-  display: flex;
-  align-items: center;
-  gap: 1vw;
+/* ----- Bottom nav bar ---------------------------------------------------- */
+
+.navbar {
+  display: flex; align-items: center; justify-content: space-around; gap: 4px;
+  background: rgba(252, 248, 240, 0.92);
+  border: 1px solid var(--card-border); border-radius: 999px;
+  box-shadow: var(--card-shadow);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  padding: clamp(5px, 0.7vh, 10px) clamp(10px, 1.5vw, 24px);
 }
-
-.dash-weather-icon {
-  font-size: 6vw;
-  line-height: 1;
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
+.navtab {
+  flex: 1; background: none; border: none; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: clamp(3px, 0.5vh, 7px) 2px; border-radius: 14px;
+  color: var(--ink-soft); font-family: var(--sans);
 }
+.navtab-ic { width: clamp(20px, 2vw, 26px); height: clamp(20px, 2vw, 26px); display: flex; }
+.nav-ic { width: 100%; height: 100%; stroke: currentColor; stroke-width: 1.7; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.navtab-label { font-size: clamp(9px, 1vw, 12px); font-weight: 500; }
+.navtab:hover { color: var(--ink); }
+.navtab.is-active { color: var(--sage-deep); }
+.navtab.is-active .navtab-label { font-weight: 700; }
+.navtab.is-active .nav-ic { fill: rgba(155, 179, 138, 0.32); stroke: var(--sage-deep); }
 
-.dash-weather-temp {
-  font-size: 7vw;
-  font-weight: 300;
-  font-variant-numeric: tabular-nums;
+/* ----- Placeholder tab screens ------------------------------------------- */
+
+.placeholder-screen {
+  position: absolute; inset: 0; display: grid; grid-template-rows: 1fr auto;
+  padding: clamp(10px, 1.4vw, 20px); padding-bottom: clamp(8px, 1vw, 14px);
 }
-
-.dash-weather-meta {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.dash-weather-desc {
-  font-size: 2.6vw;
-  font-weight: 400;
-}
-
-.dash-weather-loc {
-  font-size: 1.9vw;
-  font-weight: 300;
-  opacity: 0.85;
-  margin-top: 0.2vh;
-}
-
-/* ----- 5-day forecast strip ---------------------------------------------- */
-
-.dash-forecast {
-  display: flex;
-  gap: 1.4vw;
-  align-self: stretch;
-}
-
-.fc-day {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.6vh;
-  padding: 1.4vh 1vw;
-  border-radius: 1.2vw;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-}
-
-.fc-name {
-  font-size: 1.7vw;
-  font-weight: 500;
-  opacity: 0.9;
-}
-
-.fc-icon {
-  font-size: 2.6vw;
-  line-height: 1;
-}
-
-.fc-temps {
-  font-size: 1.8vw;
-  font-variant-numeric: tabular-nums;
-}
-
-.fc-high { font-weight: 600; }
-.fc-low { font-weight: 300; opacity: 0.7; }
-
-.fc-precip {
-  font-size: 1.3vw;
-  font-weight: 400;
-  color: #acd5ff;
-  opacity: 0.95;
-}
+.ph-center { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 8px; }
+.ph-title { font-family: var(--serif); font-weight: 300; font-size: clamp(36px, 7vw, 90px); color: var(--ink); text-shadow: 0 2px 18px rgba(0, 0, 0, 0.3); }
+.ph-sub { font-size: clamp(12px, 1.4vw, 18px); letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft); text-shadow: 0 1px 10px rgba(0, 0, 0, 0.25); }

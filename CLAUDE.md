@@ -241,10 +241,24 @@ homebase/
   - [x] **SleepScreen** — ambient resting screen (large clock + date + temp over
         the sky). It's the default screen on boot; **tapping anywhere wakes to the
         Dashboard** (`Router.show('dashboard')`). Styled dim/centered (`styles/sleep.css`).
-  - [ ] QuestTrail, CalendarDetail, MealsDetail, WeatherDetail (stubs)
+  - [x] **Dashboard redesigned into a card hub** — frosted cards over the sky in a
+        3-column grid: clock + birds, condensed weather, quest banner, Today's Agenda,
+        Chores, Meal Plan. Inline SVG icon library (`src/ui/icons.js`) + shared 7-tab
+        bottom nav bar (`src/ui/NavBar.js`). Other tabs are placeholder screens
+        (`Placeholders.js`). Warm palette + serif/sans (`styles/dashboard.css`).
+  - [x] **Quest + Reward system** (`src/quest/`, classic-script globals + CustomEvents)
+    - `QuestStore` — localStorage source of truth: per-week chore state, lifetime
+      acorns per kid, quest meta. Dispatches `choreupdate` / `questupdate`.
+    - `QuestSystem` — init, Monday reset (+`weekreset`), chest trigger, New-Quest toast.
+    - `QuestBanner` → `#quest-banner-card`: meadow gradient, theme pills, signposts,
+      animated SVG bezier trail (6 waypoints + treasure node).
+    - `KidChorePanel` → `#chores-card` summary **and** the full `chores` screen;
+      acorn counts, tap-to-toggle, `AcornAnimation` +1 float, per-kid confetti.
+    - `ChestCelebration` — full-screen chest-opens-coins-burst at 100%, once/week.
+    - `rewards.js` (4-week ISO quest cycle) + `chores.js` (`KIDS` structure).
+  - [ ] CalendarDetail, MealsDetail, WeatherDetail, Photos, Settings (placeholder tabs)
   - [ ] Return to SleepScreen from Dashboard (e.g. idle timeout) — not yet wired
-  - [ ] Navigation between Dashboard and detail screens
-  - [ ] Populate `CHORES` / `MEALS` / `VERSES` data
+  - [ ] Real Google Calendar data; populate `MEALS` / `VERSES`
 
 ### Verify Phase 1 in the browser
 

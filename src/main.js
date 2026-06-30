@@ -30,6 +30,13 @@
     // Weather refreshed -> re-resolve the sky (condition may have changed).
     WeatherSystem.onUpdate(() => syncSky());
 
+    // Quest + reward system: chore tracking, acorns, weekly quest trail,
+    // Monday reset, and the chest celebration. Wires its own events + screens.
+    if (window.QuestSystem) QuestSystem.init();
+    if (window.QuestBanner) QuestBanner.init();
+    if (window.KidChorePanel) KidChorePanel.init();
+    if (window.ChestCelebration) ChestCelebration.init();
+
     // Mount the resting screen. Screens register themselves with the Router on
     // load. The SleepScreen is the ambient default (time + temp); tapping it
     // wakes to the full Dashboard.

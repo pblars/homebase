@@ -42,8 +42,14 @@
   <script src="src/utils/api.js"></script>
   <script src="src/utils/router.js"></script>
 
-  <!-- data (static content; screens consume these later) -->
+  <!-- ui (icon library + shared nav bar; screens depend on these) -->
+  <script src="src/ui/icons.js"></script>
+  <script src="src/ui/NavBar.js"></script>
+
+  <!-- data (static content consumed by screens) -->
   <script src="src/data/verses.js"></script>
+  <script src="src/data/events.js"></script>
+  <script src="src/data/rewards.js"></script>
   <script src="src/data/chores.js"></script>
   <script src="src/data/meals.js"></script>
 
@@ -52,8 +58,17 @@
   <script src="src/sky/WeatherSystem.js"></script>
   <script src="src/sky/SkyManager.js"></script>
 
+  <!-- quest + reward system -->
+  <script src="src/quest/AcornAnimation.js"></script>
+  <script src="src/quest/QuestStore.js"></script>
+  <script src="src/quest/QuestSystem.js"></script>
+  <script src="src/quest/QuestBanner.js"></script>
+  <script src="src/quest/KidChorePanel.js"></script>
+  <script src="src/quest/ChestCelebration.js"></script>
+
   <!-- screens (register themselves with the Router on load) -->
   <script src="src/screens/SleepScreen.js"></script>
+  <script src="src/screens/Placeholders.js"></script>
   <script src="src/screens/Dashboard.js"></script>
 
   <!-- entry point -->
