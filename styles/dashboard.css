@@ -11,7 +11,8 @@
   --ink-soft: #6f675a;
   --muted: #9a8f7d;
 
-  --card-bg: rgba(252, 248, 240, 0.88);
+  --card-bg: rgba(252, 248, 240, 0.5);
+  --card-bg-hover: rgba(252, 248, 240, 0.94);
   --card-border: rgba(180, 165, 140, 0.4);
   --card-shadow: 0 4px 24px rgba(80, 60, 30, 0.12);
   --radius: 16px;
@@ -61,7 +62,14 @@
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   overflow: hidden;
+  transition: background 0.25s ease;
 }
+
+/* Translucent by default so the sky shows through; opaque on hover/focus/tap
+   for full legibility. (The quest banner is covered by its own art, unaffected.) */
+.card:hover,
+.card:focus-within,
+.card:active { background: var(--card-bg-hover); }
 
 .card-head {
   display: flex;
@@ -96,7 +104,10 @@
 .clock-time {
   font-family: var(--serif); font-weight: 200;
   font-size: clamp(54px, 8.6vw, 124px); line-height: 0.9;
-  letter-spacing: -0.02em; color: var(--ink);
+  letter-spacing: -0.02em;
+  /* light with a soft dark halo so it reads on any sky — bright midday or dark night */
+  color: #fdfaf3;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.45);
 }
 .clock-ampm {
   font-size: 0.26em; font-weight: 400; vertical-align: super;
@@ -105,9 +116,11 @@
 .clock-date {
   margin-top: 0.35em; font-weight: 500;
   font-size: clamp(13px, 1.5vw, 20px);
-  letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft);
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: #fdfaf3; opacity: 0.95;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
 }
-.bird { position: absolute; top: 16%; width: clamp(20px, 2.4vw, 34px); opacity: 0.8; }
+.bird { position: absolute; top: 16%; width: clamp(20px, 2.4vw, 34px); opacity: 0.8; filter: drop-shadow(0 1px 3px rgba(255, 255, 255, 0.55)); }
 .bird--l { left: 16%; }
 .bird--r { right: 16%; transform: scaleX(-1); }
 .bird-svg { width: 100%; height: auto; display: block; }

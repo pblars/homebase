@@ -12,8 +12,15 @@
 
 const QuestBanner = (() => {
   const NODE_FRACTIONS = [0, 0.2, 0.4, 0.6, 0.8, 1];
-  // A gentle meandering trail path in a 600x80 viewBox.
-  const TRAIL_D = 'M22 60 C150 8 235 72 320 42 C402 13 470 8 578 30';
+  // Trail traced over the painted path in the backdrop's pixel space (the art is
+  // 3:2, so viewBox 1512x1008). The SVG is drawn with the SAME cover + bottom
+  // anchoring as the background image (preserveAspectRatio "xMidYMax slice" ↔
+  // background-position "center bottom"), so these coordinates sit on the painted
+  // dirt path and the final point lands on the painted treasure chest at lower
+  // right. Eyeball-traced — nudge the control points to fine-tune.
+  const TRAIL_D =
+    'M250 660 C320 700 300 712 360 720 C470 738 540 740 640 748 ' +
+    'C880 766 1080 778 1220 800 C1290 812 1330 822 1365 834';
 
   let els = {};
   let trailLength = 0;
@@ -48,7 +55,7 @@ const QuestBanner = (() => {
           '<div class="qb-pct" data-pct>0%</div>' +
           '<div class="qb-pct-label">of the way there!</div>' +
         '</div>' +
-        '<svg class="qb-trail" viewBox="0 0 600 80" preserveAspectRatio="xMidYMax meet">' +
+        '<svg class="qb-trail" viewBox="0 0 1512 1008" preserveAspectRatio="xMidYMax slice">' +
           '<path class="qb-track" d="' + TRAIL_D + '"/>' +
           '<path class="qb-fill" data-fill d="' + TRAIL_D + '"/>' +
           '<g class="qb-nodes" data-nodes></g>' +
@@ -78,7 +85,7 @@ const QuestBanner = (() => {
     const quest = getCurrentQuest();
     const layers = [];
     if (quest.banner) layers.push("url('assets/quest/" + quest.banner + "')");
-    layers.push("url('assets/quest/questbackground.png')");
+    layers.push("url('assets/quest/magical_meadow_with_enchanted_chest.webp')");
     els.photo.style.backgroundImage = layers.join(', ');
     els.scene.classList.add('qb-has-photo');
     _buildTrail();
@@ -93,28 +100,18 @@ const QuestBanner = (() => {
 
     els.nodes.innerHTML = nodePoints.map((p, i) => {
       const isTreasure = i === NODE_FRACTIONS.length - 1;
-      const inner = isTreasure
-        ? _chestGlyph()
-        : '<path class="qb-node-check" d="M-3.6 0l2.6 2.6 4.4-5" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>';
+      const cls = 'qb-node' + (isTreasure ? ' qb-node--treasure' : '');
+      // Treasure node = a highlight ring sitting on the painted chest (we don't
+      // draw a chest — the art provides it). Others get a checkmark when reached.
+      const inner = isTreasure ? ''
+        : '<path class="qb-node-check" d="M-7 1l5 5 10-12" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>';
       return (
-        '<g class="qb-node" data-node="' + i + '" transform="translate(' + p.x.toFixed(1) + ' ' + p.y.toFixed(1) + ')">' +
-          '<circle class="qb-node-ring" r="' + (isTreasure ? 15 : 11) + '"/>' +
+        '<g class="' + cls + '" data-node="' + i + '" transform="translate(' + p.x.toFixed(1) + ' ' + p.y.toFixed(1) + ')">' +
+          '<circle class="qb-node-ring" r="' + (isTreasure ? 26 : 17) + '"/>' +
           inner +
         '</g>'
       );
     }).join('');
-  }
-
-  // Small treasure-chest glyph drawn around the node origin.
-  function _chestGlyph() {
-    return (
-      '<g class="qb-chest" transform="translate(-9 -8)">' +
-        '<rect x="0" y="6" width="18" height="11" rx="1.5" fill="#8B5E3C" stroke="#5C3D1E" stroke-width="1"/>' +
-        '<path d="M0 7a9 5 0 0 1 18 0z" fill="#a06a42" stroke="#5C3D1E" stroke-width="1"/>' +
-        '<rect x="0" y="9" width="18" height="2.4" fill="#C8902A" stroke="#8B6914" stroke-width="0.5"/>' +
-        '<rect x="7.5" y="9.5" width="3" height="4" rx="0.6" fill="#C8902A" stroke="#8B6914" stroke-width="0.5"/>' +
-      '</g>'
-    );
   }
 
   function update(progress, quest) {
