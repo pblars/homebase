@@ -21,16 +21,19 @@ const SkyManager = (() => {
   const PLACEHOLDER_KEY = 'placeholder';
 
   // Hardcoded availability map — the art that actually ships in /assets/sky/.
+  // Must match the art actually present in /assets/sky/. predawn_* and
+  // evening_* are intentionally absent (no art uploaded for those slots) — the
+  // resolver falls back to adjacent slots (night/dawn, dusk/night) that do have
+  // art. Listing a key here whose file is missing makes the resolver pick it,
+  // the load 404s, and the sky drops to the dark placeholder.
   const AVAILABLE = new Set([
     'night_clear', 'night_cloudy', 'night_rainy', 'night_snowy',
-    'predawn_clear', 'predawn_cloudy',
     'dawn_clear', 'dawn_cloudy', 'dawn_rainy',
     'morning_sunny', 'morning_cloudy', 'morning_rainy',
     'midday_sunny', 'midday_cloudy', 'midday_stormy', 'midday_rainy',
     'afternoon_sunny', 'afternoon_cloudy', 'afternoon_stormy', 'afternoon_foggy',
     'golden_sunny', 'golden_cloudy', 'golden_rainy',
     'dusk_clear', 'dusk_cloudy',
-    'evening_clear', 'evening_cloudy',
     'placeholder',
   ]);
 

@@ -6,8 +6,9 @@
 //   • right:  Chores, Meal Plan
 //   • bottom: 7-tab navigation bar
 // Each card drills into its detail screen via the nav or a tap. Live data:
-// the weather card reads WeatherSystem; everything else is placeholder data
-// (EVENTS / CHORES / MEALS / QUEST) shaped to match the design.
+// the weather card reads WeatherSystem; the Chores card + quest banner are
+// rendered by the quest system into mount-point slots; Agenda/Meal Plan use
+// the EVENTS / MEALS placeholder data.
 //
 // Registers itself with the Router at load as "dashboard".
 // -----------------------------------------------------------------------------
