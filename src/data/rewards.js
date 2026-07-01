@@ -33,9 +33,15 @@ function getISOWeek(date) {
   return 1 + Math.round(((d - week1) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7);
 }
 
+// Until per-theme banner art (forest/river/mountain) exists, pin the quest so its
+// name matches the single meadow backdrop. Set to null to resume the live 4-week
+// ISO cycle (week 1 = Meadow, 2 = Forest, 3 = River, 4 = Mountain, repeating).
+const PINNED_CYCLE_WEEK = 1;
+
 function getCurrentQuest() {
-  const week = getISOWeek(new Date());
-  const cycleWeek = ((week - 1) % 4) + 1;
+  const cycleWeek = PINNED_CYCLE_WEEK != null
+    ? PINNED_CYCLE_WEEK
+    : ((getISOWeek(new Date()) - 1) % 4) + 1;
   return REWARDS.find((r) => r.isoWeek === cycleWeek) || DEFAULT_QUEST;
 }
 
