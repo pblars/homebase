@@ -10,16 +10,16 @@ function json(obj, status = 200) {
 }
 
 export async function onRequestDelete({ params, env }) {
-  if (!env.DB) return json({ error: 'D1 binding "DB" not configured' }, 500);
-  await env.DB.batch([
-    env.DB.prepare('DELETE FROM chores WHERE kid_id = ?').bind(params.id),
-    env.DB.prepare('DELETE FROM kids WHERE id = ?').bind(params.id),
+  if (!(env.DB || env.D1)) return json({ error: 'D1 binding "DB" not configured' }, 500);
+  await (env.DB || env.D1).batch([
+    (env.DB || env.D1).prepare('DELETE FROM chores WHERE kid_id = ?').bind(params.id),
+    (env.DB || env.D1).prepare('DELETE FROM kids WHERE id = ?').bind(params.id),
   ]);
   return new Response(null, { status: 204 });
 }
 
 export async function onRequestPut({ params, request, env }) {
-  if (!env.DB) return json({ error: 'D1 binding "DB" not configured' }, 500);
+  if (!(env.DB || env.D1)) return json({ error: 'D1 binding "DB" not configured' }, 500);
   const b = await request.json().catch(() => ({}));
   const map = { name: 'name', initial: 'initial', color: 'color', avatarBg: 'avatar_bg', avatar: 'avatar' };
   const sets = [];
@@ -29,6 +29,6 @@ export async function onRequestPut({ params, request, env }) {
   }
   if (!sets.length) return json({ error: 'no updatable fields provided' }, 400);
   vals.push(params.id);
-  await env.DB.prepare('UPDATE kids SET ' + sets.join(', ') + ' WHERE id = ?').bind(...vals).run();
+  await (env.DB || env.D1).prepare('UPDATE kids SET ' + sets.join(', ') + ' WHERE id = ?').bind(...vals).run();
   return json({ ok: true });
 }

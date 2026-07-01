@@ -13,9 +13,10 @@ function json(obj, status = 200) {
 }
 
 export async function onRequestGet({ env }) {
-  if (!env.DB) return json({ error: 'D1 binding "DB" not configured' }, 500);
-  const kids = (await env.DB.prepare('SELECT * FROM kids ORDER BY sort, name').all()).results || [];
-  const chores = (await env.DB.prepare('SELECT * FROM chores ORDER BY sort, name').all()).results || [];
+  const DB = env.DB || env.D1;
+  if (!DB) return json({ error: 'D1 binding not configured (expected "DB" or "D1")' }, 500);
+  const kids = (await DB.prepare('SELECT * FROM kids ORDER BY sort, name').all()).results || [];
+  const chores = (await DB.prepare('SELECT * FROM chores ORDER BY sort, name').all()).results || [];
   const byKid = {};
   for (const c of chores) {
     (byKid[c.kid_id] = byKid[c.kid_id] || []).push({
@@ -31,14 +32,15 @@ export async function onRequestGet({ env }) {
 }
 
 export async function onRequestPost({ request, env }) {
-  if (!env.DB) return json({ error: 'D1 binding "DB" not configured' }, 500);
+  const DB = env.DB || env.D1;
+  if (!DB) return json({ error: 'D1 binding not configured (expected "DB" or "D1")' }, 500);
   const b = await request.json().catch(() => ({}));
   const name = (b.name || '').trim();
   if (!b.kidId || !name) return json({ error: 'kidId and name are required' }, 400);
   const id = crypto.randomUUID();
   const frequency = b.frequency === 'Weekly' ? 'Weekly' : 'Daily';
   const description = (b.description || '').trim();
-  await env.DB
+  await DB
     .prepare('INSERT INTO chores (id, kid_id, name, description, frequency, sort) VALUES (?,?,?,?,?,?)')
     .bind(id, b.kidId, name, description, frequency, Date.now() % 1000000)
     .run();

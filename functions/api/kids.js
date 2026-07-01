@@ -20,19 +20,19 @@ const PALETTE = [
 ];
 
 export async function onRequestPost({ request, env }) {
-  if (!env.DB) return json({ error: 'D1 binding "DB" not configured' }, 500);
+  if (!(env.DB || env.D1)) return json({ error: 'D1 binding "DB" not configured' }, 500);
   const b = await request.json().catch(() => ({}));
   const name = (b.name || '').trim();
   if (!name) return json({ error: 'name is required' }, 400);
 
-  const count = ((await env.DB.prepare('SELECT COUNT(*) AS n FROM kids').first()) || {}).n || 0;
+  const count = ((await (env.DB || env.D1).prepare('SELECT COUNT(*) AS n FROM kids').first()) || {}).n || 0;
   const pick = PALETTE[count % PALETTE.length];
   const id = crypto.randomUUID();
   const initial = (b.initial || name[0] || '?').toUpperCase().slice(0, 1);
   const color = b.color || pick.color;
   const avatarBg = b.avatarBg || pick.bg;
 
-  await env.DB
+  await (env.DB || env.D1)
     .prepare('INSERT INTO kids (id, name, initial, color, avatar_bg, sort) VALUES (?,?,?,?,?,?)')
     .bind(id, name, initial, color, avatarBg, count)
     .run();

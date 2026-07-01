@@ -10,13 +10,13 @@ function json(obj, status = 200) {
 }
 
 export async function onRequestDelete({ params, env }) {
-  if (!env.DB) return json({ error: 'D1 binding "DB" not configured' }, 500);
-  await env.DB.prepare('DELETE FROM chores WHERE id = ?').bind(params.id).run();
+  if (!(env.DB || env.D1)) return json({ error: 'D1 binding "DB" not configured' }, 500);
+  await (env.DB || env.D1).prepare('DELETE FROM chores WHERE id = ?').bind(params.id).run();
   return new Response(null, { status: 204 });
 }
 
 export async function onRequestPut({ params, request, env }) {
-  if (!env.DB) return json({ error: 'D1 binding "DB" not configured' }, 500);
+  if (!(env.DB || env.D1)) return json({ error: 'D1 binding "DB" not configured' }, 500);
   const b = await request.json().catch(() => ({}));
   const sets = [];
   const vals = [];
@@ -25,6 +25,6 @@ export async function onRequestPut({ params, request, env }) {
   if (b.frequency != null) { sets.push('frequency = ?'); vals.push(b.frequency === 'Weekly' ? 'Weekly' : 'Daily'); }
   if (!sets.length) return json({ error: 'no updatable fields provided' }, 400);
   vals.push(params.id);
-  await env.DB.prepare('UPDATE chores SET ' + sets.join(', ') + ' WHERE id = ?').bind(...vals).run();
+  await (env.DB || env.D1).prepare('UPDATE chores SET ' + sets.join(', ') + ' WHERE id = ?').bind(...vals).run();
   return json({ ok: true });
 }
