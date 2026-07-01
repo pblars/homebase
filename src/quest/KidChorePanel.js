@@ -92,9 +92,8 @@ const KidChorePanel = (() => {
     return (
       '<div class="kcp-kid" data-kid="' + k.id + '">' +
         '<div class="kcp-head">' +
-          '<span class="kcp-avatar" style="background:' + k.avatarBg + ';color:' + k.color + '">' + avatarInner(k) + '</span>' +
+          '<span class="kcp-avatar" style="background:' + k.color + '">' + avatarInner(k) + '</span>' +
           '<span class="kcp-name">' + esc(k.name) + '</span>' +
-          acornChip(k.id) +
           '<span class="kcp-frac">' + p.done + '/' + p.total + '</span>' +
         '</div>' +
         '<div class="kcp-bar"><div class="kcp-bar-fill" style="width:' + p.pct + '%;background:' + k.color + '"></div></div>' +
@@ -107,10 +106,8 @@ const KidChorePanel = (() => {
     const c = document.getElementById('chores-card');
     if (!c) return;
     c.innerHTML =
-      '<div class="card-head">' +
-        '<span class="card-title"><span class="leaf-mini">' + ICONS.deco.sprig + '</span>Chores</span>' +
-        '<button type="button" class="view-all" data-nav="chores">View All</button>' +
-      '</div>' +
+      '<div class="kcp-head-row"><span class="eyebrow">Chores</span>' +
+        '<span class="kcp-hint">tap to check off</span></div>' +
       '<div class="kcp-list">' + boardKids().map(kidSummaryHTML).join('') + '</div>';
   }
 

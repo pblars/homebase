@@ -24,6 +24,20 @@
       SkyManager.update(slot, condition);
     }
 
+    // Set data-scene=dark|light on <html> so the frosted-glass UI stays readable
+    // over both dark (night/dusk/stormy) and light (day/sunny) backgrounds.
+    const DARK_SLOTS = new Set(['night', 'predawn', 'dusk', 'evening']);
+    const DARK_CONDITIONS = new Set(['rainy', 'stormy']);
+    function syncScene() {
+      const { slot } = TimeSystem.getNow();
+      const condition = WeatherSystem.condition || 'sunny';
+      const dark = DARK_SLOTS.has(slot) || DARK_CONDITIONS.has(condition);
+      document.documentElement.dataset.scene = dark ? 'dark' : 'light';
+    }
+    syncScene();
+    TimeSystem.onSlotChange(syncScene);
+    WeatherSystem.onUpdate(syncScene);
+
     // Slot boundary crossed -> re-resolve the sky.
     TimeSystem.onSlotChange(() => syncSky());
 
