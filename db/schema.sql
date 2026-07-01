@@ -6,15 +6,28 @@
 --   npx wrangler d1 execute homebase --remote --file=db/schema.sql
 -- (safe to re-run — CREATE IF NOT EXISTS + INSERT OR IGNORE)
 
+-- Household members (table kept named "kids" for continuity; a member may be a
+-- Parent or Kid, and on_chore_board decides whether they appear on the board).
 CREATE TABLE IF NOT EXISTS kids (
-  id        TEXT PRIMARY KEY,
-  name      TEXT NOT NULL,
-  initial   TEXT NOT NULL DEFAULT '',
-  color     TEXT NOT NULL DEFAULT '#4a7c59',
-  avatar_bg TEXT NOT NULL DEFAULT '#c8e6c9',
-  avatar    TEXT,
-  sort      INTEGER NOT NULL DEFAULT 0
+  id             TEXT PRIMARY KEY,
+  name           TEXT NOT NULL,
+  initial        TEXT NOT NULL DEFAULT '',
+  color          TEXT NOT NULL DEFAULT '#4a7c59',
+  avatar_bg      TEXT NOT NULL DEFAULT '#c8e6c9',
+  avatar         TEXT,
+  role           TEXT NOT NULL DEFAULT 'Kid',
+  on_chore_board INTEGER NOT NULL DEFAULT 1,
+  sort           INTEGER NOT NULL DEFAULT 0
 );
+
+-- Site-wide settings (family name, address, …) as simple key/value rows.
+CREATE TABLE IF NOT EXISTS settings (
+  key   TEXT PRIMARY KEY,
+  value TEXT NOT NULL DEFAULT ''
+);
+INSERT OR IGNORE INTO settings (key, value) VALUES
+  ('family_name', 'Our Family'),
+  ('address', ''), ('city', ''), ('state', ''), ('zip', '');
 
 CREATE TABLE IF NOT EXISTS chores (
   id          TEXT PRIMARY KEY,

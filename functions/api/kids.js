@@ -42,10 +42,12 @@ export async function onRequestPost({ request, env }) {
   const initial = (b.initial || name[0] || '?').toUpperCase().slice(0, 1);
   const color = b.color || pick.color;
   const avatarBg = b.avatarBg || pick.bg;
+  const role = b.role === 'Parent' ? 'Parent' : 'Kid';
+  const onBoard = b.onBoard === false ? 0 : 1;
 
   await DB
-    .prepare('INSERT INTO kids (id, name, initial, color, avatar_bg, sort) VALUES (?,?,?,?,?,?)')
-    .bind(id, name, initial, color, avatarBg, count)
+    .prepare('INSERT INTO kids (id, name, initial, color, avatar_bg, role, on_chore_board, sort) VALUES (?,?,?,?,?,?,?,?)')
+    .bind(id, name, initial, color, avatarBg, role, onBoard, count)
     .run();
-  return json({ id, name, initial, color, avatarBg, chores: [] }, 201);
+  return json({ id, name, initial, color, avatarBg, role, onBoard: onBoard === 1, chores: [] }, 201);
 }

@@ -9,14 +9,13 @@
 // -----------------------------------------------------------------------------
 
 const Placeholders = (() => {
-  // 'chores' is intentionally absent — KidChorePanel registers the real
-  // Chores screen with the Router.
+  // 'chores' (KidChorePanel) and 'settings' (SettingsScreen) register their own
+  // real screens with the Router, so they're intentionally absent here.
   const SCREENS = [
     { id: 'weather',  label: 'Weather' },
     { id: 'calendar', label: 'Calendar' },
     { id: 'meals',    label: 'Meals' },
     { id: 'photos',   label: 'Photos' },
-    { id: 'settings', label: 'Settings' },
   ];
 
   function make(def) {

@@ -101,7 +101,17 @@ const ChoreData = (() => {
     await load();
   }
 
-  return { load, addChore, removeChore, updateChore, addKid, removeKid };
+  async function updateKid(id, fields) {
+    const res = await fetch(KIDS_API + '/' + encodeURIComponent(id), {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(fields),
+    });
+    if (!res.ok) throw new Error('update kid failed (' + res.status + ')');
+    await load();
+  }
+
+  return { load, addChore, removeChore, updateChore, addKid, removeKid, updateKid };
 })();
 
 window.ChoreData = ChoreData;

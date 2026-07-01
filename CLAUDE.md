@@ -155,17 +155,23 @@ Keys:
 
 ---
 
-## Chore data (Cloudflare D1)
+## Household data (Cloudflare D1)
 
-Chore **definitions** (kids + chores) live in a **Cloudflare D1** database and are
-edited from the app (Chores tab → **Manage**). Daily **completion + acorns** stay
-on the tablet in localStorage (`QuestStore`).
+The **household** — family name + address (`settings` table) and **members**
+(`kids` table: name, role Parent/Kid, `on_chore_board`) — plus **chore
+definitions** live in **Cloudflare D1**. Members + settings are edited in the
+**Settings** tab; chores in the **Chores** tab → **Manage**. Daily **completion +
+acorns** stay on the tablet in localStorage (`QuestStore`).
 
-- `db/schema.sql` — tables `kids` + `chores`, seeded with the current family.
-- `functions/api/chores.js` + `functions/api/chores/[id].js` — Pages Functions
-  CRUD API over the D1 binding **`DB`** (`GET`/`POST`/`DELETE`/`PUT`).
-- `src/data/ChoreData.js` — fetches `/api/chores`, caches to localStorage, and
-  falls back to the built-in defaults in `chores.js`; dispatches `choresupdated`.
+- `db/schema.sql` — `settings`, `kids`, `chores`; run `db/migrations/0002_household.sql`
+  once on an existing database (adds settings table, member role/board, chore days).
+- `functions/api/` — `settings.js` (GET/PUT), `chores.js` + `chores/[id].js`,
+  `kids.js` + `kids/[id].js`. The D1 binding is auto-detected by any name
+  (`pickDB`), so the dashboard binding can be `DB`/`D1`/`db`.
+- `src/data/ChoreData.js` (roster + chores) and `src/data/SettingsData.js`
+  (family/address) fetch the API, cache to localStorage, fall back to defaults,
+  and dispatch `choresupdated` / `settingsupdated`. Chores show only members with
+  `onBoard`; Settings shows everyone.
 
 ### One-time D1 setup (per Cloudflare account)
 

@@ -70,7 +70,8 @@ const QuestStore = (() => {
   function getFamilyProgress() {
     let total = 0;
     let completed = 0;
-    kids().forEach((k) => {
+    // Only members on the chore board count toward the family quest.
+    kids().filter((k) => k.onBoard !== false).forEach((k) => {
       const st = getChoreState(k.id);
       k.chores.forEach((c) => { total += 1; if (st[c.id]) completed += 1; });
     });

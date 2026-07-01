@@ -1,0 +1,54 @@
+/* settings.css — the Settings tab (household config + members).
+   Uses the :root palette + .navbar from dashboard.css. */
+
+.settings-screen {
+  position: absolute; inset: 0; display: grid; grid-template-rows: 1fr auto;
+  padding: clamp(10px, 1.4vw, 20px); padding-bottom: clamp(8px, 1vw, 14px);
+  font-family: var(--sans); color: var(--ink);
+}
+.set-inner {
+  min-height: 0; overflow-y: auto; display: flex; flex-direction: column;
+  gap: clamp(10px, 1.6vh, 18px); align-items: center;
+}
+.set-heading { font-family: var(--serif); font-weight: 300; font-size: clamp(28px, 4vw, 52px); text-shadow: 0 2px 14px rgba(0, 0, 0, 0.25); }
+
+.set-card {
+  width: min(680px, 96%);
+  background: var(--card-bg-hover); border: 1px solid var(--card-border);
+  border-radius: var(--radius); box-shadow: var(--card-shadow);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  padding: clamp(14px, 1.8vw, 24px);
+}
+.set-title { font-size: clamp(12px, 1.3vw, 16px); font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 12px; }
+.set-hint { font-size: clamp(11px, 1.1vw, 13px); color: var(--muted); margin: -4px 0 12px; }
+
+.set-field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+.set-field label { font-size: clamp(11px, 1.1vw, 13px); font-weight: 600; color: var(--ink-soft); }
+.set-field input {
+  padding: 9px 12px; border: 1px solid var(--card-border); border-radius: 10px;
+  background: rgba(255, 255, 255, 0.9); font-family: var(--sans); font-size: clamp(13px, 1.3vw, 16px); color: var(--ink);
+}
+.set-row { display: flex; gap: 10px; align-items: flex-end; }
+.set-grow { flex: 1; }
+
+.set-save {
+  padding: 9px 22px; border: none; border-radius: 999px; cursor: pointer;
+  background: var(--sage-deep); color: #fff; font-family: var(--sans); font-weight: 600; font-size: clamp(13px, 1.3vw, 15px);
+}
+.set-save:disabled { opacity: 0.7; }
+
+/* members */
+.set-members { display: flex; flex-direction: column; gap: 8px; }
+.set-member { display: flex; align-items: center; gap: 10px; }
+.set-avatar { flex: 0 0 auto; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; }
+.set-mname { flex: 1; min-width: 0; padding: 7px 10px; border: 1px solid var(--card-border); border-radius: 8px; background: rgba(255, 255, 255, 0.9); font-family: var(--sans); font-size: clamp(13px, 1.3vw, 15px); }
+.set-role { padding: 7px 8px; border: 1px solid var(--card-border); border-radius: 8px; background: rgba(255, 255, 255, 0.9); font-family: var(--sans); font-size: clamp(12px, 1.2vw, 14px); }
+.set-board { display: inline-flex; align-items: center; gap: 5px; font-size: clamp(11px, 1.1vw, 13px); color: var(--ink-soft); white-space: nowrap; }
+.set-board input { accent-color: var(--sage-deep); }
+.set-del { flex: 0 0 auto; width: 28px; height: 28px; border: none; border-radius: 50%; background: rgba(226, 116, 95, 0.16); color: #d2543f; font-size: 18px; line-height: 1; cursor: pointer; }
+
+.set-addmember { display: flex; gap: 8px; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(180, 165, 140, 0.35); }
+.set-addmember input { flex: 1; min-width: 0; padding: 8px 12px; border: 1px solid var(--card-border); border-radius: 8px; background: rgba(255, 255, 255, 0.9); font-family: var(--sans); font-size: clamp(13px, 1.3vw, 15px); }
+.set-addmember select { padding: 8px; border: 1px solid var(--card-border); border-radius: 8px; background: rgba(255, 255, 255, 0.9); font-family: var(--sans); }
+.set-add-btn { padding: 8px 18px; border: none; border-radius: 8px; background: var(--sage-deep); color: #fff; font-weight: 600; cursor: pointer; font-family: var(--sans); font-size: clamp(12px, 1.2vw, 14px); }
+.set-add-btn:disabled { opacity: 0.6; }

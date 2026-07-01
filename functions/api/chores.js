@@ -43,6 +43,7 @@ export async function onRequestGet({ env }) {
   const out = kids.map((k) => ({
     id: k.id, name: k.name, initial: k.initial, color: k.color,
     avatarBg: k.avatar_bg, avatar: k.avatar || null,
+    role: k.role || 'Kid', onBoard: k.on_chore_board !== 0,
     chores: byKid[k.id] || [],
   }));
   return json({ kids: out });

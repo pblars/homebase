@@ -33,12 +33,13 @@ export async function onRequestPut({ params, request, env }) {
   const DB = pickDB(env);
   if (!DB) return json({ error: 'No D1 binding found on this deployment' }, 500);
   const b = await request.json().catch(() => ({}));
-  const map = { name: 'name', initial: 'initial', color: 'color', avatarBg: 'avatar_bg', avatar: 'avatar' };
+  const map = { name: 'name', initial: 'initial', color: 'color', avatarBg: 'avatar_bg', avatar: 'avatar', role: 'role' };
   const sets = [];
   const vals = [];
   for (const key of Object.keys(map)) {
     if (b[key] != null) { sets.push(map[key] + ' = ?'); vals.push(String(b[key])); }
   }
+  if (b.onBoard != null) { sets.push('on_chore_board = ?'); vals.push(b.onBoard ? 1 : 0); }
   if (!sets.length) return json({ error: 'no updatable fields provided' }, 400);
   vals.push(params.id);
   await DB.prepare('UPDATE kids SET ' + sets.join(', ') + ' WHERE id = ?').bind(...vals).run();

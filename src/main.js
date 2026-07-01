@@ -36,9 +36,12 @@
     if (window.QuestBanner) QuestBanner.init();
     if (window.KidChorePanel) KidChorePanel.init();
     if (window.ChestCelebration) ChestCelebration.init();
+    if (window.SettingsScreen) SettingsScreen.init();
 
-    // Load chore definitions from the D1-backed API (falls back to the cached
-    // copy, then the built-in defaults). Fires 'choresupdated' when it lands.
+    // Load household settings + chore definitions from the D1-backed API (each
+    // falls back to cache, then built-in defaults). Fire 'settingsupdated' /
+    // 'choresupdated' when they land.
+    if (window.SettingsData) SettingsData.load();
     if (window.ChoreData) ChoreData.load();
 
     // Mount the resting screen. Screens register themselves with the Router on
