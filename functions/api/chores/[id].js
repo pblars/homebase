@@ -1,4 +1,4 @@
-// Pages Function: /api/chores/:id  (D1 binding `DB`)
+// Pages Function: /api/chores/:id  (Cloudflare D1)
 // DELETE /api/chores/:id           -> 204 remove a chore
 // PUT    /api/chores/:id {name?,description?,frequency?} -> update fields
 
@@ -9,14 +9,26 @@ function json(obj, status = 200) {
   });
 }
 
+function pickDB(env) {
+  for (const k of ['DB', 'D1', 'db', 'd1']) {
+    if (env[k] && typeof env[k].prepare === 'function') return env[k];
+  }
+  for (const k in env) {
+    if (env[k] && typeof env[k].prepare === 'function') return env[k];
+  }
+  return null;
+}
+
 export async function onRequestDelete({ params, env }) {
-  if (!(env.DB || env.D1)) return json({ error: 'D1 binding "DB" not configured' }, 500);
-  await (env.DB || env.D1).prepare('DELETE FROM chores WHERE id = ?').bind(params.id).run();
+  const DB = pickDB(env);
+  if (!DB) return json({ error: 'No D1 binding found on this deployment' }, 500);
+  await DB.prepare('DELETE FROM chores WHERE id = ?').bind(params.id).run();
   return new Response(null, { status: 204 });
 }
 
 export async function onRequestPut({ params, request, env }) {
-  if (!(env.DB || env.D1)) return json({ error: 'D1 binding "DB" not configured' }, 500);
+  const DB = pickDB(env);
+  if (!DB) return json({ error: 'No D1 binding found on this deployment' }, 500);
   const b = await request.json().catch(() => ({}));
   const sets = [];
   const vals = [];
@@ -25,6 +37,6 @@ export async function onRequestPut({ params, request, env }) {
   if (b.frequency != null) { sets.push('frequency = ?'); vals.push(b.frequency === 'Weekly' ? 'Weekly' : 'Daily'); }
   if (!sets.length) return json({ error: 'no updatable fields provided' }, 400);
   vals.push(params.id);
-  await (env.DB || env.D1).prepare('UPDATE chores SET ' + sets.join(', ') + ' WHERE id = ?').bind(...vals).run();
+  await DB.prepare('UPDATE chores SET ' + sets.join(', ') + ' WHERE id = ?').bind(...vals).run();
   return json({ ok: true });
 }

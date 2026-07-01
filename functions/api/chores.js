@@ -1,7 +1,4 @@
-// Pages Function: /api/chores
-// Backed by the Cloudflare D1 binding `DB`. Returns chore definitions in the
-// exact shape the app already uses (window.KIDS), and accepts new chores.
-//
+// Pages Function: /api/chores  (Cloudflare D1)
 // GET  /api/chores            -> { kids: [ {id,name,initial,color,avatarBg,avatar, chores:[{id,name,description,frequency}]} ] }
 // POST /api/chores {kidId,name,description?,frequency?} -> 201 created chore
 
@@ -12,9 +9,21 @@ function json(obj, status = 200) {
   });
 }
 
+// Find the D1 binding regardless of what it was named in the dashboard
+// (case-insensitive DB/D1, else the first binding that looks like a D1 database).
+function pickDB(env) {
+  for (const k of ['DB', 'D1', 'db', 'd1']) {
+    if (env[k] && typeof env[k].prepare === 'function') return env[k];
+  }
+  for (const k in env) {
+    if (env[k] && typeof env[k].prepare === 'function') return env[k];
+  }
+  return null;
+}
+
 export async function onRequestGet({ env }) {
-  const DB = env.DB || env.D1;
-  if (!DB) return json({ error: 'D1 binding not configured (expected "DB" or "D1")' }, 500);
+  const DB = pickDB(env);
+  if (!DB) return json({ error: 'No D1 binding found on this deployment' }, 500);
   const kids = (await DB.prepare('SELECT * FROM kids ORDER BY sort, name').all()).results || [];
   const chores = (await DB.prepare('SELECT * FROM chores ORDER BY sort, name').all()).results || [];
   const byKid = {};
@@ -32,8 +41,8 @@ export async function onRequestGet({ env }) {
 }
 
 export async function onRequestPost({ request, env }) {
-  const DB = env.DB || env.D1;
-  if (!DB) return json({ error: 'D1 binding not configured (expected "DB" or "D1")' }, 500);
+  const DB = pickDB(env);
+  if (!DB) return json({ error: 'No D1 binding found on this deployment' }, 500);
   const b = await request.json().catch(() => ({}));
   const name = (b.name || '').trim();
   if (!b.kidId || !name) return json({ error: 'kidId and name are required' }, 400);

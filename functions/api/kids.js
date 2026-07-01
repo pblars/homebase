@@ -1,4 +1,4 @@
-// Pages Function: /api/kids  (D1 binding `DB`)
+// Pages Function: /api/kids  (Cloudflare D1)
 // POST /api/kids {name, initial?, color?, avatarBg?} -> 201 created kid
 // (Kids are also returned by GET /api/chores, so there's no GET here.)
 
@@ -7,6 +7,16 @@ function json(obj, status = 200) {
     status,
     headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
   });
+}
+
+function pickDB(env) {
+  for (const k of ['DB', 'D1', 'db', 'd1']) {
+    if (env[k] && typeof env[k].prepare === 'function') return env[k];
+  }
+  for (const k in env) {
+    if (env[k] && typeof env[k].prepare === 'function') return env[k];
+  }
+  return null;
 }
 
 // Palette assigned to new kids in order, so each gets a distinct color.
@@ -20,19 +30,20 @@ const PALETTE = [
 ];
 
 export async function onRequestPost({ request, env }) {
-  if (!(env.DB || env.D1)) return json({ error: 'D1 binding "DB" not configured' }, 500);
+  const DB = pickDB(env);
+  if (!DB) return json({ error: 'No D1 binding found on this deployment' }, 500);
   const b = await request.json().catch(() => ({}));
   const name = (b.name || '').trim();
   if (!name) return json({ error: 'name is required' }, 400);
 
-  const count = ((await (env.DB || env.D1).prepare('SELECT COUNT(*) AS n FROM kids').first()) || {}).n || 0;
+  const count = ((await DB.prepare('SELECT COUNT(*) AS n FROM kids').first()) || {}).n || 0;
   const pick = PALETTE[count % PALETTE.length];
   const id = crypto.randomUUID();
   const initial = (b.initial || name[0] || '?').toUpperCase().slice(0, 1);
   const color = b.color || pick.color;
   const avatarBg = b.avatarBg || pick.bg;
 
-  await (env.DB || env.D1)
+  await DB
     .prepare('INSERT INTO kids (id, name, initial, color, avatar_bg, sort) VALUES (?,?,?,?,?,?)')
     .bind(id, name, initial, color, avatarBg, count)
     .run();
