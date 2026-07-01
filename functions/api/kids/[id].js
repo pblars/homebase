@@ -33,7 +33,7 @@ export async function onRequestPut({ params, request, env }) {
   const DB = pickDB(env);
   if (!DB) return json({ error: 'No D1 binding found on this deployment' }, 500);
   const b = await request.json().catch(() => ({}));
-  const map = { name: 'name', initial: 'initial', color: 'color', avatarBg: 'avatar_bg', avatar: 'avatar', role: 'role' };
+  const map = { name: 'name', initial: 'initial', color: 'color', avatarBg: 'avatar_bg', avatar: 'avatar', role: 'role', birthdate: 'birthdate' };
   const sets = [];
   const vals = [];
   for (const key of Object.keys(map)) {

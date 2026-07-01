@@ -39,7 +39,8 @@
 
 /* members */
 .set-members { display: flex; flex-direction: column; gap: 8px; }
-.set-member { display: flex; align-items: center; gap: 10px; }
+.set-member { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.set-bday { padding: 6px 8px; border: 1px solid var(--card-border); border-radius: 8px; background: rgba(255, 255, 255, 0.9); font-family: var(--sans); font-size: clamp(12px, 1.2vw, 14px); color: var(--ink); }
 .set-avatar { flex: 0 0 auto; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; }
 .set-mname { flex: 1; min-width: 0; padding: 7px 10px; border: 1px solid var(--card-border); border-radius: 8px; background: rgba(255, 255, 255, 0.9); font-family: var(--sans); font-size: clamp(13px, 1.3vw, 15px); }
 .set-role { padding: 7px 8px; border: 1px solid var(--card-border); border-radius: 8px; background: rgba(255, 255, 255, 0.9); font-family: var(--sans); font-size: clamp(12px, 1.2vw, 14px); }

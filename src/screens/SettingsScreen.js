@@ -23,6 +23,7 @@ const SettingsScreen = (() => {
       '<div class="set-member" data-id="' + m.id + '">' +
         '<span class="set-avatar" style="background:' + (m.avatarBg || '#ddd') + ';color:' + (m.color || '#333') + '">' + esc(m.initial || (m.name || '?')[0]) + '</span>' +
         '<input class="set-mname" data-field="name" value="' + esc(m.name) + '" maxlength="20" aria-label="Name">' +
+        '<input type="date" class="set-bday" data-field="birthdate" value="' + esc(m.birthdate || '') + '" title="Birthdate" aria-label="Birthdate">' +
         '<select class="set-role" data-field="role">' +
           '<option value="Kid"' + (role === 'Kid' ? ' selected' : '') + '>Kid</option>' +
           '<option value="Parent"' + (role === 'Parent' ? ' selected' : '') + '>Parent</option>' +
@@ -57,6 +58,7 @@ const SettingsScreen = (() => {
       members().map(memberRowHTML).join('') +
       '<form class="set-addmember" data-addmember>' +
         '<input name="name" placeholder="Add a family member" maxlength="20" required>' +
+        '<input type="date" name="birthdate" class="set-bday" title="Birthdate" aria-label="Birthdate">' +
         '<select name="role"><option value="Kid">Kid</option><option value="Parent">Parent</option></select>' +
         '<button type="submit" class="set-add-btn">Add</button>' +
       '</form>';
@@ -78,7 +80,7 @@ const SettingsScreen = (() => {
     if (!name) return;
     const btn = form.querySelector('.set-add-btn');
     if (btn) btn.disabled = true;
-    ChoreData.addKid({ name, role: form.role.value, onBoard: true })
+    ChoreData.addKid({ name, role: form.role.value, birthdate: form.birthdate.value, onBoard: true })
       .catch((err) => { console.error(err); alert('Could not add member. Is the database set up?'); })
       .finally(() => { if (btn) btn.disabled = false; });
   }

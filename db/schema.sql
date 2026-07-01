@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS kids (
   avatar         TEXT,
   role           TEXT NOT NULL DEFAULT 'Kid',
   on_chore_board INTEGER NOT NULL DEFAULT 1,
+  birthdate      TEXT NOT NULL DEFAULT '',   -- ISO 'YYYY-MM-DD'
   sort           INTEGER NOT NULL DEFAULT 0
 );
 
