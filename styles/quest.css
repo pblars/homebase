@@ -176,6 +176,12 @@
 .cs-del-kid { display: none; flex: 0 0 auto; margin-left: 8px; width: 26px; height: 26px; border: none; border-radius: 50%; background: rgba(226, 116, 95, 0.16); color: #d2543f; font-size: 18px; line-height: 1; cursor: pointer; }
 .cs-managing .cs-del-kid { display: inline-flex; align-items: center; justify-content: center; }
 
+/* day-of-week picker: only shown for a Weekly chore (form gets .freq-weekly) */
+.cs-days { display: none; flex-basis: 100%; flex-wrap: wrap; gap: 4px; }
+.cs-add.freq-weekly .cs-days { display: flex; }
+.cs-day { display: inline-flex; align-items: center; gap: 3px; padding: 3px 7px; border: 1px solid var(--card-border); border-radius: 6px; background: rgba(255, 255, 255, 0.8); font-family: var(--sans); font-size: clamp(10px, 1vw, 12px); cursor: pointer; }
+.cs-day input { margin: 0; accent-color: var(--sage-deep); }
+
 /* =========================================================================
    New-Quest toast
    ========================================================================= */

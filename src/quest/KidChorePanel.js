@@ -19,6 +19,46 @@ const KidChorePanel = (() => {
   function kids() { return window.KIDS || []; }
   function kid(id) { return kids().find((k) => k.id === id) || null; }
 
+  const DAYS = [['Sun', 'Su'], ['Mon', 'Mo'], ['Tue', 'Tu'], ['Wed', 'We'], ['Thu', 'Th'], ['Fri', 'Fr'], ['Sat', 'Sa']];
+  let nameIndex = {}; // lowercased chore name -> {name, description, frequency, days} for autocomplete
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, (m) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+  }
+
+  // Badge: a Weekly chore with specific days shows the day(s); otherwise the frequency.
+  function choreBadge(c) {
+    if (c.frequency === 'Weekly' && c.days) return { text: c.days.split(',').join(', '), cls: 'weekly' };
+    return { text: c.frequency || 'Daily', cls: c.frequency === 'Weekly' ? 'weekly' : 'daily' };
+  }
+
+  function daysChipsHTML(selected) {
+    const sel = new Set(String(selected || '').split(',').filter(Boolean));
+    return '<div class="cs-days">' + DAYS.map(([v, l]) =>
+      '<label class="cs-day"><input type="checkbox" name="day" value="' + v + '"' + (sel.has(v) ? ' checked' : '') + '>' + l + '</label>'
+    ).join('') + '</div>';
+  }
+
+  function buildNameIndex() {
+    nameIndex = {};
+    kids().forEach((k) => (k.chores || []).forEach((c) => {
+      const key = (c.name || '').trim().toLowerCase();
+      if (key && !nameIndex[key]) {
+        nameIndex[key] = { name: c.name, description: c.description || '', frequency: c.frequency || 'Daily', days: c.days || '' };
+      }
+    }));
+  }
+
+  function datalistHTML() {
+    const opts = Object.values(nameIndex).map((v) => '<option value="' + esc(v.name) + '"></option>').join('');
+    return '<datalist id="chore-name-options">' + opts + '</datalist>';
+  }
+
+  function syncFreq(form) {
+    if (form && form.frequency) form.classList.toggle('freq-weekly', form.frequency.value === 'Weekly');
+  }
+
   function progressOf(k) {
     const st = QuestStore.getChoreState(k.id);
     const total = k.chores.length;
@@ -45,13 +85,13 @@ const KidChorePanel = (() => {
     const p = progressOf(k);
     const items = k.chores.map((c) =>
       '<button type="button" class="kcp-chip' + (p.st[c.id] ? ' is-done' : '') + '" data-kid="' + k.id + '" data-chore="' + c.id + '">' +
-        '<span class="kcp-dot">' + (p.st[c.id] ? ICONS.check : '') + '</span>' + c.name +
+        '<span class="kcp-dot">' + (p.st[c.id] ? ICONS.check : '') + '</span>' + esc(c.name) +
       '</button>').join('');
     return (
       '<div class="kcp-kid" data-kid="' + k.id + '">' +
         '<div class="kcp-head">' +
           '<span class="kcp-avatar" style="background:' + k.avatarBg + ';color:' + k.color + '">' + avatarInner(k) + '</span>' +
-          '<span class="kcp-name">' + k.name + '</span>' +
+          '<span class="kcp-name">' + esc(k.name) + '</span>' +
           acornChip(k.id) +
           '<span class="kcp-frac">' + p.done + '/' + p.total + '</span>' +
         '</div>' +
@@ -94,21 +134,24 @@ const KidChorePanel = (() => {
   function kidSectionHTML(k) {
     const p = progressOf(k);
     // cs-row is a div (not a button) so the Manage-mode delete button can nest.
-    const rows = k.chores.map((c) =>
-      '<div class="cs-row' + (p.st[c.id] ? ' is-done' : '') + '" role="button" tabindex="0" data-kid="' + k.id + '" data-chore="' + c.id + '">' +
+    const rows = k.chores.map((c) => {
+      const badge = choreBadge(c);
+      return '<div class="cs-row' + (p.st[c.id] ? ' is-done' : '') + '" role="button" tabindex="0" data-kid="' + k.id + '" data-chore="' + c.id + '">' +
         '<span class="cs-check">' + (p.st[c.id] ? ICONS.check : '') + '</span>' +
         '<span class="cs-row-body">' +
-          '<span class="cs-row-name">' + c.name + '</span>' +
-          '<span class="cs-row-desc">' + c.description + '</span>' +
+          '<span class="cs-row-name">' + esc(c.name) + '</span>' +
+          '<span class="cs-row-desc">' + esc(c.description) + '</span>' +
         '</span>' +
-        '<span class="cs-freq cs-freq--' + c.frequency.toLowerCase() + '">' + c.frequency + '</span>' +
+        '<span class="cs-freq cs-freq--' + badge.cls + '">' + esc(badge.text) + '</span>' +
         '<button type="button" class="cs-del" data-del="' + c.id + '" title="Remove chore" aria-label="Remove chore">&times;</button>' +
-      '</div>').join('');
+      '</div>';
+    }).join('');
     const addForm =
       '<form class="cs-add" data-add-kid="' + k.id + '">' +
-        '<input class="cs-add-name" name="name" placeholder="New chore" maxlength="40" required>' +
+        '<input class="cs-add-name" name="name" list="chore-name-options" autocomplete="off" placeholder="New chore" maxlength="40" required>' +
         '<input class="cs-add-desc" name="description" placeholder="Description (optional)" maxlength="80">' +
         '<select class="cs-add-freq" name="frequency"><option>Daily</option><option>Weekly</option></select>' +
+        daysChipsHTML('') +
         '<button type="submit" class="cs-add-btn">Add</button>' +
       '</form>';
     return (
@@ -116,11 +159,11 @@ const KidChorePanel = (() => {
         '<div class="cs-kid-head">' +
           '<span class="cs-avatar" style="background:' + k.avatarBg + ';color:' + k.color + '">' + avatarInner(k) + '</span>' +
           '<div class="cs-kid-meta">' +
-            '<div class="cs-kid-name">' + k.name + '</div>' +
+            '<div class="cs-kid-name">' + esc(k.name) + '</div>' +
             '<div class="cs-kid-acorns">' + acornChip(k.id) + '<span class="cs-acorn-word">acorns</span></div>' +
           '</div>' +
           '<div class="cs-kid-frac">' + p.done + '/' + p.total + '</div>' +
-          '<button type="button" class="cs-del-kid" data-del-kid="' + k.id + '" data-kid-name="' + k.name + '" title="Remove kid" aria-label="Remove kid">&times;</button>' +
+          '<button type="button" class="cs-del-kid" data-del-kid="' + k.id + '" data-kid-name="' + esc(k.name) + '" title="Remove kid" aria-label="Remove kid">&times;</button>' +
         '</div>' +
         '<div class="cs-bar"><div class="cs-bar-fill" style="width:' + p.pct + '%;background:' + k.color + '"></div></div>' +
         '<div class="cs-list">' + rows + '</div>' +
@@ -132,7 +175,9 @@ const KidChorePanel = (() => {
   function renderDetail() {
     if (!detailRoot) return;
     const grid = detailRoot.querySelector('[data-cs-grid]');
-    if (grid) grid.innerHTML = kids().map(kidSectionHTML).join('');
+    if (!grid) return;
+    buildNameIndex(); // for the "New chore" name autocomplete + auto-fill
+    grid.innerHTML = datalistHTML() + kids().map(kidSectionHTML).join('');
   }
 
   function setManaging(on) {
@@ -150,9 +195,13 @@ const KidChorePanel = (() => {
     if (!name) return;
     const btn = form.querySelector('.cs-add-btn');
     if (btn) btn.disabled = true;
+    const frequency = form.frequency.value;
+    const days = frequency === 'Weekly'
+      ? Array.from(form.querySelectorAll('input[name="day"]:checked')).map((c) => c.value).join(',')
+      : '';
     try {
       await ChoreData.addChore(form.dataset.addKid, {
-        name, description: form.description.value.trim(), frequency: form.frequency.value,
+        name, description: form.description.value.trim(), frequency, days,
       });
     } catch (err) {
       console.error('[KidChorePanel] add failed:', err);
@@ -218,6 +267,25 @@ const KidChorePanel = (() => {
       if (kidForm) { e.preventDefault(); addKidFromForm(kidForm); return; }
       const choreForm = e.target.closest('[data-add-kid]');
       if (choreForm) { e.preventDefault(); addFromForm(choreForm); }
+    });
+
+    // Frequency select toggles the day-picker visibility.
+    detailRoot.addEventListener('change', (e) => {
+      const sel = e.target.closest('.cs-add-freq');
+      if (sel) syncFreq(sel.closest('form'));
+    });
+
+    // Typing/picking a known chore name auto-fills its description/frequency/days.
+    detailRoot.addEventListener('input', (e) => {
+      const input = e.target.closest('.cs-add-name');
+      if (!input) return;
+      const hit = nameIndex[input.value.trim().toLowerCase()];
+      if (!hit) return;
+      const form = input.closest('form');
+      if (form.description && !form.description.value) form.description.value = hit.description;
+      if (form.frequency) { form.frequency.value = hit.frequency; syncFreq(form); }
+      const set = new Set(String(hit.days || '').split(',').filter(Boolean));
+      form.querySelectorAll('input[name="day"]').forEach((cb) => { cb.checked = set.has(cb.value); });
     });
   }
 

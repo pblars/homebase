@@ -21,6 +21,14 @@ function pickDB(env) {
   return null;
 }
 
+const VALID_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+// Weekly chores keep their chosen days; anything else stores no days.
+function cleanDays(input, frequency) {
+  if (frequency !== 'Weekly') return '';
+  const arr = Array.isArray(input) ? input : String(input || '').split(',');
+  return VALID_DAYS.filter((d) => arr.includes(d)).join(',');
+}
+
 export async function onRequestGet({ env }) {
   const DB = pickDB(env);
   if (!DB) return json({ error: 'No D1 binding found on this deployment' }, 500);
@@ -29,7 +37,7 @@ export async function onRequestGet({ env }) {
   const byKid = {};
   for (const c of chores) {
     (byKid[c.kid_id] = byKid[c.kid_id] || []).push({
-      id: c.id, name: c.name, description: c.description, frequency: c.frequency,
+      id: c.id, name: c.name, description: c.description, frequency: c.frequency, days: c.days || '',
     });
   }
   const out = kids.map((k) => ({
@@ -49,9 +57,10 @@ export async function onRequestPost({ request, env }) {
   const id = crypto.randomUUID();
   const frequency = b.frequency === 'Weekly' ? 'Weekly' : 'Daily';
   const description = (b.description || '').trim();
+  const days = cleanDays(b.days, frequency);
   await DB
-    .prepare('INSERT INTO chores (id, kid_id, name, description, frequency, sort) VALUES (?,?,?,?,?,?)')
-    .bind(id, b.kidId, name, description, frequency, Date.now() % 1000000)
+    .prepare('INSERT INTO chores (id, kid_id, name, description, frequency, days, sort) VALUES (?,?,?,?,?,?,?)')
+    .bind(id, b.kidId, name, description, frequency, days, Date.now() % 1000000)
     .run();
-  return json({ id, kidId: b.kidId, name, description, frequency }, 201);
+  return json({ id, kidId: b.kidId, name, description, frequency, days }, 201);
 }

@@ -61,7 +61,7 @@ const ChoreData = (() => {
     const res = await fetch(API, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ kidId, name: chore.name, description: chore.description, frequency: chore.frequency }),
+      body: JSON.stringify({ kidId, name: chore.name, description: chore.description, frequency: chore.frequency, days: chore.days || '' }),
     });
     if (!res.ok) throw new Error('add failed (' + res.status + ')');
     await load();

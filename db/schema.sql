@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS chores (
   name        TEXT NOT NULL,
   description TEXT NOT NULL DEFAULT '',
   frequency   TEXT NOT NULL DEFAULT 'Daily',
+  days        TEXT NOT NULL DEFAULT '',   -- Weekly chores: comma-separated day tokens (e.g. 'Tue' or 'Mon,Thu')
   sort        INTEGER NOT NULL DEFAULT 0
 );
 
