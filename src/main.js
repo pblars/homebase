@@ -37,6 +37,10 @@
     if (window.KidChorePanel) KidChorePanel.init();
     if (window.ChestCelebration) ChestCelebration.init();
 
+    // Load chore definitions from the D1-backed API (falls back to the cached
+    // copy, then the built-in defaults). Fires 'choresupdated' when it lands.
+    if (window.ChoreData) ChoreData.load();
+
     // Mount the resting screen. Screens register themselves with the Router on
     // load. The SleepScreen is the ambient default (time + temp); tapping it
     // wakes to the full Dashboard.

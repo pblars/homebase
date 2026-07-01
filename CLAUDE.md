@@ -155,6 +155,32 @@ Keys:
 
 ---
 
+## Chore data (Cloudflare D1)
+
+Chore **definitions** (kids + chores) live in a **Cloudflare D1** database and are
+edited from the app (Chores tab → **Manage**). Daily **completion + acorns** stay
+on the tablet in localStorage (`QuestStore`).
+
+- `db/schema.sql` — tables `kids` + `chores`, seeded with the current family.
+- `functions/api/chores.js` + `functions/api/chores/[id].js` — Pages Functions
+  CRUD API over the D1 binding **`DB`** (`GET`/`POST`/`DELETE`/`PUT`).
+- `src/data/ChoreData.js` — fetches `/api/chores`, caches to localStorage, and
+  falls back to the built-in defaults in `chores.js`; dispatches `choresupdated`.
+
+### One-time D1 setup (per Cloudflare account)
+
+```
+npx wrangler d1 create homebase
+npx wrangler d1 execute homebase --remote --file=db/schema.sql
+```
+
+Then in the dashboard: **Pages → homebase → Settings → Functions → D1 database
+bindings** → add binding **Variable name `DB`** → database `homebase`, for **both
+Production and Preview**. Redeploy. Verify at `/api/chores` (should return the
+seeded JSON). Until the binding exists the app runs on cached/default chores.
+
+---
+
 ## Running locally
 
 It's static — serve the folder over HTTP (don't open via `file://`, the relative

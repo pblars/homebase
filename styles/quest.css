@@ -153,6 +153,21 @@
 .cs-freq--daily { background: #e3efd9; color: #5a8a3f; }
 .cs-freq--weekly { background: #dee9f6; color: #3a6ea5; }
 
+/* ----- Manage mode: add / remove chores ---------------------------------- */
+.cs-manage { margin-left: auto; align-self: center; background: rgba(255, 255, 255, 0.65); border: 1px solid var(--card-border); border-radius: 999px; padding: 5px 16px; cursor: pointer; font-family: var(--sans); font-size: clamp(11px, 1.2vw, 14px); font-weight: 600; color: var(--sage-deep); }
+.cs-managing .cs-manage { background: var(--sage-deep); color: #fff; border-color: var(--sage-deep); }
+
+.cs-del { display: none; flex: 0 0 auto; margin-left: 6px; width: 24px; height: 24px; border: none; border-radius: 50%; background: rgba(226, 116, 95, 0.16); color: #d2543f; font-size: 17px; line-height: 1; cursor: pointer; }
+.cs-managing .cs-del { display: inline-flex; align-items: center; justify-content: center; }
+.cs-managing .cs-row { cursor: default; }
+
+.cs-add { display: none; gap: 6px; margin-top: 8px; flex-wrap: wrap; align-items: center; }
+.cs-managing .cs-add { display: flex; }
+.cs-add-name, .cs-add-desc { flex: 1 1 120px; min-width: 0; padding: 6px 10px; border: 1px solid var(--card-border); border-radius: 8px; background: rgba(255, 255, 255, 0.85); font-family: var(--sans); font-size: clamp(11px, 1.1vw, 13px); }
+.cs-add-freq { padding: 6px 8px; border: 1px solid var(--card-border); border-radius: 8px; background: rgba(255, 255, 255, 0.85); font-family: var(--sans); font-size: clamp(11px, 1.1vw, 13px); }
+.cs-add-btn { padding: 6px 14px; border: none; border-radius: 8px; background: var(--sage-deep); color: #fff; font-weight: 600; cursor: pointer; font-family: var(--sans); font-size: clamp(11px, 1.1vw, 13px); }
+.cs-add-btn:disabled { opacity: 0.6; }
+
 /* =========================================================================
    New-Quest toast
    ========================================================================= */

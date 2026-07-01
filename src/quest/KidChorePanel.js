@@ -14,6 +14,7 @@ const KidChorePanel = (() => {
   let summaryWired = false;
   let detailRoot = null;     // full-screen container (built lazily)
   let detailMounted = false; // is the detail screen currently shown?
+  let managing = false;      // Chores screen "Manage" (add/remove) mode
 
   function kids() { return window.KIDS || []; }
   function kid(id) { return kids().find((k) => k.id === id) || null; }
@@ -92,15 +93,24 @@ const KidChorePanel = (() => {
 
   function kidSectionHTML(k) {
     const p = progressOf(k);
+    // cs-row is a div (not a button) so the Manage-mode delete button can nest.
     const rows = k.chores.map((c) =>
-      '<button type="button" class="cs-row' + (p.st[c.id] ? ' is-done' : '') + '" data-kid="' + k.id + '" data-chore="' + c.id + '">' +
+      '<div class="cs-row' + (p.st[c.id] ? ' is-done' : '') + '" role="button" tabindex="0" data-kid="' + k.id + '" data-chore="' + c.id + '">' +
         '<span class="cs-check">' + (p.st[c.id] ? ICONS.check : '') + '</span>' +
         '<span class="cs-row-body">' +
           '<span class="cs-row-name">' + c.name + '</span>' +
           '<span class="cs-row-desc">' + c.description + '</span>' +
         '</span>' +
         '<span class="cs-freq cs-freq--' + c.frequency.toLowerCase() + '">' + c.frequency + '</span>' +
-      '</button>').join('');
+        '<button type="button" class="cs-del" data-del="' + c.id + '" title="Remove chore" aria-label="Remove chore">&times;</button>' +
+      '</div>').join('');
+    const addForm =
+      '<form class="cs-add" data-add-kid="' + k.id + '">' +
+        '<input class="cs-add-name" name="name" placeholder="New chore" maxlength="40" required>' +
+        '<input class="cs-add-desc" name="description" placeholder="Description (optional)" maxlength="80">' +
+        '<select class="cs-add-freq" name="frequency"><option>Daily</option><option>Weekly</option></select>' +
+        '<button type="submit" class="cs-add-btn">Add</button>' +
+      '</form>';
     return (
       '<section class="cs-kid" data-kid="' + k.id + '">' +
         '<div class="cs-kid-head">' +
@@ -113,6 +123,7 @@ const KidChorePanel = (() => {
         '</div>' +
         '<div class="cs-bar"><div class="cs-bar-fill" style="width:' + p.pct + '%;background:' + k.color + '"></div></div>' +
         '<div class="cs-list">' + rows + '</div>' +
+        addForm +
       '</section>'
     );
   }
@@ -123,6 +134,38 @@ const KidChorePanel = (() => {
     if (grid) grid.innerHTML = kids().map(kidSectionHTML).join('');
   }
 
+  function setManaging(on) {
+    managing = on;
+    if (!detailRoot) return;
+    detailRoot.classList.toggle('cs-managing', managing);
+    const btn = detailRoot.querySelector('[data-manage]');
+    if (btn) btn.textContent = managing ? 'Done' : 'Manage';
+    const sub = detailRoot.querySelector('[data-cs-sub]');
+    if (sub) sub.textContent = managing ? 'Add or remove chores' : 'Tap to check off — earn an acorn each time';
+  }
+
+  async function addFromForm(form) {
+    const name = form.name.value.trim();
+    if (!name) return;
+    const btn = form.querySelector('.cs-add-btn');
+    if (btn) btn.disabled = true;
+    try {
+      await ChoreData.addChore(form.dataset.addKid, {
+        name, description: form.description.value.trim(), frequency: form.frequency.value,
+      });
+    } catch (err) {
+      console.error('[KidChorePanel] add failed:', err);
+      alert('Could not add the chore. Make sure the chore database is set up.');
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  async function removeById(id) {
+    try { await ChoreData.removeChore(id); }
+    catch (err) { console.error('[KidChorePanel] remove failed:', err); alert('Could not remove the chore.'); }
+  }
+
   function buildDetail() {
     detailRoot = document.createElement('div');
     detailRoot.className = 'chores-screen';
@@ -130,7 +173,8 @@ const KidChorePanel = (() => {
       '<div class="cs-inner">' +
         '<div class="cs-header"><span class="leaf-mini">' + ICONS.deco.leaf + '</span>' +
           '<h1 class="cs-heading">Chores</h1>' +
-          '<span class="cs-sub">Tap to check off — earn an acorn each time</span>' +
+          '<span class="cs-sub" data-cs-sub>Tap to check off — earn an acorn each time</span>' +
+          '<button type="button" class="cs-manage" data-manage>Manage</button>' +
         '</div>' +
         '<div class="cs-grid" data-cs-grid></div>' +
       '</div>';
@@ -138,8 +182,19 @@ const KidChorePanel = (() => {
     renderDetail();
 
     detailRoot.addEventListener('click', (e) => {
+      if (e.target.closest('[data-manage]')) { setManaging(!managing); return; }
+      const del = e.target.closest('[data-del]');
+      if (del) { removeById(del.dataset.del); return; }
+      if (managing) return; // rows don't toggle completion while managing
       const row = e.target.closest('[data-chore]');
-      if (row) { QuestStore.toggleChore(row.dataset.kid, row.dataset.chore); }
+      if (row) QuestStore.toggleChore(row.dataset.kid, row.dataset.chore);
+    });
+
+    detailRoot.addEventListener('submit', (e) => {
+      const form = e.target.closest('[data-add-kid]');
+      if (!form) return;
+      e.preventDefault();
+      addFromForm(form);
     });
   }
 
@@ -203,6 +258,7 @@ const KidChorePanel = (() => {
   function init() {
     window.addEventListener('choreupdate', _onChoreUpdate);
     window.addEventListener('weekreset', refresh);
+    window.addEventListener('choresupdated', refresh); // chore definitions changed (D1)
     if (typeof Router !== 'undefined') Router.register('chores', detailScreen);
   }
 

@@ -1,7 +1,9 @@
-// chores.js — the family's kids and their chore definitions (final structure).
-// Classic-script global: exposes KIDS on window. Completion state is NOT stored
-// here — it lives per-week in localStorage via QuestStore. This file is just the
-// static definition of who has which chores.
+// chores.js — the family's kids and their chore definitions.
+// Classic-script global: exposes KIDS on window. This is now the built-in
+// DEFAULT / offline fallback: at runtime ChoreData.js fetches the live
+// definitions from the D1-backed /api/chores and overwrites window.KIDS. It also
+// matches db/schema.sql's seed. Completion state is NOT stored here — it lives
+// per-week in localStorage via QuestStore.
 //
 // `avatar` is optional illustrated art in /assets/avatars/ (e.g. 'emma.webp').
 // When set and the file exists it replaces the colored initial circle; if the
