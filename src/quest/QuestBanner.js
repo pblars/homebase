@@ -19,7 +19,7 @@ const QuestBanner = (() => {
   // dirt path and the final point lands on the painted treasure chest at lower
   // right. Eyeball-traced — nudge the control points to fine-tune.
   const TRAIL_D =
-    'M250 660 C320 700 300 712 360 720 C470 738 540 740 640 748 ' +
+    'M250 648 C315 668 315 700 365 708 C475 724 545 736 640 748 ' +
     'C880 766 1080 778 1220 800 C1290 812 1330 822 1365 834';
 
   let els = {};
