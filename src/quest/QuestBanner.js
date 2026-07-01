@@ -39,6 +39,7 @@ const QuestBanner = (() => {
   }
 
   function template(quest) {
+    const d = quest.trail || TRAIL_D; // each quest traces its own backdrop
     const pills = (quest.theme || []).map((t) => '<span class="qb-pill">' + t + '</span>').join('');
     const signposts = (quest.theme || []).map((t, i) =>
       '<span class="qb-signpost qb-signpost--' + i + '">' + t + '</span>').join('');
@@ -56,8 +57,8 @@ const QuestBanner = (() => {
           '<div class="qb-pct-label">of the way there!</div>' +
         '</div>' +
         '<svg class="qb-trail" viewBox="0 0 1512 1008" preserveAspectRatio="xMidYMax slice">' +
-          '<path class="qb-track" d="' + TRAIL_D + '"/>' +
-          '<path class="qb-fill" data-fill d="' + TRAIL_D + '"/>' +
+          '<path class="qb-track" d="' + d + '"/>' +
+          '<path class="qb-fill" data-fill d="' + d + '"/>' +
           '<g class="qb-nodes" data-nodes></g>' +
         '</svg>' +
       '</div>'

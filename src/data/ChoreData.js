@@ -15,6 +15,7 @@
 
 const ChoreData = (() => {
   const API = 'api/chores';                 // relative → /api/chores on the deployed site
+  const KIDS_API = 'api/kids';
   const CACHE_KEY = 'homebase_chore_defs';
 
   function cacheGet() {
@@ -83,7 +84,24 @@ const ChoreData = (() => {
     await load();
   }
 
-  return { load, addChore, removeChore, updateChore };
+  async function addKid(kid) {
+    const res = await fetch(KIDS_API, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(kid),
+    });
+    if (!res.ok) throw new Error('add kid failed (' + res.status + ')');
+    await load();
+    return res.json().catch(() => ({}));
+  }
+
+  async function removeKid(id) {
+    const res = await fetch(KIDS_API + '/' + encodeURIComponent(id), { method: 'DELETE' });
+    if (!res.ok && res.status !== 204) throw new Error('remove kid failed (' + res.status + ')');
+    await load();
+  }
+
+  return { load, addChore, removeChore, updateChore, addKid, removeKid };
 })();
 
 window.ChoreData = ChoreData;

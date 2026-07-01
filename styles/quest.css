@@ -168,6 +168,14 @@
 .cs-add-btn { padding: 6px 14px; border: none; border-radius: 8px; background: var(--sage-deep); color: #fff; font-weight: 600; cursor: pointer; font-family: var(--sans); font-size: clamp(11px, 1.1vw, 13px); }
 .cs-add-btn:disabled { opacity: 0.6; }
 
+/* add a kid (header, managing only) + remove a kid (× on the kid header) */
+.cs-addkid { display: none; gap: 6px; align-items: center; margin-left: auto; }
+.cs-managing .cs-addkid { display: flex; }
+.cs-managing .cs-manage { margin-left: 8px; }        /* addkid form takes the auto margin */
+.cs-addkid-name { padding: 6px 10px; border: 1px solid var(--card-border); border-radius: 8px; background: rgba(255, 255, 255, 0.85); font-family: var(--sans); font-size: clamp(11px, 1.1vw, 13px); }
+.cs-del-kid { display: none; flex: 0 0 auto; margin-left: 8px; width: 26px; height: 26px; border: none; border-radius: 50%; background: rgba(226, 116, 95, 0.16); color: #d2543f; font-size: 18px; line-height: 1; cursor: pointer; }
+.cs-managing .cs-del-kid { display: inline-flex; align-items: center; justify-content: center; }
+
 /* =========================================================================
    New-Quest toast
    ========================================================================= */

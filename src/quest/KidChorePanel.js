@@ -120,6 +120,7 @@ const KidChorePanel = (() => {
             '<div class="cs-kid-acorns">' + acornChip(k.id) + '<span class="cs-acorn-word">acorns</span></div>' +
           '</div>' +
           '<div class="cs-kid-frac">' + p.done + '/' + p.total + '</div>' +
+          '<button type="button" class="cs-del-kid" data-del-kid="' + k.id + '" data-kid-name="' + k.name + '" title="Remove kid" aria-label="Remove kid">&times;</button>' +
         '</div>' +
         '<div class="cs-bar"><div class="cs-bar-fill" style="width:' + p.pct + '%;background:' + k.color + '"></div></div>' +
         '<div class="cs-list">' + rows + '</div>' +
@@ -166,6 +167,22 @@ const KidChorePanel = (() => {
     catch (err) { console.error('[KidChorePanel] remove failed:', err); alert('Could not remove the chore.'); }
   }
 
+  async function addKidFromForm(form) {
+    const name = form.name.value.trim();
+    if (!name) return;
+    const btn = form.querySelector('.cs-add-btn');
+    if (btn) btn.disabled = true;
+    try { await ChoreData.addKid({ name }); }
+    catch (err) { console.error('[KidChorePanel] add kid failed:', err); alert('Could not add. Is the database set up?'); }
+    finally { if (btn) btn.disabled = false; }
+  }
+
+  async function removeKidById(id, name) {
+    if (!confirm('Remove ' + (name || 'this kid') + ' and all their chores?')) return;
+    try { await ChoreData.removeKid(id); }
+    catch (err) { console.error('[KidChorePanel] remove kid failed:', err); alert('Could not remove.'); }
+  }
+
   function buildDetail() {
     detailRoot = document.createElement('div');
     detailRoot.className = 'chores-screen';
@@ -174,6 +191,10 @@ const KidChorePanel = (() => {
         '<div class="cs-header"><span class="leaf-mini">' + ICONS.deco.leaf + '</span>' +
           '<h1 class="cs-heading">Chores</h1>' +
           '<span class="cs-sub" data-cs-sub>Tap to check off — earn an acorn each time</span>' +
+          '<form class="cs-addkid" data-addkid>' +
+            '<input class="cs-addkid-name" name="name" placeholder="Add a kid" maxlength="20" required>' +
+            '<button type="submit" class="cs-add-btn">Add kid</button>' +
+          '</form>' +
           '<button type="button" class="cs-manage" data-manage>Manage</button>' +
         '</div>' +
         '<div class="cs-grid" data-cs-grid></div>' +
@@ -183,6 +204,8 @@ const KidChorePanel = (() => {
 
     detailRoot.addEventListener('click', (e) => {
       if (e.target.closest('[data-manage]')) { setManaging(!managing); return; }
+      const delKid = e.target.closest('[data-del-kid]');
+      if (delKid) { removeKidById(delKid.dataset.delKid, delKid.dataset.kidName); return; }
       const del = e.target.closest('[data-del]');
       if (del) { removeById(del.dataset.del); return; }
       if (managing) return; // rows don't toggle completion while managing
@@ -191,10 +214,10 @@ const KidChorePanel = (() => {
     });
 
     detailRoot.addEventListener('submit', (e) => {
-      const form = e.target.closest('[data-add-kid]');
-      if (!form) return;
-      e.preventDefault();
-      addFromForm(form);
+      const kidForm = e.target.closest('[data-addkid]');
+      if (kidForm) { e.preventDefault(); addKidFromForm(kidForm); return; }
+      const choreForm = e.target.closest('[data-add-kid]');
+      if (choreForm) { e.preventDefault(); addFromForm(choreForm); }
     });
   }
 
