@@ -15,3 +15,6 @@ node_modules/
 
 # Wrangler / Cloudflare
 .wrangler/
+
+# Local design reference (not deployed)
+design_handoff_home_base/
