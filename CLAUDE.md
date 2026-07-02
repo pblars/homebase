@@ -6,7 +6,7 @@ Hosted on Cloudflare Pages.
 
 - GitHub: `pblars/homebase` (`git@github.com:pblars/homebase.git`)
 - Weather: OpenWeatherMap (free tier), zip `37064` — Franklin, TN
-- Calendar: Google Calendar API (later phase)
+- Calendar: Google Calendar API (public calendar + API key)
 
 ---
 
@@ -288,9 +288,16 @@ homebase/
       acorn counts, tap-to-toggle, `AcornAnimation` +1 float, per-kid confetti.
     - `ChestCelebration` — full-screen chest-opens-coins-burst at 100%, once/week.
     - `rewards.js` (4-week ISO quest cycle) + `chores.js` (`KIDS` structure).
-  - [ ] CalendarDetail, MealsDetail, WeatherDetail, Photos, Settings (placeholder tabs)
+  - [x] **Calendar** — live public Google Calendar via API key (`GOOGLE_CALENDAR_ID`
+        + `GOOGLE_API_KEY`). `src/data/CalendarSystem.js` (WeatherSystem-style singleton:
+        fetches the next 14 days, normalizes events, caches to localStorage, refreshes
+        every 10 min, dispatches `calendarupdate`) feeds `window.EVENTS` (today) for the
+        dashboard agenda and the `CalendarDetail` screen (day-grouped, `styles/calendar.css`).
+        Unconfigured → falls back to the placeholder agenda (`src/data/events.js`).
+        **The calendar must be set public in Google Calendar settings.**
+  - [ ] MealsDetail, WeatherDetail, Photos (placeholder tabs)
   - [ ] Return to SleepScreen from Dashboard (e.g. idle timeout) — not yet wired
-  - [ ] Real Google Calendar data; populate `MEALS` / `VERSES`
+  - [ ] Populate `MEALS` / `VERSES`
 
 ### Verify Phase 1 in the browser
 

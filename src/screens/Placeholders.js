@@ -9,11 +9,11 @@
 // -----------------------------------------------------------------------------
 
 const Placeholders = (() => {
-  // 'chores' (KidChorePanel) and 'settings' (SettingsScreen) register their own
-  // real screens with the Router, so they're intentionally absent here.
+  // 'chores' (KidChorePanel), 'settings' (SettingsScreen), and 'calendar'
+  // (CalendarDetail) register their own real screens with the Router, so they're
+  // intentionally absent here.
   const SCREENS = [
     { id: 'weather',  label: 'Weather' },
-    { id: 'calendar', label: 'Calendar' },
     { id: 'meals',    label: 'Meals' },
     { id: 'photos',   label: 'Photos' },
   ];

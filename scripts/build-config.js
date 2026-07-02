@@ -13,8 +13,8 @@
 //
 // Cloudflare Pages → Settings → Environment variables (set the secrets):
 //   OPENWEATHERMAP_API_KEY   (required for live weather)
-//   GOOGLE_CALENDAR_ID       (later phase)
-//   GOOGLE_API_KEY           (later phase)
+//   GOOGLE_CALENDAR_ID       (public calendar id — for the Calendar tab/agenda)
+//   GOOGLE_API_KEY           (Google Calendar API key)
 //   LAT, LON, ZIP, LOCATION_LABEL  (optional — defaults below are Franklin, TN)
 //
 // Pure Node, no dependencies. Locally you don't need this — keep your hand-

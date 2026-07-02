@@ -11,7 +11,14 @@ const CONFIG = {
   // OpenWeatherMap — free tier key. https://openweathermap.org/api
   OPENWEATHERMAP_API_KEY: 'your_key_here',
 
-  // Google Calendar — calendar id (often an email-like string) + API key
+  // Google Calendar — read a PUBLIC calendar with an API key (no OAuth).
+  //   1. Google Calendar → the calendar's Settings → "Access permissions" →
+  //      check "Make available to public".
+  //   2. Same Settings page → "Integrate calendar" → copy the Calendar ID
+  //      (often an email-like string, e.g. abc123@group.calendar.google.com).
+  //   3. Google Cloud Console → enable "Google Calendar API" → create an API key.
+  //      (Recommended: restrict the key to the Calendar API + your site's
+  //      HTTP referrer, since it ships to the browser like the weather key.)
   GOOGLE_CALENDAR_ID: 'your_calendar_id',
   GOOGLE_API_KEY: 'your_key_here',
 

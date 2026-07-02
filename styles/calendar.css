@@ -1,0 +1,57 @@
+/* calendar.css — the Calendar tab (CalendarDetail).
+   A frosted-glass panel over the sky holding day-grouped event rows. Relies on
+   the glass material + palette tokens defined in dashboard.css. */
+
+.calendar-screen {
+  position: absolute; inset: 0;
+  display: grid; grid-template-rows: 1fr auto;
+  gap: clamp(10px, 1.5vh, 15px);
+  padding: clamp(14px, 2vw, 22px) clamp(14px, 2vw, 22px) clamp(10px, 1.2vw, 14px);
+  font-family: var(--sans); color: var(--text-primary);
+}
+
+.cal-inner {
+  min-height: 0; display: flex; flex-direction: column;
+  border-radius: var(--radius);
+  padding: clamp(16px, 2vw, 26px) clamp(16px, 2vw, 28px) clamp(8px, 1vw, 12px);
+}
+
+.cal-header {
+  display: flex; align-items: baseline; gap: 14px; flex: none;
+  padding-bottom: clamp(10px, 1.4vh, 16px); margin-bottom: clamp(4px, 1vh, 10px);
+  border-bottom: 1px solid var(--glass-border);
+}
+.cal-title { font-family: var(--serif); font-weight: 500; font-size: clamp(28px, 4vw, 48px); line-height: 1; }
+.cal-sub { font-weight: 700; font-size: clamp(10px, 1.1vw, 12px); letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-secondary); }
+
+/* scroll region holding the day groups */
+.cal-scroll { flex: 1; min-height: 0; overflow-y: auto; padding-right: 6px; }
+.cal-scroll::-webkit-scrollbar { width: 6px; }
+.cal-scroll::-webkit-scrollbar-thumb { background: var(--track); border-radius: 999px; }
+
+.cal-day { margin-bottom: clamp(12px, 1.8vh, 22px); }
+.cal-day-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: clamp(6px, 1vh, 10px); }
+.cal-day-name { font-family: var(--serif); font-weight: 600; font-size: clamp(15px, 1.7vw, 20px); color: var(--text-primary); }
+.cal-day-date { font-weight: 700; font-size: clamp(9px, 1vw, 11px); letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-accent); }
+
+.cal-events { display: flex; flex-direction: column; gap: clamp(4px, 0.8vh, 8px); }
+.cal-ev {
+  display: flex; align-items: flex-start; gap: clamp(10px, 1.4vw, 16px);
+  padding: clamp(8px, 1.1vh, 12px) clamp(10px, 1.2vw, 14px);
+  border-radius: 14px; background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border);
+}
+.cal-ev-time { flex: none; width: clamp(64px, 7vw, 92px); font-weight: 700; font-size: clamp(11px, 1.2vw, 14px); color: var(--text-accent); padding-top: 1px; }
+.cal-ev-dot { flex: none; margin-top: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--text-secondary); box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.06); }
+.cal-ev--am .cal-ev-dot { background: var(--teal); }
+.cal-ev--pm .cal-ev-dot { background: var(--coral); }
+.cal-ev-body { min-width: 0; }
+.cal-ev-title { font-family: var(--serif); font-weight: 600; font-size: clamp(14px, 1.5vw, 18px); line-height: 1.2; color: var(--text-primary); }
+.cal-ev-loc { font-size: clamp(10px, 1.1vw, 13px); color: var(--text-secondary); margin-top: 2px; }
+
+.cal-empty {
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  height: 100%; padding: 0 12%;
+  font-family: var(--serif); font-style: italic; font-size: clamp(14px, 1.6vw, 20px);
+  color: var(--text-secondary); line-height: 1.5;
+}

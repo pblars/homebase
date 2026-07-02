@@ -57,21 +57,30 @@ const Dashboard = (() => {
     );
   }
 
-  function agendaHTML() {
-    const rows = (window.EVENTS || []).map((e) =>
+  function agendaRowsHTML() {
+    const events = window.EVENTS || [];
+    if (!events.length) return '<div class="ag-empty">Nothing on the calendar today.</div>';
+    return events.map((e) =>
       '<div class="ag-row">' +
         '<span class="ag-dot ag-dot--' + e.period + '"></span>' +
         '<div class="ag-body">' +
           '<div class="ag-time">' + e.time + (e.ampm ? ' ' + e.ampm : '') + '</div>' +
           '<div class="ag-title">' + e.title + '</div>' +
-          '<div class="ag-sub">' + e.sub + '</div>' +
+          '<div class="ag-sub">' + (e.sub || '') + '</div>' +
         '</div>' +
       '</div>').join('');
+  }
+
+  function agendaHTML() {
     return (
       '<div class="ag-eyebrow">Today\'s Agenda</div>' +
-      '<div class="agenda-list">' + rows + '</div>' +
+      '<div class="agenda-list" data-agenda>' + agendaRowsHTML() + '</div>' +
       '<div class="ag-foot">Make today count.</div>'
     );
+  }
+
+  function renderAgenda() {
+    if (els.agenda) els.agenda.innerHTML = agendaRowsHTML();
   }
 
   function mealsHTML() {
@@ -145,6 +154,7 @@ const Dashboard = (() => {
       wtemp: root.querySelector('[data-wtemp]'),
       wcond: root.querySelector('[data-wcond]'),
       forecast: root.querySelector('[data-forecast]'),
+      agenda: root.querySelector('[data-agenda]'),
     };
 
     // Card / weather-pill drill-downs: any [data-nav] routes to that screen.
@@ -164,12 +174,16 @@ const Dashboard = (() => {
 
     renderClock();
     renderWeather();
+    renderAgenda();
 
     if (tickHandle) clearInterval(tickHandle);
     tickHandle = setInterval(renderClock, 1000);
 
     if (!weatherSubscribed) {
       WeatherSystem.onUpdate((snap) => { if (root && root.isConnected) renderWeather(snap); });
+      if (typeof CalendarSystem !== 'undefined') {
+        CalendarSystem.onUpdate(() => { if (root && root.isConnected) renderAgenda(); });
+      }
       weatherSubscribed = true;
     }
   }

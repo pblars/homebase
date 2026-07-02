@@ -58,6 +58,12 @@
     if (window.SettingsData) SettingsData.load();
     if (window.ChoreData) ChoreData.load();
 
+    // Live family calendar (public Google Calendar via API key). Populates
+    // window.EVENTS with today's events for the agenda + feeds CalendarDetail;
+    // falls back to the placeholder agenda when unconfigured. Dispatches
+    // 'calendarupdate' when events land.
+    if (window.CalendarSystem) CalendarSystem.init();
+
     // Mount the resting screen. Screens register themselves with the Router on
     // load. The SleepScreen is the ambient default (time + temp); tapping it
     // wakes to the full Dashboard.
