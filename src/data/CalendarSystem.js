@@ -20,6 +20,10 @@ const CalendarSystem = (() => {
   const REFRESH_MS = 10 * 60 * 1000; // 10 minutes
   const CACHE_KEY = 'homebase_calendar';
   const DAYS_AHEAD = 14;             // how far forward to fetch for the detail view
+  const AGENDA_MAX = 6;              // max rows when the agenda rolls forward to upcoming
+
+  const WEEKDAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
   const state = {
     events: [],       // normalized events across the fetch window (sorted by start)
@@ -123,19 +127,49 @@ const CalendarSystem = (() => {
 
   // ---- state / listeners ----------------------------------------------------
 
-  // TODAY's events, in the agenda's shape (window.EVENTS).
+  // TODAY's events (dateKey matches today).
   function _todaysEvents() {
     const key = _dateKey(new Date());
     return state.events.filter((e) => e.dateKey === key);
+  }
+
+  // Relative day label for a future date: 'Tomorrow', a short weekday within a
+  // week, else 'Mon 6'. Returns '' for today (no prefix needed).
+  function _relDayLabel(d) {
+    const n = new Date();
+    const t0 = new Date(n.getFullYear(), n.getMonth(), n.getDate());
+    const d0 = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const days = Math.round((d0 - t0) / 86400000);
+    if (days <= 0) return '';
+    if (days === 1) return 'Tomorrow';
+    if (days < 7) return WEEKDAYS_SHORT[d.getDay()];
+    return `${MONTHS_SHORT[d.getMonth()]} ${d.getDate()}`;
+  }
+
+  function _toAgendaShape(e, withDay) {
+    const label = withDay ? _relDayLabel(e.start) : '';
+    return {
+      time: label ? `${label} · ${e.time}` : e.time,
+      ampm: e.ampm, period: e.period, title: e.title, sub: e.sub,
+    };
+  }
+
+  // The dashboard agenda: today's events, or — if today is empty — roll forward
+  // to the next upcoming events (labelled with their day).
+  function _agendaEvents() {
+    const today = _todaysEvents();
+    if (today.length) return { mode: 'today', list: today.map((e) => _toAgendaShape(e, false)) };
+    // today empty → everything left in the window is future (timeMin = today 00:00)
+    return { mode: 'upcoming', list: state.events.slice(0, AGENDA_MAX).map((e) => _toAgendaShape(e, true)) };
   }
 
   function _publish() {
     // Only take over window.EVENTS when we actually have a configured calendar;
     // otherwise leave the placeholder events (events.js) so the design demos.
     if (state.configured) {
-      window.EVENTS = _todaysEvents().map((e) => ({
-        time: e.time, ampm: e.ampm, period: e.period, title: e.title, sub: e.sub,
-      }));
+      const agenda = _agendaEvents();
+      window.EVENTS = agenda.list;
+      window.AGENDA_LABEL = agenda.mode === 'upcoming' ? 'Upcoming' : "Today's Agenda";
     }
     const snapshot = getState();
     updateListeners.forEach((cb) => {

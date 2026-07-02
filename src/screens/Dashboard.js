@@ -59,7 +59,7 @@ const Dashboard = (() => {
 
   function agendaRowsHTML() {
     const events = window.EVENTS || [];
-    if (!events.length) return '<div class="ag-empty">Nothing on the calendar today.</div>';
+    if (!events.length) return '<div class="ag-empty">Nothing on the calendar.</div>';
     return events.map((e) =>
       '<div class="ag-row">' +
         '<span class="ag-dot ag-dot--' + e.period + '"></span>' +
@@ -73,7 +73,7 @@ const Dashboard = (() => {
 
   function agendaHTML() {
     return (
-      '<div class="ag-eyebrow">Today\'s Agenda</div>' +
+      '<div class="ag-eyebrow" data-agenda-eyebrow>Today\'s Agenda</div>' +
       '<div class="agenda-list" data-agenda>' + agendaRowsHTML() + '</div>' +
       '<div class="ag-foot">Make today count.</div>'
     );
@@ -81,6 +81,7 @@ const Dashboard = (() => {
 
   function renderAgenda() {
     if (els.agenda) els.agenda.innerHTML = agendaRowsHTML();
+    if (els.agendaEyebrow) els.agendaEyebrow.textContent = window.AGENDA_LABEL || "Today's Agenda";
   }
 
   function mealsHTML() {
@@ -155,6 +156,7 @@ const Dashboard = (() => {
       wcond: root.querySelector('[data-wcond]'),
       forecast: root.querySelector('[data-forecast]'),
       agenda: root.querySelector('[data-agenda]'),
+      agendaEyebrow: root.querySelector('[data-agenda-eyebrow]'),
     };
 
     // Card / weather-pill drill-downs: any [data-nav] routes to that screen.
