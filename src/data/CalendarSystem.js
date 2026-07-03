@@ -280,6 +280,25 @@ const CalendarSystem = (() => {
     if (typeof callback === 'function') updateListeners.push(callback);
   }
 
+  // Create an event via the /api/calendar Function (service-account write), then
+  // refetch so it shows up. `payload` = { title, location?, allDay, date,
+  // startTime?, endTime? }; the caller's local time zone is attached here.
+  // Resolves with the created Google event; rejects with a message on failure.
+  async function createEvent(payload) {
+    let tz = 'America/Chicago';
+    try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || tz; } catch (_) { /* keep default */ }
+    const res = await fetch('/api/calendar', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(Object.assign({ timeZone: tz }, payload)),
+    });
+    let data = {};
+    try { data = await res.json(); } catch (_) { /* non-JSON error */ }
+    if (!res.ok) throw new Error(data.error || `Couldn't add the event (HTTP ${res.status}).`);
+    await _refresh(); // pull the new event into the loaded range and notify listeners
+    return data.event;
+  }
+
   function init() {
     const cached = _cacheGet();
     if (cached && cached.events) {
@@ -296,7 +315,7 @@ const CalendarSystem = (() => {
     console.log('[CalendarSystem] init — refreshing every 10 min');
   }
 
-  return { init, refresh: _refresh, ensureMonth, onUpdate, getState, getEvents, getToday, getUpcoming, isConfigured };
+  return { init, refresh: _refresh, ensureMonth, createEvent, onUpdate, getState, getEvents, getToday, getUpcoming, isConfigured };
 })();
 
 window.CalendarSystem = CalendarSystem;

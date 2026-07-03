@@ -55,9 +55,11 @@
 .cal-grid { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(7, 1fr); grid-auto-rows: 1fr; gap: 6px; }
 .cal-cell {
   min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 3px;
-  padding: clamp(4px, 0.6vw, 7px);
+  padding: clamp(4px, 0.6vw, 7px); cursor: pointer;
   border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255, 255, 255, 0.03);
+  transition: background 0.12s ease;
 }
+.cal-cell:hover { background: rgba(255, 255, 255, 0.08); }
 .cal-cell--out { opacity: 0.4; }
 .cal-cell-num {
   flex: none; width: clamp(20px, 2vw, 26px); height: clamp(20px, 2vw, 26px);
@@ -81,10 +83,18 @@
 
 /* ---- upcoming rail ---- */
 .cal-up-head {
-  flex: none; font-family: var(--serif); font-weight: 600; font-size: clamp(18px, 2vw, 26px);
+  flex: none; display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  font-family: var(--serif); font-weight: 600; font-size: clamp(18px, 2vw, 26px);
   padding-bottom: clamp(8px, 1.2vh, 14px); margin-bottom: clamp(4px, 0.8vh, 8px);
   border-bottom: 1px solid var(--glass-border);
 }
+.cal-add-btn {
+  flex: none; font-family: var(--sans); font-weight: 700; font-size: clamp(10px, 1.1vw, 13px);
+  letter-spacing: 0.03em; color: var(--text-accent); cursor: pointer;
+  padding: clamp(5px, 0.7vh, 8px) clamp(10px, 1.2vw, 14px); border-radius: 999px;
+  border: 1px solid var(--glass-border); background: rgba(255, 255, 255, 0.06);
+}
+.cal-add-btn:hover { background: rgba(255, 255, 255, 0.12); }
 .cal-up-scroll { flex: 1; min-height: 0; overflow-y: auto; padding-right: 6px; }
 .cal-up-scroll::-webkit-scrollbar { width: 6px; }
 .cal-up-scroll::-webkit-scrollbar-thumb { background: var(--track); border-radius: 999px; }
@@ -111,3 +121,63 @@
   font-family: var(--serif); font-style: italic; font-size: clamp(13px, 1.5vw, 18px);
   color: var(--text-secondary); line-height: 1.5; padding: clamp(12px, 2vh, 20px) 4px;
 }
+
+/* ---- Add Event dialog ---- */
+.aed-backdrop {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+  background: rgba(10, 15, 13, 0.55); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+}
+.aed-backdrop[hidden] { display: none; }
+
+.aed-card {
+  width: min(560px, 92vw); max-height: 90vh; overflow-y: auto;
+  border-radius: var(--radius); padding: clamp(20px, 3vw, 30px);
+  font-family: var(--sans); color: var(--text-primary);
+}
+.aed-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: clamp(14px, 2vh, 22px); }
+.aed-title { font-family: var(--serif); font-weight: 500; font-size: clamp(22px, 3vw, 32px); line-height: 1; }
+.aed-close {
+  width: 36px; height: 36px; flex: none; display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; border: 1px solid var(--glass-border); background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary); font-size: 22px; line-height: 1; cursor: pointer;
+}
+.aed-close:hover { background: rgba(255, 255, 255, 0.12); }
+
+.aed-form { display: flex; flex-direction: column; gap: clamp(12px, 1.8vh, 18px); }
+.aed-field { display: flex; flex-direction: column; gap: 6px; }
+.aed-flabel { font-weight: 700; font-size: clamp(10px, 1.1vw, 12px); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); }
+.aed-opt { font-weight: 600; letter-spacing: 0.04em; text-transform: none; opacity: 0.7; }
+.aed-input {
+  width: 100%; box-sizing: border-box;
+  padding: clamp(9px, 1.2vh, 12px) clamp(11px, 1.2vw, 14px);
+  border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary); font-family: var(--sans); font-size: clamp(13px, 1.4vw, 16px);
+}
+.aed-input::placeholder { color: var(--text-secondary); }
+.aed-input:focus { outline: none; border-color: var(--teal); background: rgba(255, 255, 255, 0.12); }
+
+.aed-check { display: flex; align-items: center; gap: 9px; font-weight: 600; font-size: clamp(12px, 1.3vw, 15px); cursor: pointer; }
+.aed-check input { width: 18px; height: 18px; accent-color: var(--teal); cursor: pointer; }
+
+.aed-row { display: flex; gap: clamp(10px, 1.4vw, 16px); flex-wrap: wrap; }
+.aed-row .aed-field { flex: 1; min-width: 120px; }
+.aed-grow { flex: 1 1 100%; }
+.aed-timerow { flex: 2; min-width: 220px; }
+
+.aed-err {
+  font-size: clamp(12px, 1.3vw, 14px); color: #ffb4a2; font-weight: 600;
+  padding: clamp(8px, 1.2vh, 11px) clamp(11px, 1.2vw, 14px); border-radius: 10px;
+  background: rgba(226, 116, 95, 0.14); border: 1px solid rgba(226, 116, 95, 0.4);
+}
+
+.aed-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: clamp(4px, 1vh, 8px); }
+.aed-btn {
+  font-family: var(--sans); font-weight: 700; font-size: clamp(12px, 1.3vw, 15px); cursor: pointer;
+  padding: clamp(10px, 1.3vh, 13px) clamp(16px, 2vw, 22px); border-radius: 999px; border: 1px solid var(--glass-border);
+}
+.aed-btn[disabled] { opacity: 0.55; cursor: default; }
+.aed-btn--ghost { background: rgba(255, 255, 255, 0.06); color: var(--text-primary); }
+.aed-btn--ghost:not([disabled]):hover { background: rgba(255, 255, 255, 0.12); }
+.aed-btn--primary { background: var(--teal); border-color: var(--teal); color: #fff; }
+.aed-btn--primary:not([disabled]):hover { filter: brightness(1.08); }

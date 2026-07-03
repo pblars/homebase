@@ -187,6 +187,47 @@ seeded JSON). Until the binding exists the app runs on cached/default chores.
 
 ---
 
+## Adding events (Google Calendar write)
+
+Reads use a public-calendar **API key** (read-only). **Writing** events (the
+Calendar tab's **Add Event** button / tapping a day cell) goes through a
+**service account** so the wall tablet never needs an interactive Google login:
+
+```
+Add Event dialog → CalendarSystem.createEvent() → POST /api/calendar
+   → functions/api/calendar.js signs a service-account JWT (WebCrypto RS256)
+   → exchanges it for an access token → POST to the Calendar API
+   → CalendarSystem.refresh() repaints with the new event
+```
+
+- `functions/api/calendar.js` — `onRequestPost` only. Validates the payload,
+  builds the Google event (all-day → `start.date` + exclusive `end.date`; timed →
+  `start/end.dateTime` + `timeZone` sent by the client), creates it, returns it.
+- `src/screens/AddEventDialog.js` — the frosted-glass modal (`AddEventDialog.open(dateKey?)`).
+- Credentials stay **server-side** — never in `config.js` (which ships to the
+  browser). `build-config.js` does **not** write the service account into `config.js`.
+
+### One-time service-account setup
+
+1. **Google Cloud Console** → same project as the Calendar API → **IAM & Admin →
+   Service Accounts → Create**. No roles needed. **Keys → Add key → JSON** →
+   download the key file.
+2. **Google Calendar** → the family calendar's **Settings → Share with specific
+   people** → add the service account's `client_email` with **"Make changes to
+   events"**.
+3. **Cloudflare Pages → homebase → Settings → Environment variables (Production)**
+   → add **`GOOGLE_SERVICE_ACCOUNT`** = the **entire** downloaded JSON, pasted
+   as-is. (`GOOGLE_CALENDAR_ID` is already set for reads and is reused here.)
+4. Redeploy. Test by adding an event; a `500` "Server not configured" means the
+   secret is missing, a `403` means the calendar isn't shared with the account.
+
+> **Note:** `/api/calendar` is unauthenticated (a family calendar behind an
+> unguessable URL). Fine for this use; add a shared-secret/Access rule if that
+> ever matters. **Add Event only works on the deployed site (or `wrangler pages
+> dev`)** — a plain static server has no Functions runtime, so the POST 404s.
+
+---
+
 ## Running locally
 
 It's static — serve the folder over HTTP (don't open via `file://`, the relative
@@ -295,6 +336,11 @@ homebase/
         dashboard agenda and the `CalendarDetail` screen (day-grouped, `styles/calendar.css`).
         Unconfigured → falls back to the placeholder agenda (`src/data/events.js`).
         **The calendar must be set public in Google Calendar settings.**
+    - **Month view + Add Event** — `CalendarDetail` renders a two-pane month
+      grid (navigable prev/Today/next) + an "Upcoming" rail. `CalendarSystem` is
+      month-aware (`ensureMonth`, `getUpcoming`; the fetch window grows as you
+      page). **Add Event** writes via a service account → see *Adding events*
+      above (`functions/api/calendar.js`, `src/screens/AddEventDialog.js`).
   - [ ] MealsDetail, WeatherDetail, Photos (placeholder tabs)
   - [ ] Return to SleepScreen from Dashboard (e.g. idle timeout) — not yet wired
   - [ ] Populate `MEALS` / `VERSES`

@@ -21,6 +21,8 @@ const CalendarDetail = (() => {
   let view = null;           // { year, month } currently displayed on the grid
 
   function _dateKey(d) { return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; }
+  function _pad(n) { return String(n).padStart(2, '0'); }
+  function _inputDate(d) { return `${d.getFullYear()}-${_pad(d.getMonth() + 1)}-${_pad(d.getDate())}`; } // <input type=date> value
   function _esc(s) {
     return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   }
@@ -60,7 +62,8 @@ const CalendarDetail = (() => {
     const chips = shown.map(chipHTML).join('') +
       (overflow > 0 ? '<span class="cal-chip-more">+' + overflow + ' more</span>' : '');
     return (
-      '<div class="cal-cell' + (inMonth ? '' : ' cal-cell--out') + (isToday ? ' cal-cell--today' : '') + '">' +
+      '<div class="cal-cell' + (inMonth ? '' : ' cal-cell--out') + (isToday ? ' cal-cell--today' : '') + '"' +
+           ' data-day="' + _inputDate(d) + '">' +
         '<div class="cal-cell-num">' + d.getDate() + '</div>' +
         '<div class="cal-cell-evs">' + chips + '</div>' +
       '</div>'
@@ -176,7 +179,10 @@ const CalendarDetail = (() => {
           '<div class="cal-grid" data-grid></div>' +
         '</section>' +
         '<aside class="cal-up glass">' +
-          '<div class="cal-up-head">Upcoming</div>' +
+          '<div class="cal-up-head">' +
+            '<span>Upcoming</span>' +
+            '<button class="cal-add-btn" data-add type="button">+ Add Event</button>' +
+          '</div>' +
           '<div class="cal-up-scroll" data-up></div>' +
         '</aside>' +
       '</div>';
@@ -190,6 +196,16 @@ const CalendarDetail = (() => {
     root.querySelector('[data-prev]').addEventListener('click', () => _go(-1));
     root.querySelector('[data-next]').addEventListener('click', () => _go(1));
     root.querySelector('[data-today]').addEventListener('click', _goToday);
+
+    // Add Event — from the header (defaults to today) or by tapping a day cell
+    // (prefills that date). Both open the shared dialog.
+    root.querySelector('[data-add]').addEventListener('click', () => {
+      if (window.AddEventDialog) AddEventDialog.open();
+    });
+    els.grid.addEventListener('click', (e) => {
+      const cell = e.target.closest('.cal-cell');
+      if (cell && window.AddEventDialog) AddEventDialog.open(cell.getAttribute('data-day'));
+    });
   }
 
   function show() {
