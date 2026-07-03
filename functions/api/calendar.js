@@ -19,6 +19,19 @@ function json(obj, status = 200) {
   });
 }
 
+// Same-origin guard. The tablet posts from the site itself, so its Origin (which
+// browsers always send on POST) must match this deployment's own host — works on
+// any host (pages.dev, preview hashes, a custom domain) with no hardcoding, and
+// blocks cross-site browser POSTs + naive header-less bots. It does NOT stop a
+// determined attacker forging the Origin header via curl; real auth would mean a
+// login (e.g. Cloudflare Access) in front of the site.
+function isSameOrigin(request) {
+  const self = new URL(request.url).host;
+  const src = request.headers.get('Origin') || request.headers.get('Referer');
+  if (!src) return false;
+  try { return new URL(src).host === self; } catch (_) { return false; }
+}
+
 // ---- JWT / token ----------------------------------------------------------
 
 function b64urlFromString(str) {
@@ -95,6 +108,8 @@ function plusHour(hhmm) {
 // ---- handler --------------------------------------------------------------
 
 export async function onRequestPost({ request, env }) {
+  if (!isSameOrigin(request)) return json({ error: 'Forbidden.' }, 403);
+
   const raw = env.GOOGLE_SERVICE_ACCOUNT;
   const calId = env.GOOGLE_CALENDAR_ID;
   if (!raw) return json({ error: 'Server not configured: GOOGLE_SERVICE_ACCOUNT is not set.' }, 500);

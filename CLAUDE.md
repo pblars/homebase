@@ -221,10 +221,13 @@ Add Event dialog → CalendarSystem.createEvent() → POST /api/calendar
 4. Redeploy. Test by adding an event; a `500` "Server not configured" means the
    secret is missing, a `403` means the calendar isn't shared with the account.
 
-> **Note:** `/api/calendar` is unauthenticated (a family calendar behind an
-> unguessable URL). Fine for this use; add a shared-secret/Access rule if that
-> ever matters. **Add Event only works on the deployed site (or `wrangler pages
-> dev`)** — a plain static server has no Functions runtime, so the POST 404s.
+> **Auth:** `/api/calendar` enforces a **same-origin guard** (`isSameOrigin` —
+> the request's `Origin`/`Referer` host must equal the deployment's own host), so
+> cross-site browser POSTs and header-less bots get a `403`. It deliberately has
+> no login (the wall tablet can't do interactive auth). It does **not** stop a
+> forged-`Origin` curl; for real auth, put **Cloudflare Access** in front of the
+> site. **Add Event only works on the deployed site (or `wrangler pages dev`)** —
+> a plain static server has no Functions runtime, so the POST 404s.
 
 ---
 
