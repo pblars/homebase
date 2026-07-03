@@ -187,6 +187,7 @@ const CalendarDetail = (() => {
         '</aside>' +
       '</div>';
     root.appendChild(NavBar.render('calendar'));
+    root.insertBefore(Breadcrumb.render('Calendar'), root.firstChild);
 
     els = {
       mtitle: root.querySelector('[data-mtitle]'),

@@ -227,6 +227,7 @@ const KidChorePanel = (() => {
         '<div class="cs-grid" data-cs-grid></div>' +
       '</div>';
     detailRoot.appendChild(NavBar.render('chores'));
+    detailRoot.insertBefore(Breadcrumb.render('Chores'), detailRoot.firstChild);
     renderDetail();
 
     detailRoot.addEventListener('click', (e) => {

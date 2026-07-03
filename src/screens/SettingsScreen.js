@@ -103,6 +103,7 @@ const SettingsScreen = (() => {
         '</section>' +
       '</div>';
     root.appendChild(NavBar.render('settings'));
+    root.insertBefore(Breadcrumb.render('Settings'), root.firstChild);
     render();
 
     root.addEventListener('click', (e) => {

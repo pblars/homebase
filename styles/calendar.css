@@ -5,7 +5,7 @@
 
 .calendar-screen {
   position: absolute; inset: 0;
-  display: grid; grid-template-rows: 1fr auto;
+  display: grid; grid-template-rows: auto 1fr auto;
   gap: clamp(10px, 1.5vh, 15px);
   padding: clamp(14px, 2vw, 22px) clamp(14px, 2vw, 22px) clamp(10px, 1.2vw, 14px);
   font-family: var(--sans); color: var(--text-primary);

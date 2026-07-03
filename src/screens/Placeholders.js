@@ -13,7 +13,6 @@ const Placeholders = (() => {
   // (CalendarDetail) register their own real screens with the Router, so they're
   // intentionally absent here.
   const SCREENS = [
-    { id: 'weather',  label: 'Weather' },
     { id: 'meals',    label: 'Meals' },
     { id: 'photos',   label: 'Photos' },
   ];
@@ -29,6 +28,7 @@ const Placeholders = (() => {
           '<div class="ph-sub">Coming soon</div>' +
         '</div>';
       root.appendChild(NavBar.render(def.id));
+      root.insertBefore(Breadcrumb.render(def.label), root.firstChild);
     }
     function show() {
       if (!root) build();

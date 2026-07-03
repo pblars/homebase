@@ -166,7 +166,22 @@ html[data-scene="light"] {
 
 /* ----- Placeholder tab screens ------------------------------------------- */
 
-.placeholder-screen { position: absolute; inset: 0; display: grid; grid-template-rows: 1fr auto; padding: clamp(14px, 2vw, 22px) clamp(14px, 2vw, 22px) clamp(10px, 1.2vw, 14px); }
+.placeholder-screen { position: absolute; inset: 0; display: grid; grid-template-rows: auto 1fr auto; padding: clamp(14px, 2vw, 22px) clamp(14px, 2vw, 22px) clamp(10px, 1.2vw, 14px); }
 .ph-center { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 8px; }
 .ph-title { font-family: var(--serif); font-weight: 500; font-size: clamp(36px, 7vw, 90px); color: var(--text-primary); text-shadow: 0 2px 18px rgba(0, 0, 0, 0.3); }
 .ph-sub { font-size: clamp(12px, 1.4vw, 18px); letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-secondary); text-shadow: 0 1px 10px rgba(0, 0, 0, 0.25); }
+
+/* ----- Breadcrumb (top-left back-to-Home on detail screens) --------------- */
+
+.breadcrumb { flex: none; display: flex; align-items: center; gap: clamp(6px, 0.8vw, 10px); padding: clamp(2px, 0.6vh, 8px) 2px clamp(8px, 1.2vh, 14px); }
+.bc-home {
+  display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+  background: none; border: none; padding: 5px 8px; border-radius: 11px;
+  font-family: var(--sans); font-weight: 700; font-size: clamp(13px, 1.4vw, 17px);
+  color: var(--text-secondary); text-shadow: 0 1px 8px rgba(0, 0, 0, 0.22);
+}
+.bc-home:hover { color: var(--text-primary); background: rgba(255, 255, 255, 0.08); }
+.bc-logo { display: flex; color: var(--text-accent); }
+.bc-cloud { width: clamp(22px, 2.4vw, 30px); height: auto; display: block; }
+.bc-sep { color: var(--text-secondary); font-size: clamp(15px, 1.6vw, 20px); text-shadow: 0 1px 8px rgba(0, 0, 0, 0.22); }
+.bc-current { font-family: var(--sans); font-weight: 800; font-size: clamp(13px, 1.4vw, 17px); color: var(--text-primary); text-shadow: 0 1px 8px rgba(0, 0, 0, 0.22); }

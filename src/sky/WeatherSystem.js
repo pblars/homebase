@@ -21,8 +21,18 @@ const WeatherSystem = (() => {
     description: '',
     humidity: null,
     windMph: null,
-    forecast: [], // [{ dayName, high, low, condition, precipPct }]
+    windDeg: null,
+    windDir: '',
+    sunrise: null,   // unix seconds
+    sunset: null,    // unix seconds
+    todayHigh: null,
+    todayLow: null,
+    forecast: [],    // [{ dayName, high, low, condition, precipPct }]
+    hourly: [],      // [{ label, tempF, condition, precipPct }] — 'Now' + next steps
   };
+
+  const COMPASS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+  function _compass(deg) { return COMPASS[Math.round((deg % 360) / 45) % 8]; }
 
   let refreshHandle = null;
   const updateListeners = [];
@@ -128,6 +138,31 @@ const WeatherSystem = (() => {
     state.description = (json.weather && json.weather[0] && json.weather[0].description) || '';
     state.humidity = json.main?.humidity ?? null;
     state.windMph = json.wind?.speed != null ? Math.round(json.wind.speed) : null;
+    state.windDeg = json.wind?.deg != null ? json.wind.deg : null;
+    state.windDir = state.windDeg != null ? _compass(state.windDeg) : '';
+    state.sunrise = json.sys?.sunrise ?? null;
+    state.sunset = json.sys?.sunset ?? null;
+  }
+
+  // 'Now' (current conditions) followed by the next 3-hourly forecast steps,
+  // each labelled by its local hour. Feeds the Weather tab's hourly strip +
+  // precipitation trend.
+  function _buildHourly(list) {
+    const out = [{
+      label: 'Now', tempF: state.tempF, condition: state.condition,
+      precipPct: (list[0] && typeof list[0].pop === 'number') ? Math.round(list[0].pop * 100) : 0,
+    }];
+    for (const entry of list.slice(0, 9)) {
+      const d = new Date(entry.dt * 1000);
+      const h = d.getHours();
+      out.push({
+        label: `${(h % 12) || 12} ${h < 12 ? 'AM' : 'PM'}`,
+        tempF: Math.round(entry.main?.temp ?? state.tempF),
+        condition: mapCondition(entry.weather && entry.weather[0] && entry.weather[0].id),
+        precipPct: typeof entry.pop === 'number' ? Math.round(entry.pop * 100) : 0,
+      });
+    }
+    return out;
   }
 
   async function _fetchForecast() {
@@ -135,7 +170,14 @@ const WeatherSystem = (() => {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`forecast HTTP ${res.status}`);
     const json = await res.json();
-    state.forecast = _summarizeForecast(json.list || []);
+    const list = json.list || [];
+    state.forecast = _summarizeForecast(list);
+    state.hourly = _buildHourly(list);
+    const today = state.forecast[0];
+    if (today) {
+      state.todayHigh = today.high != null ? Math.max(today.high, state.tempF) : state.tempF;
+      state.todayLow = today.low != null ? Math.min(today.low, state.tempF) : state.tempF;
+    }
   }
 
   function _emitUpdate() {
@@ -182,7 +224,14 @@ const WeatherSystem = (() => {
       description: state.description,
       humidity: state.humidity,
       windMph: state.windMph,
+      windDeg: state.windDeg,
+      windDir: state.windDir,
+      sunrise: state.sunrise,
+      sunset: state.sunset,
+      todayHigh: state.todayHigh,
+      todayLow: state.todayLow,
       forecast: state.forecast.slice(),
+      hourly: state.hourly.slice(),
     };
   }
 
