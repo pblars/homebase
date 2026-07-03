@@ -173,15 +173,18 @@ html[data-scene="light"] {
 
 /* ----- Breadcrumb (top-left back-to-Home on detail screens) --------------- */
 
+/* Breadcrumb sits directly over the sky, so it uses fixed light text + a strong
+   shadow (readable over both dark and bright/daytime skies) rather than the
+   scene-adaptive tokens (which go dark in light scenes and wash out). */
 .breadcrumb { flex: none; display: flex; align-items: center; gap: clamp(6px, 0.8vw, 10px); padding: clamp(2px, 0.6vh, 8px) 2px clamp(8px, 1.2vh, 14px); }
 .bc-home {
   display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
   background: none; border: none; padding: 5px 8px; border-radius: 11px;
-  font-family: var(--sans); font-weight: 700; font-size: clamp(13px, 1.4vw, 17px);
-  color: var(--text-secondary); text-shadow: 0 1px 8px rgba(0, 0, 0, 0.22);
+  font-family: var(--sans); font-weight: 800; font-size: clamp(14px, 1.5vw, 18px);
+  color: rgba(255, 255, 255, 0.92); text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6), 0 2px 12px rgba(0, 0, 0, 0.45);
 }
-.bc-home:hover { color: var(--text-primary); background: rgba(255, 255, 255, 0.08); }
-.bc-logo { display: flex; color: var(--text-accent); }
+.bc-home:hover { color: #fff; background: rgba(0, 0, 0, 0.18); }
+.bc-logo { display: flex; color: rgba(255, 255, 255, 0.92); filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5)); }
 .bc-cloud { width: clamp(22px, 2.4vw, 30px); height: auto; display: block; }
-.bc-sep { color: var(--text-secondary); font-size: clamp(15px, 1.6vw, 20px); text-shadow: 0 1px 8px rgba(0, 0, 0, 0.22); }
-.bc-current { font-family: var(--sans); font-weight: 800; font-size: clamp(13px, 1.4vw, 17px); color: var(--text-primary); text-shadow: 0 1px 8px rgba(0, 0, 0, 0.22); }
+.bc-sep { color: rgba(255, 255, 255, 0.75); font-size: clamp(15px, 1.6vw, 20px); text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6); }
+.bc-current { font-family: var(--sans); font-weight: 800; font-size: clamp(14px, 1.5vw, 18px); color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6), 0 2px 12px rgba(0, 0, 0, 0.45); }
