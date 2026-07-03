@@ -125,31 +125,38 @@ const WeatherSystem = (() => {
     return days.slice(0, 5);
   }
 
-  async function _fetchCurrent() {
-    const url = `${_baseUrl('weather')}?zip=${encodeURIComponent(_zip())},us&appid=${_key()}&units=imperial`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`current weather HTTP ${res.status}`);
-    const json = await res.json();
+  // Query string for a location: {lat,lon} preferred, else {zip}, else home zip.
+  function _qs(loc) {
+    if (loc && loc.lat != null && loc.lon != null) return `lat=${loc.lat}&lon=${loc.lon}`;
+    return `zip=${encodeURIComponent((loc && loc.zip) || _zip())},us`;
+  }
 
+  // Build a "current conditions" snapshot from an OWM /weather response.
+  function _snapCurrent(json) {
     const owmId = json.weather && json.weather[0] && json.weather[0].id;
-    state.condition = mapCondition(owmId);
-    state.tempF = Math.round(json.main?.temp ?? 72);
-    state.feelsLikeF = Math.round(json.main?.feels_like ?? state.tempF);
-    state.description = (json.weather && json.weather[0] && json.weather[0].description) || '';
-    state.humidity = json.main?.humidity ?? null;
-    state.windMph = json.wind?.speed != null ? Math.round(json.wind.speed) : null;
-    state.windDeg = json.wind?.deg != null ? json.wind.deg : null;
-    state.windDir = state.windDeg != null ? _compass(state.windDeg) : '';
-    state.sunrise = json.sys?.sunrise ?? null;
-    state.sunset = json.sys?.sunset ?? null;
+    const tempF = Math.round(json.main?.temp ?? 72);
+    const windDeg = json.wind?.deg != null ? json.wind.deg : null;
+    return {
+      condition: mapCondition(owmId),
+      tempF,
+      feelsLikeF: Math.round(json.main?.feels_like ?? tempF),
+      description: (json.weather && json.weather[0] && json.weather[0].description) || '',
+      humidity: json.main?.humidity ?? null,
+      windMph: json.wind?.speed != null ? Math.round(json.wind.speed) : null,
+      windDeg,
+      windDir: windDeg != null ? _compass(windDeg) : '',
+      sunrise: json.sys?.sunrise ?? null,
+      sunset: json.sys?.sunset ?? null,
+      todayHigh: null, todayLow: null, forecast: [], hourly: [],
+    };
   }
 
   // 'Now' (current conditions) followed by the next 3-hourly forecast steps,
   // each labelled by its local hour. Feeds the Weather tab's hourly strip +
   // precipitation trend.
-  function _buildHourly(list) {
+  function _buildHourly(list, nowTempF, nowCondition) {
     const out = [{
-      label: 'Now', tempF: state.tempF, condition: state.condition,
+      label: 'Now', tempF: nowTempF, condition: nowCondition,
       precipPct: (list[0] && typeof list[0].pop === 'number') ? Math.round(list[0].pop * 100) : 0,
     }];
     for (const entry of list.slice(0, 9)) {
@@ -157,7 +164,7 @@ const WeatherSystem = (() => {
       const h = d.getHours();
       out.push({
         label: `${(h % 12) || 12} ${h < 12 ? 'AM' : 'PM'}`,
-        tempF: Math.round(entry.main?.temp ?? state.tempF),
+        tempF: Math.round(entry.main?.temp ?? nowTempF),
         condition: mapCondition(entry.weather && entry.weather[0] && entry.weather[0].id),
         precipPct: typeof entry.pop === 'number' ? Math.round(entry.pop * 100) : 0,
       });
@@ -165,19 +172,35 @@ const WeatherSystem = (() => {
     return out;
   }
 
-  async function _fetchForecast() {
-    const url = `${_baseUrl('forecast')}?zip=${encodeURIComponent(_zip())},us&appid=${_key()}&units=imperial&cnt=40`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`forecast HTTP ${res.status}`);
-    const json = await res.json();
-    const list = json.list || [];
-    state.forecast = _summarizeForecast(list);
-    state.hourly = _buildHourly(list);
-    const today = state.forecast[0];
-    if (today) {
-      state.todayHigh = today.high != null ? Math.max(today.high, state.tempF) : state.tempF;
-      state.todayLow = today.low != null ? Math.min(today.low, state.tempF) : state.tempF;
+  // Current-conditions-only fetch for a location (1 call). Used by the Weather
+  // tab's non-selected "temp cards".
+  async function fetchCurrent(loc) {
+    const res = await fetch(`${_baseUrl('weather')}?${_qs(loc)}&appid=${_key()}&units=imperial`);
+    if (!res.ok) throw new Error(`current weather HTTP ${res.status}`);
+    return _snapCurrent(await res.json());
+  }
+
+  // Full snapshot for a location (current + 5-day forecast; forecast best-effort).
+  // Does NOT touch the singleton state — safe for arbitrary locations.
+  async function fetchSnapshot(loc) {
+    const snap = await fetchCurrent(loc);
+    try {
+      const res = await fetch(`${_baseUrl('forecast')}?${_qs(loc)}&appid=${_key()}&units=imperial&cnt=40`);
+      if (res.ok) {
+        const list = ((await res.json()).list) || [];
+        snap.forecast = _summarizeForecast(list);
+        snap.hourly = _buildHourly(list, snap.tempF, snap.condition);
+        const today = snap.forecast[0];
+        if (today) {
+          snap.todayHigh = today.high != null ? Math.max(today.high, snap.tempF) : snap.tempF;
+          snap.todayLow = today.low != null ? Math.min(today.low, snap.tempF) : snap.tempF;
+        }
+      }
+    } catch (fErr) {
+      console.warn('[WeatherSystem] forecast fetch failed (non-fatal):', fErr.message);
     }
+    if (snap.todayHigh == null) { snap.todayHigh = snap.tempF; snap.todayLow = snap.tempF; }
+    return snap;
   }
 
   function _emitUpdate() {
@@ -198,13 +221,9 @@ const WeatherSystem = (() => {
     }
 
     try {
-      // current is the critical one; forecast is best-effort
-      await _fetchCurrent();
-      try {
-        await _fetchForecast();
-      } catch (fErr) {
-        console.warn('[WeatherSystem] forecast fetch failed (non-fatal):', fErr.message);
-      }
+      // Home location drives the sky + dashboard; forecast is best-effort inside.
+      const snap = await fetchSnapshot({ zip: _zip() });
+      Object.assign(state, snap);
       console.log(`[WeatherSystem] update — ${state.tempF}°F, condition: ${state.condition} (${state.description})`);
       _emitUpdate();
     } catch (err) {
@@ -250,6 +269,8 @@ const WeatherSystem = (() => {
     init,
     onUpdate,
     getState,
+    fetchCurrent,           // current-only snapshot for an arbitrary location
+    fetchSnapshot,          // full snapshot for an arbitrary location
     mapCondition,           // exposed for debugging
     refresh: _refresh,      // manual trigger for debugging
     get condition() { return state.condition; },

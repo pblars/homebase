@@ -1,9 +1,14 @@
 // WeatherDetail.js
 // -----------------------------------------------------------------------------
-// The Weather tab. Layout follows the reference (current summary on the left;
-// hourly strip, daily forecast + stat tiles, and a precipitation-trend chart on
-// the right) but keeps the app's frosted-glass-over-sky styling. Reads
-// WeatherSystem and re-renders on `weatherupdate`. Registers as "weather".
+// The Weather tab. A location switcher (temp cards) sits under the breadcrumb:
+// the PRIMARY (home) location plus up to 3 saved locations. The selected card's
+// location is shown in full below (current summary + hourly + daily + tiles +
+// precip trend); the others show just a compact temp card. Tap a card to switch,
+// "+ Add" to add (city or ZIP), "×" to remove. Home always drives the sky, so
+// switching here never changes the background.
+//
+// Reads WeatherSystem (per-location snapshots) + WeatherLocations. Registers as
+// "weather".
 // -----------------------------------------------------------------------------
 
 const WeatherDetail = (() => {
@@ -11,8 +16,6 @@ const WeatherDetail = (() => {
     sunny: 'Sunny', clear: 'Clear', partly_cloudy: 'Partly Cloudy', cloudy: 'Cloudy',
     rainy: 'Rain', stormy: 'Storms', snowy: 'Snow', foggy: 'Fog',
   };
-
-  // Small inline glyphs for the stat tiles (stroke, inherit color via the tile).
   const GLYPH = {
     drop: '<svg viewBox="0 0 24 24" class="wx-glyph"><path d="M12 3.5s6 6.5 6 10.5a6 6 0 0 1-12 0c0-4 6-10.5 6-10.5z"/></svg>',
     wind: '<svg viewBox="0 0 24 24" class="wx-glyph"><path d="M3 9h11a2.5 2.5 0 1 0-2.5-2.5M3 13h15a2.5 2.5 0 1 1-2.5 2.5M3 17h9"/></svg>',
@@ -24,9 +27,16 @@ const WeatherDetail = (() => {
   let els = {};
   let subscribed = false;
 
-  function _location() {
-    return (typeof CONFIG !== 'undefined' && CONFIG.LOCATION_LABEL) || 'Your area';
+  let selectedId = 'home';
+  const snaps = {};        // id -> weather snapshot (partial=current-only or full)
+  let adding = false;
+  let addBusy = false;
+  let addError = '';
+
+  function _esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   }
+  function _isFull(snap) { return !!(snap && snap.hourly && snap.hourly.length); }
   function _fmtClock(unix) {
     if (!unix) return '--';
     const d = new Date(unix * 1000);
@@ -37,68 +47,100 @@ const WeatherDetail = (() => {
     return `${h}:${String(m).padStart(2, '0')} ${ap}`;
   }
 
-  // ---- left: current summary ------------------------------------------------
+  // ---- location switcher ----------------------------------------------------
+
+  function locCardHTML(loc) {
+    const snap = snaps[loc.id];
+    const temp = snap ? Math.round(snap.tempF) + '°' : '—';
+    const icon = snap ? ICONS.weather(snap.condition) : '';
+    const cond = snap ? (CONDITION_LABEL[snap.condition] || '') : 'Loading…';
+    const remove = loc.primary ? '' :
+      '<span class="wx-loc-remove" data-remove="' + loc.id + '" title="Remove" aria-label="Remove location">&times;</span>';
+    const star = loc.primary ? '<span class="wx-loc-star" title="Home">★</span>' : '';
+    return (
+      '<button type="button" class="wx-loc' + (loc.id === selectedId ? ' is-active' : '') + '" data-loc="' + loc.id + '">' +
+        '<span class="wx-loc-ic">' + icon + '</span>' +
+        '<span class="wx-loc-info">' +
+          '<span class="wx-loc-name">' + star + _esc(loc.name) + '</span>' +
+          '<span class="wx-loc-cond">' + _esc(cond) + '</span>' +
+        '</span>' +
+        '<span class="wx-loc-temp">' + temp + '</span>' +
+        remove +
+      '</button>'
+    );
+  }
+
+  function addControlHTML() {
+    if (!WeatherLocations.canAdd() && !adding) return '';
+    if (!adding) {
+      return '<button type="button" class="wx-loc-add" data-add>' +
+        '<span class="wx-loc-add-plus">+</span><span>Add location</span></button>';
+    }
+    const err = addError ? '<div class="wx-loc-err">' + _esc(addError) + '</div>' : '';
+    return (
+      '<form class="wx-loc-addform" data-addform>' +
+        '<input class="wx-loc-input" data-addinput type="text" placeholder="City or ZIP" ' +
+          'maxlength="60" autocomplete="off"' + (addBusy ? ' disabled' : '') + ' />' +
+        '<button type="submit" class="wx-loc-addbtn" data-addsubmit' + (addBusy ? ' disabled' : '') + '>' +
+          (addBusy ? '…' : 'Add') + '</button>' +
+        '<button type="button" class="wx-loc-addcancel" data-addcancel aria-label="Cancel">&times;</button>' +
+        err +
+      '</form>'
+    );
+  }
+
+  function renderSwitch() {
+    if (!els.switch) return;
+    els.switch.innerHTML = WeatherLocations.list().map(locCardHTML).join('') + addControlHTML();
+    const input = els.switch.querySelector('[data-addinput]');
+    if (input && !addBusy) input.focus();
+  }
+
+  // ---- full view (selected location) ----------------------------------------
 
   function leftHTML(w) {
     const label = w.description || CONDITION_LABEL[w.condition] || 'Partly Cloudy';
     const hi = w.todayHigh != null ? w.todayHigh + '°' : '--';
     const lo = w.todayLow != null ? w.todayLow + '°' : '--';
+    const loc = WeatherLocations.get(selectedId);
     return (
       '<div class="wx-cur-icon">' + ICONS.weather(w.condition) + '</div>' +
       '<div class="wx-cur-temp">' + Math.round(w.tempF) + '<span class="wx-deg">°</span></div>' +
-      '<div class="wx-cur-cond">' + label + '</div>' +
+      '<div class="wx-cur-cond">' + _esc(label) + '</div>' +
       '<div class="wx-cur-hilo"><span>High ' + hi + '</span><span class="wx-sep">/</span><span>Low ' + lo + '</span></div>' +
-      '<div class="wx-cur-loc">' + _location() + '</div>' +
+      '<div class="wx-cur-loc">' + _esc((loc && loc.name) || '') + '</div>' +
       '<div class="wx-cur-feels">Feels like ' + Math.round(w.feelsLikeF) + '°</div>'
     );
   }
-
-  // ---- hourly strip ---------------------------------------------------------
-
   function hourlyHTML(hours) {
     if (!hours.length) return '<div class="wx-empty">Hourly forecast unavailable.</div>';
     return hours.map((h) =>
       '<div class="wx-hour">' +
-        '<div class="wx-hour-lbl">' + h.label + '</div>' +
+        '<div class="wx-hour-lbl">' + _esc(h.label) + '</div>' +
         '<div class="wx-hour-ic">' + ICONS.weather(h.condition) + '</div>' +
         '<div class="wx-hour-temp">' + h.tempF + '°</div>' +
         '<div class="wx-hour-pop">' + GLYPH.drop + '<span>' + h.precipPct + '%</span></div>' +
       '</div>').join('');
   }
-
-  // ---- daily forecast -------------------------------------------------------
-
   function dailyHTML(days) {
     if (!days.length) return '<div class="wx-empty">Daily forecast unavailable.</div>';
     return days.map((d) =>
       '<div class="wx-day">' +
-        '<div class="wx-day-name">' + String(d.dayName || '').toUpperCase() + '</div>' +
+        '<div class="wx-day-name">' + _esc(String(d.dayName || '').toUpperCase()) + '</div>' +
         '<div class="wx-day-ic">' + ICONS.weather(d.condition) + '</div>' +
         '<div class="wx-day-hi">' + (d.high != null ? d.high + '°' : '--') + '</div>' +
         '<div class="wx-day-lo">' + (d.low != null ? d.low + '°' : '--') + '</div>' +
       '</div>').join('');
   }
-
-  // ---- stat tiles -----------------------------------------------------------
-
   function tile(glyph, label, value, sub) {
     return (
-      '<div class="wx-tile">' +
-        '<div class="wx-tile-ic">' + glyph + '</div>' +
-        '<div class="wx-tile-body">' +
-          '<div class="wx-tile-label">' + label + '</div>' +
+      '<div class="wx-tile"><div class="wx-tile-ic">' + glyph + '</div>' +
+        '<div class="wx-tile-body"><div class="wx-tile-label">' + label + '</div>' +
           '<div class="wx-tile-value">' + value + '</div>' +
-          (sub ? '<div class="wx-tile-sub">' + sub + '</div>' : '') +
-        '</div>' +
-      '</div>'
+          (sub ? '<div class="wx-tile-sub">' + sub + '</div>' : '') + '</div></div>'
     );
   }
-  function humidityWord(h) {
-    if (h == null) return '';
-    if (h < 40) return 'Dry';
-    if (h <= 60) return 'Comfortable';
-    return 'Humid';
-  }
+  function humidityWord(h) { return h == null ? '' : h < 40 ? 'Dry' : h <= 60 ? 'Comfortable' : 'Humid'; }
   function tilesHTML(w) {
     const precip = w.hourly && w.hourly.length ? Math.max.apply(null, w.hourly.map((h) => h.precipPct)) : 0;
     return (
@@ -109,9 +151,6 @@ const WeatherDetail = (() => {
       tile(GLYPH.sunset, 'Sunset', _fmtClock(w.sunset), '')
     );
   }
-
-  // ---- precipitation trend --------------------------------------------------
-
   function summaryText(hours) {
     const steps = hours.slice(0, 9);
     const maxPop = steps.length ? Math.max.apply(null, steps.map((h) => h.precipPct)) : 0;
@@ -124,25 +163,19 @@ const WeatherDetail = (() => {
     const bars = hours.slice(0, 8);
     if (!bars.length) return '<div class="wx-empty">No precipitation data.</div>';
     const chart = bars.map((h) =>
-      '<div class="wx-bar-col">' +
-        '<div class="wx-bar-val">' + h.precipPct + '%</div>' +
+      '<div class="wx-bar-col"><div class="wx-bar-val">' + h.precipPct + '%</div>' +
         '<div class="wx-bar-track"><div class="wx-bar" style="height:' + Math.max(2, h.precipPct) + '%"></div></div>' +
-        '<div class="wx-bar-lbl">' + h.label + '</div>' +
-      '</div>').join('');
+        '<div class="wx-bar-lbl">' + _esc(h.label) + '</div></div>').join('');
     return (
       '<div class="wx-chart">' + chart + '</div>' +
-      '<div class="wx-trend-note">' +
-        '<div class="wx-trend-note-h">Next 24 Hours</div>' +
-        '<div class="wx-trend-note-b">' + summaryText(hours) + '</div>' +
-      '</div>'
+      '<div class="wx-trend-note"><div class="wx-trend-note-h">Next 24 Hours</div>' +
+        '<div class="wx-trend-note-b">' + summaryText(hours) + '</div></div>'
     );
   }
 
-  // ---- render ---------------------------------------------------------------
-
-  function render() {
+  function renderFull() {
     if (!els.left) return;
-    const w = WeatherSystem.getState();
+    const w = snaps[selectedId] || { tempF: 72, feelsLikeF: 72, condition: 'cloudy', forecast: [], hourly: [] };
     els.left.innerHTML = leftHTML(w);
     els.hourly.innerHTML = hourlyHTML(w.hourly || []);
     els.daily.innerHTML = dailyHTML(w.forecast || []);
@@ -150,10 +183,79 @@ const WeatherDetail = (() => {
     els.trend.innerHTML = trendHTML(w.hourly || []);
   }
 
+  function render() { renderSwitch(); renderFull(); }
+
+  // ---- data loading ---------------------------------------------------------
+
+  function _params(loc) { return { lat: loc.lat, lon: loc.lon, zip: loc.zip }; }
+
+  // Home reuses the live singleton state; others fetch.
+  async function ensureCard(loc) {
+    if (loc.id === 'home') { snaps.home = WeatherSystem.getState(); return; }
+    if (snaps[loc.id]) return;
+    try { snaps[loc.id] = await WeatherSystem.fetchCurrent(_params(loc)); }
+    catch (err) { console.warn('[WeatherDetail] card fetch failed:', err.message); }
+  }
+  async function ensureFull(loc) {
+    if (loc.id === 'home') { snaps.home = WeatherSystem.getState(); return; }
+    if (_isFull(snaps[loc.id])) return;
+    try { snaps[loc.id] = await WeatherSystem.fetchSnapshot(_params(loc)); }
+    catch (err) { console.warn('[WeatherDetail] snapshot fetch failed:', err.message); }
+  }
+
+  async function loadAll() {
+    const locs = WeatherLocations.list();
+    await ensureFull(WeatherLocations.get(selectedId) || locs[0]);
+    render();
+    // fill the remaining temp cards in the background
+    await Promise.all(locs.filter((l) => l.id !== selectedId).map((l) =>
+      ensureCard(l).then(() => renderSwitch())));
+  }
+
+  // ---- interactions ---------------------------------------------------------
+
+  async function selectLoc(id) {
+    if (id === selectedId) return;
+    selectedId = id;
+    adding = false; addError = '';
+    render(); // paint whatever we have (temp already known → big view shows it)
+    await ensureFull(WeatherLocations.get(id));
+    if (selectedId === id) render();
+  }
+
+  function removeLoc(id) {
+    WeatherLocations.remove(id);
+    delete snaps[id];
+    if (selectedId === id) { selectedId = 'home'; }
+    render();
+  }
+
+  async function submitAdd() {
+    const input = els.switch.querySelector('[data-addinput]');
+    const query = input ? input.value : '';
+    if (!query.trim()) { addError = 'Enter a city or ZIP code.'; renderSwitch(); return; }
+    addBusy = true; addError = ''; renderSwitch();
+    try {
+      const found = await WeatherLocations.geocode(query);
+      const entry = WeatherLocations.add(found);
+      adding = false; addBusy = false;
+      snaps[entry.id] = await WeatherSystem.fetchSnapshot(_params(entry));
+      selectedId = entry.id;
+      render();
+    } catch (err) {
+      addBusy = false;
+      addError = err.message || "Couldn't add that location.";
+      renderSwitch();
+    }
+  }
+
+  // ---- build / lifecycle ----------------------------------------------------
+
   function build() {
     root = document.createElement('div');
     root.className = 'weather-screen';
     root.innerHTML =
+      '<div class="wx-switch" data-switch></div>' +
       '<div class="wx-main">' +
         '<aside class="wx-left" data-wx-left></aside>' +
         '<div class="wx-right">' +
@@ -178,12 +280,26 @@ const WeatherDetail = (() => {
     root.insertBefore(Breadcrumb.render('Weather'), root.firstChild);
 
     els = {
+      switch: root.querySelector('[data-switch]'),
       left: root.querySelector('[data-wx-left]'),
       hourly: root.querySelector('[data-wx-hourly]'),
       daily: root.querySelector('[data-wx-daily]'),
       tiles: root.querySelector('[data-wx-tiles]'),
       trend: root.querySelector('[data-wx-trend]'),
     };
+
+    // Switcher interactions (event delegation).
+    els.switch.addEventListener('click', (e) => {
+      const rm = e.target.closest('[data-remove]');
+      if (rm) { e.preventDefault(); e.stopPropagation(); removeLoc(rm.getAttribute('data-remove')); return; }
+      if (e.target.closest('[data-add]')) { adding = true; addError = ''; renderSwitch(); return; }
+      if (e.target.closest('[data-addcancel]')) { adding = false; addError = ''; renderSwitch(); return; }
+      const card = e.target.closest('[data-loc]');
+      if (card) selectLoc(card.getAttribute('data-loc'));
+    });
+    els.switch.addEventListener('submit', (e) => {
+      if (e.target.closest('[data-addform]')) { e.preventDefault(); submitAdd(); }
+    });
   }
 
   function show() {
@@ -191,8 +307,14 @@ const WeatherDetail = (() => {
     const sr = document.getElementById('screen-root');
     if (root.parentNode !== sr) sr.appendChild(root);
     render();
+    loadAll();
     if (!subscribed) {
-      WeatherSystem.onUpdate(() => { if (root && root.isConnected) render(); });
+      WeatherSystem.onUpdate(() => {
+        if (!root || !root.isConnected) return;
+        snaps.home = WeatherSystem.getState();
+        if (selectedId === 'home') renderFull();
+        renderSwitch();
+      });
       subscribed = true;
     }
   }
