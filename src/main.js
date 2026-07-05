@@ -54,9 +54,19 @@
 
     // Load household settings + chore definitions from the D1-backed API (each
     // falls back to cache, then built-in defaults). Fire 'settingsupdated' /
-    // 'choresupdated' when they land.
+    // 'choresupdated' when they land. Once chore definitions (window.KIDS) are in,
+    // pull the SHARED daily progress (completions + acorns + quest) from D1 so
+    // every device shows the same board.
     if (window.SettingsData) SettingsData.load();
-    if (window.ChoreData) ChoreData.load();
+    if (window.ChoreData) {
+      const loaded = ChoreData.load();
+      if (window.QuestStore) {
+        if (loaded && typeof loaded.then === 'function') loaded.then(() => QuestStore.load());
+        else QuestStore.load();
+      }
+    } else if (window.QuestStore) {
+      QuestStore.load();
+    }
 
     // Live family calendar (public Google Calendar via API key). Populates
     // window.EVENTS with today's events for the agenda + feeds CalendarDetail;

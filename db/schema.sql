@@ -1,6 +1,8 @@
--- Home Base — chore definitions (Cloudflare D1 / SQLite).
--- Only DEFINITIONS live here (who has which chores). Daily completion + acorns
--- stay on the wall tablet in localStorage.
+-- Home Base — household + chore data (Cloudflare D1 / SQLite).
+-- Chore DEFINITIONS (who has which chores) plus daily PROGRESS — per-week chore
+-- completion, lifetime acorns, and weekly quest meta — all live here so every
+-- device sees the same shared board. localStorage is used only as an offline
+-- cache on top of this.
 --
 -- Apply to the remote D1 database:
 --   npx wrangler d1 execute homebase --remote --file=db/schema.sql
@@ -62,3 +64,30 @@ INSERT OR IGNORE INTO chores (id, kid_id, name, description, frequency, sort) VA
   ('l2', 'lucy', 'Pick up toys',       'Living room and bedroom',           'Daily',  1),
   ('l3', 'lucy', 'Help with laundry',  'Sort colors and whites',            'Weekly', 2),
   ('l4', 'lucy', 'Read for 20 min',    'Any book of your choice',           'Daily',  3);
+
+-- ---------------------------------------------------------------------------
+-- Daily progress (see db/migrations/0004_progress.sql). Shared across devices.
+-- ---------------------------------------------------------------------------
+
+-- Per-kid, per-week chore completion. `week` is the ISO week number (1–53) as a
+-- string, matching getISOWeek() on the client (src/data/rewards.js).
+CREATE TABLE IF NOT EXISTS chore_completion (
+  week     TEXT NOT NULL,
+  kid_id   TEXT NOT NULL,
+  chore_id TEXT NOT NULL,
+  done     INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (week, kid_id, chore_id)
+);
+
+-- Lifetime acorn count per kid (never resets on the weekly rollover).
+CREATE TABLE IF NOT EXISTS acorns (
+  kid_id TEXT PRIMARY KEY,
+  count  INTEGER NOT NULL DEFAULT 0
+);
+
+-- Per-week family quest meta (completed + whether the chest celebration ran).
+CREATE TABLE IF NOT EXISTS quest_meta (
+  week              TEXT PRIMARY KEY,
+  completed         INTEGER NOT NULL DEFAULT 0,
+  celebration_shown INTEGER NOT NULL DEFAULT 0
+);

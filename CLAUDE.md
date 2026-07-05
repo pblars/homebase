@@ -157,21 +157,37 @@ Keys:
 
 ## Household data (Cloudflare D1)
 
-The **household** — family name + address (`settings` table) and **members**
-(`kids` table: name, role Parent/Kid, `on_chore_board`) — plus **chore
-definitions** live in **Cloudflare D1**. Members + settings are edited in the
-**Settings** tab; chores in the **Chores** tab → **Manage**. Daily **completion +
-acorns** stay on the tablet in localStorage (`QuestStore`).
+Everything shared across devices lives in **Cloudflare D1**: the **household**
+(family name + address in `settings`; **members** in `kids`: name, role
+Parent/Kid, `on_chore_board`), **chore definitions** (`chores`), and — as of
+migration `0004` — the **daily progress** a family taps every day: per-week chore
+**completion** (`chore_completion`), lifetime **acorns** (`acorns`), and weekly
+**quest meta** (`quest_meta`). So opening the site on a phone or a second tablet
+shows the same live board. Members + settings are edited in the **Settings** tab;
+chores in the **Chores** tab → **Manage**.
 
-- `db/schema.sql` — `settings`, `kids`, `chores`; run `db/migrations/0002_household.sql`
-  once on an existing database (adds settings table, member role/board, chore days).
+- `db/schema.sql` — all tables. On an existing database run the migrations once:
+  `0002_household.sql` (settings table, member role/board, chore days),
+  `0003_birthdate.sql`, and **`0004_progress.sql`** (the progress tables above).
 - `functions/api/` — `settings.js` (GET/PUT), `chores.js` + `chores/[id].js`,
-  `kids.js` + `kids/[id].js`. The D1 binding is auto-detected by any name
+  `kids.js` + `kids/[id].js`, and **`progress.js`** (GET `?week=NN` returns the
+  week's completion/acorns/quest; POST `{action}` — `toggle` upserts a completion
+  and adjusts that kid's acorns ±1 server-side/clamped, `quest` upserts quest
+  meta, `reset` clears a week). The D1 binding is auto-detected by any name
   (`pickDB`), so the dashboard binding can be `DB`/`D1`/`db`.
 - `src/data/ChoreData.js` (roster + chores) and `src/data/SettingsData.js`
   (family/address) fetch the API, cache to localStorage, fall back to defaults,
   and dispatch `choresupdated` / `settingsupdated`. Chores show only members with
   `onBoard`; Settings shows everyone.
+- `src/quest/QuestStore.js` — daily progress. **Reads stay synchronous** (served
+  from a localStorage cache) so callers are unchanged; **writes are optimistic**
+  (update local + fire events instantly, then write through to `/api/progress` and
+  reconcile the acorn count to the server's authoritative value). `load()` pulls
+  the shared state on app start (chained after `ChoreData.load()` so `KIDS` is
+  ready) and on **wake** (`SleepScreen.wake()`). **No background polling** — a
+  change on one device appears on another on its next load/wake. localStorage is
+  the offline cache, so the wall tablet still works when the API is briefly down
+  and re-syncs on the next `load()`.
 
 ### One-time D1 setup (per Cloudflare account)
 
@@ -323,8 +339,10 @@ homebase/
         bottom nav bar (`src/ui/NavBar.js`). Other tabs are placeholder screens
         (`Placeholders.js`). Warm palette + serif/sans (`styles/dashboard.css`).
   - [x] **Quest + Reward system** (`src/quest/`, classic-script globals + CustomEvents)
-    - `QuestStore` — localStorage source of truth: per-week chore state, lifetime
-      acorns per kid, quest meta. Dispatches `choreupdate` / `questupdate`.
+    - `QuestStore` — source of truth for per-week chore state, lifetime acorns
+      per kid, and quest meta, **shared across devices via D1** (`/api/progress`)
+      with localStorage as an offline cache. Sync reads, optimistic write-through.
+      Dispatches `choreupdate` / `questupdate`.
     - `QuestSystem` — init, Monday reset (+`weekreset`), chest trigger, New-Quest toast.
     - `QuestBanner` → `#quest-banner-card`: meadow gradient, theme pills, signposts,
       animated SVG bezier trail (6 waypoints + treasure node).

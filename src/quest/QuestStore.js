@@ -1,19 +1,30 @@
 // QuestStore.js
 // -----------------------------------------------------------------------------
 // Single source of truth for all quest + chore state. Every read/write goes
-// through here; persistence is localStorage. Classic-script global `QuestStore`.
+// through here. State is SHARED across devices via Cloudflare D1 (/api/progress);
+// localStorage is kept as an offline cache on top, so the wall tablet renders
+// instantly and keeps working when the API is briefly unreachable.
 //
-// localStorage keys:
-//   homebase_chores_{kidId}_{isoWeek}  -> { choreId: boolean } per kid per week
-//   homebase_acorns_{kidId}            -> lifetime integer acorn count (never resets)
+// Reads are synchronous (served from the localStorage cache) so callers don't
+// change. Writes are optimistic: update the local cache + fire events for an
+// instant UI, then write through to D1 in the background and reconcile.
+//
+// Sync model (no background polling — by design): load() pulls the shared state
+// on app start and on wake (see main.js / SleepScreen). A change on one device
+// shows on another on its next load/wake.
+//
+// localStorage cache keys (mirror of the D1 rows for the current week):
+//   homebase_chores_{kidId}_{isoWeek}  -> { choreId: boolean }
+//   homebase_acorns_{kidId}            -> lifetime integer acorn count
 //   homebase_quest_{isoWeek}           -> { completed, celebrationShown }
-//   homebase_current_week              -> last-seen ISO week marker (reset detection)
+//   homebase_current_week              -> last-seen ISO week marker (per device)
 //
 // Dispatches window CustomEvents on change: 'choreupdate' and 'questupdate'.
 // -----------------------------------------------------------------------------
 
 const QuestStore = (() => {
   const CUR_WEEK_KEY = 'homebase_current_week';
+  const API = 'api/progress';               // relative -> /api/progress on the deployed site
 
   function kids() { return window.KIDS || []; }
   function kid(id) { return kids().find((k) => k.id === id) || null; }
@@ -30,6 +41,16 @@ const QuestStore = (() => {
   }
   function write(key, val) {
     try { localStorage.setItem(key, JSON.stringify(val)); } catch (_) { /* ignore quota/private mode */ }
+  }
+
+  // Background write-through to D1. Fire-and-forget; failures leave the optimistic
+  // local state in place, to be reconciled on the next load().
+  function post(body) {
+    return fetch(API, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    });
   }
 
   // { choreId: boolean } for the current week, auto-initialized to all-false.
@@ -59,11 +80,27 @@ const QuestStore = (() => {
     state[choreId] = done;
     write(key, state);
 
+    // Optimistic acorn update for an instant UI; the server is authoritative and
+    // reconciles below.
     const acorns = done ? getAcorns(kidId) + 1 : Math.max(0, getAcorns(kidId) - 1);
     setAcorns(kidId, acorns);
 
     window.dispatchEvent(new CustomEvent('choreupdate', { detail: { kidId, choreId, done, acorns } }));
     window.dispatchEvent(new CustomEvent('questupdate', { detail: getFamilyProgress() }));
+
+    // Write through to D1 and reconcile the acorn count to the server's value.
+    post({ action: 'toggle', week: wk, kidId, choreId, done })
+      .then((res) => (res && res.ok ? res.json() : null))
+      .then((data) => {
+        if (!data || typeof data.acorns !== 'number') return;
+        if (data.acorns !== getAcorns(kidId)) {
+          setAcorns(kidId, data.acorns);
+          // done:false -> refresh the count without replaying the +1 animation.
+          window.dispatchEvent(new CustomEvent('choreupdate', { detail: { kidId, done: false, acorns: data.acorns } }));
+        }
+      })
+      .catch((e) => console.warn('[QuestStore] toggle sync failed (kept local):', e.message));
+
     return done;
   }
 
@@ -95,7 +132,12 @@ const QuestStore = (() => {
   }
 
   function getQuestMeta() { return read(questKey(getWeekKey()), { completed: false, celebrationShown: false }); }
-  function setQuestMeta(m) { write(questKey(getWeekKey()), m); }
+  function setQuestMeta(m) {
+    const wk = getWeekKey();
+    write(questKey(wk), m);
+    post({ action: 'quest', week: wk, completed: !!m.completed, celebrationShown: !!m.celebrationShown })
+      .catch((e) => console.warn('[QuestStore] quest-meta sync failed (kept local):', e.message));
+  }
   function markCelebrationShown() { const m = getQuestMeta(); m.completed = true; m.celebrationShown = true; setQuestMeta(m); }
   function isCelebrationShown() { return !!getQuestMeta().celebrationShown; }
 
@@ -110,14 +152,45 @@ const QuestStore = (() => {
       k.chores.forEach((c) => { st[c.id] = false; });
       write(choreKey(k.id, wk), st);
     });
-    setQuestMeta({ completed: false, celebrationShown: false });
+    write(questKey(wk), { completed: false, celebrationShown: false });
     ensureWeekMarker();
+    // Write through so every device converges on the reset week (idempotent).
+    post({ action: 'reset', week: wk })
+      .catch((e) => console.warn('[QuestStore] reset sync failed (kept local):', e.message));
+  }
+
+  // Pull the shared state for the current week from D1 into the local cache and
+  // repaint. Called on app start and on wake (main.js). Falls back to the
+  // existing local cache if the API is unreachable.
+  async function load() {
+    const wk = getWeekKey();
+    try {
+      const res = await fetch(`${API}?week=${encodeURIComponent(wk)}`, { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      hydrate(wk, data);
+      window.dispatchEvent(new CustomEvent('choreupdate', { detail: {} }));
+      window.dispatchEvent(new CustomEvent('questupdate', { detail: getFamilyProgress() }));
+    } catch (e) {
+      console.warn('[QuestStore] API unavailable — using local cache:', e.message);
+    }
+  }
+
+  // Overwrite the local cache for the current week with the shared D1 state.
+  function hydrate(wk, data) {
+    if (!data || typeof data !== 'object') return;
+    const completion = data.completion || {};
+    kids().forEach((k) => { write(choreKey(k.id, wk), completion[k.id] || {}); });
+    const acorns = data.acorns || {};
+    Object.keys(acorns).forEach((kidId) => setAcorns(kidId, parseInt(acorns[kidId], 10) || 0));
+    const q = data.quest || {};
+    write(questKey(wk), { completed: !!q.completed, celebrationShown: !!q.celebrationShown });
   }
 
   return {
     getWeekKey, getChoreState, toggleChore, getAcorns, getFamilyProgress,
-    isKidComplete, getQuestMeta, markCelebrationShown, isCelebrationShown,
-    isNewWeek, resetWeek, ensureWeekMarker,
+    isKidComplete, getQuestMeta, setQuestMeta, markCelebrationShown, isCelebrationShown,
+    isNewWeek, resetWeek, ensureWeekMarker, load,
   };
 })();
 

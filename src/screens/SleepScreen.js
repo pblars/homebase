@@ -30,6 +30,9 @@ const SleepScreen = (() => {
   let weatherSubscribed = false;
 
   function wake() {
+    // Waking is a natural sync point — pull the latest shared board (completions
+    // + acorns) from D1 so this device reflects changes made on another.
+    if (window.QuestStore) QuestStore.load();
     if (typeof Router !== 'undefined') Router.show('dashboard');
   }
 
