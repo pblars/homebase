@@ -43,14 +43,20 @@ const QuestStore = (() => {
     try { localStorage.setItem(key, JSON.stringify(val)); } catch (_) { /* ignore quota/private mode */ }
   }
 
+  // Count of in-flight write-throughs. A background load() skips while this is
+  // > 0 so a periodic sync can't overwrite an optimistic toggle with stale
+  // server data before its POST has landed.
+  let pendingWrites = 0;
+
   // Background write-through to D1. Fire-and-forget; failures leave the optimistic
   // local state in place, to be reconciled on the next load().
   function post(body) {
+    pendingWrites += 1;
     return fetch(API, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(body),
-    });
+    }).finally(() => { pendingWrites = Math.max(0, pendingWrites - 1); });
   }
 
   // { choreId: boolean } for the current week, auto-initialized to all-false.
@@ -163,6 +169,9 @@ const QuestStore = (() => {
   // repaint. Called on app start and on wake (main.js). Falls back to the
   // existing local cache if the API is unreachable.
   async function load() {
+    // Don't sync while a local write is still being written through — a stale GET
+    // could momentarily revert the tap the user just made.
+    if (pendingWrites > 0) return;
     const wk = getWeekKey();
     try {
       const res = await fetch(`${API}?week=${encodeURIComponent(wk)}`, { cache: 'no-store' });

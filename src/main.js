@@ -68,6 +68,22 @@
       QuestStore.load();
     }
 
+    // Gentle background sync so an always-awake wall tablet (which may sit on the
+    // dashboard for hours) picks up chore taps made on other devices. Only runs
+    // while the page is VISIBLE — a backgrounded phone won't poll — and QuestStore
+    // itself skips a sync while a local write is still in flight. Also syncs
+    // immediately when the tab/tablet regains focus. (Reads are cheap; no polling
+    // of the write path.)
+    if (window.QuestStore) {
+      const SYNC_MS = 60 * 1000;
+      setInterval(() => {
+        if (document.visibilityState === 'visible') QuestStore.load();
+      }, SYNC_MS);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') QuestStore.load();
+      });
+    }
+
     // Live family calendar (public Google Calendar via API key). Populates
     // window.EVENTS with today's events for the agenda + feeds CalendarDetail;
     // falls back to the placeholder agenda when unconfigured. Dispatches
