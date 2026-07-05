@@ -25,7 +25,7 @@ const WeatherRadar = (() => {
   let map = null, els = {}, container = null;
   let host = '', frames = [], layers = [], idx = 0;
   let playTimer = null, refreshTimer = null, playing = true, visible = false;
-  let center = [35.9251, -86.8689], zoom = 8, mountTries = 0;
+  let center = [35.9251, -86.8689], zoom = 8, mountTries = 0, resizeObs = null;
 
   const ready = () => typeof L !== 'undefined' && L.map;
 
@@ -72,6 +72,19 @@ const WeatherRadar = (() => {
 
     els.play.addEventListener('click', () => setPlaying(!playing));
     els.scrub.addEventListener('input', () => { setPlaying(false); showFrame(parseInt(els.scrub.value, 10)); });
+
+    // The card can measure 0 at the instant the tab mounts (before layout
+    // settles), so Leaflet would request no tiles and stay blank. Force it to
+    // re-measure once the container actually has a size — via a ResizeObserver
+    // plus a couple of delayed passes as a fallback.
+    const fixSize = () => { if (map) map.invalidateSize(false); };
+    requestAnimationFrame(fixSize);
+    setTimeout(fixSize, 150);
+    setTimeout(fixSize, 500);
+    if (window.ResizeObserver) {
+      resizeObs = new ResizeObserver(fixSize);
+      resizeObs.observe(els.map);
+    }
 
     visible = true;
     loadFrames();
