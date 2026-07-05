@@ -1,17 +1,23 @@
 // Pages Function: /api/progress  (Cloudflare D1)
-// Shared daily quest/chore PROGRESS — completion, acorns, quest meta — so every
-// device that opens the site sees the same board. Definitions live in /api/chores.
+// Shared quest/chore PROGRESS — completion, acorns, quest meta — so every device
+// that opens the site sees the same board. Definitions live in /api/chores.
 //
-// GET  /api/progress?week=NN
+// Completion is keyed by `period`: DAILY chores use the calendar date
+// ('2026-07-05') so they reset each day; WEEKLY chores use the ISO week number
+// ('27') so they reset each week. The client sends each chore's period.
+//
+// GET  /api/progress?week=NN&date=YYYY-MM-DD
 //   -> { week, completion: {kidId:{choreId:bool}}, acorns: {kidId:n},
 //        quest: {completed, celebrationShown} }
+//   completion covers BOTH the given week (weekly chores) and date (daily chores).
 // POST /api/progress { action, ... }
-//   action 'toggle' {week, kidId, choreId, done}
-//     -> upserts completion; adjusts that kid's acorns +1/-1 (clamped >=0),
-//        authoritatively, server-side. Returns { done, acorns }.
+//   action 'toggle' {period, kidId, choreId, done}
+//     -> upserts completion for that period; adjusts that kid's acorns +1/-1
+//        (clamped >=0), authoritatively, server-side. Returns { done, acorns }.
 //   action 'quest'  {week, completed, celebrationShown} -> upserts quest_meta.
-//   action 'reset'  {week} -> clears the week's completion + quest_meta (acorns
-//        untouched). Idempotent — safe for concurrent Monday rollovers.
+//   action 'reset'  {week} -> clears that week's WEEKLY completion + quest_meta
+//        (acorns untouched; daily buckets reset on their own each day).
+//        Idempotent — safe for concurrent Monday rollovers.
 
 function json(obj, status = 200) {
   return new Response(JSON.stringify(obj), {
@@ -44,9 +50,13 @@ export async function onRequestGet({ request, env }) {
   if (!DB) return json({ error: 'No D1 binding found on this deployment' }, 500);
   const week = weekOf(request, null);
   if (!week) return json({ error: 'week is required' }, 400);
+  // Daily chores live under today's date; weekly under the week number. Return
+  // completion for both so the client can fill each chore's bucket. (date falls
+  // back to week when absent — harmless, just matches no daily rows.)
+  const date = new URL(request.url).searchParams.get('date') || week;
 
   const [comp, acorns, quest] = await Promise.all([
-    DB.prepare('SELECT kid_id, chore_id, done FROM chore_completion WHERE week = ?').bind(week).all(),
+    DB.prepare('SELECT kid_id, chore_id, done FROM chore_completion WHERE period IN (?, ?)').bind(week, date).all(),
     DB.prepare('SELECT kid_id, count FROM acorns').all(),
     DB.prepare('SELECT completed, celebration_shown FROM quest_meta WHERE week = ?').bind(week).first(),
   ]);
@@ -74,19 +84,18 @@ export async function onRequestPost({ request, env }) {
   if (!DB) return json({ error: 'No D1 binding found on this deployment' }, 500);
   const b = await request.json().catch(() => ({}));
   const action = b.action;
-  const week = weekOf(request, b);
-  if (!week) return json({ error: 'week is required' }, 400);
 
   if (action === 'toggle') {
-    if (!b.kidId || !b.choreId) return json({ error: 'kidId and choreId are required' }, 400);
+    const period = b.period != null ? String(b.period) : '';
+    if (!period || !b.kidId || !b.choreId) return json({ error: 'period, kidId and choreId are required' }, 400);
     const done = b.done ? 1 : 0;
     const delta = done ? 1 : -1;
     // Completion upsert + acorn adjustment run together in one transaction.
     await DB.batch([
       DB.prepare(
-        `INSERT INTO chore_completion (week, kid_id, chore_id, done) VALUES (?, ?, ?, ?)
-         ON CONFLICT(week, kid_id, chore_id) DO UPDATE SET done = excluded.done`
-      ).bind(week, b.kidId, b.choreId, done),
+        `INSERT INTO chore_completion (period, kid_id, chore_id, done) VALUES (?, ?, ?, ?)
+         ON CONFLICT(period, kid_id, chore_id) DO UPDATE SET done = excluded.done`
+      ).bind(period, b.kidId, b.choreId, done),
       DB.prepare(
         `INSERT INTO acorns (kid_id, count) VALUES (?, MAX(0, ?))
          ON CONFLICT(kid_id) DO UPDATE SET count = MAX(0, count + ?)`
@@ -95,6 +104,9 @@ export async function onRequestPost({ request, env }) {
     const row = await DB.prepare('SELECT count FROM acorns WHERE kid_id = ?').bind(b.kidId).first();
     return json({ done: !!done, acorns: (row && row.count) || 0 });
   }
+
+  const week = weekOf(request, b);
+  if (!week) return json({ error: 'week is required' }, 400);
 
   if (action === 'quest') {
     const completed = b.completed ? 1 : 0;
@@ -108,8 +120,10 @@ export async function onRequestPost({ request, env }) {
   }
 
   if (action === 'reset') {
+    // Clears the WEEKLY completion bucket (period = week number) + quest meta.
+    // Daily buckets (period = date) reset on their own each day.
     await DB.batch([
-      DB.prepare('DELETE FROM chore_completion WHERE week = ?').bind(week),
+      DB.prepare('DELETE FROM chore_completion WHERE period = ?').bind(week),
       DB.prepare(
         `INSERT INTO quest_meta (week, completed, celebration_shown) VALUES (?, 0, 0)
          ON CONFLICT(week) DO UPDATE SET completed = 0, celebration_shown = 0`

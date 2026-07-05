@@ -13,8 +13,14 @@
 // on app start and on wake (see main.js / SleepScreen). A change on one device
 // shows on another on its next load/wake.
 //
-// localStorage cache keys (mirror of the D1 rows for the current week):
-//   homebase_chores_{kidId}_{isoWeek}  -> { choreId: boolean }
+// Completion is keyed by PERIOD, which depends on the chore's frequency:
+//   • DAILY chore  -> period = calendar date 'YYYY-MM-DD'  (resets each day)
+//   • WEEKLY chore -> period = ISO week number '27'         (resets each week)
+// Acorns are a lifetime running total (never reset) — checking a chore adds one,
+// so re-doing daily chores day after day keeps the acorns summing up.
+//
+// localStorage cache keys:
+//   homebase_chores_{kidId}_{period}   -> { choreId: boolean }  (one bucket/period)
 //   homebase_acorns_{kidId}            -> lifetime integer acorn count
 //   homebase_quest_{isoWeek}           -> { completed, celebrationShown }
 //   homebase_current_week              -> last-seen ISO week marker (per device)
@@ -28,10 +34,21 @@ const QuestStore = (() => {
 
   function kids() { return window.KIDS || []; }
   function kid(id) { return kids().find((k) => k.id === id) || null; }
+  function choreDef(kidId, choreId) {
+    const k = kid(kidId);
+    return k ? (k.chores || []).find((c) => c.id === choreId) || null : null;
+  }
 
+  const isDaily = (c) => !c || c.frequency !== 'Weekly';
   function getWeekKey() { return String(getISOWeek(new Date())); }
+  function dayKey() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+  // The completion bucket a chore lives in: date for daily, week for weekly.
+  function periodOf(c) { return isDaily(c) ? dayKey() : getWeekKey(); }
 
-  const choreKey = (kidId, wk) => `homebase_chores_${kidId}_${wk}`;
+  const choreKey = (kidId, period) => `homebase_chores_${kidId}_${period}`;
   const acornKey = (kidId) => `homebase_acorns_${kidId}`;
   const questKey = (wk) => `homebase_quest_${wk}`;
 
@@ -59,16 +76,17 @@ const QuestStore = (() => {
     }).finally(() => { pendingWrites = Math.max(0, pendingWrites - 1); });
   }
 
-  // { choreId: boolean } for the current week, auto-initialized to all-false.
+  // { choreId: boolean } for a kid — each chore read from its own period bucket
+  // (daily = today's date, weekly = this week), defaulting to false.
   function getChoreState(kidId) {
-    const wk = getWeekKey();
-    const key = choreKey(kidId, wk);
-    let state = read(key, null);
-    if (!state || typeof state !== 'object') state = {};
-    const ids = (kid(kidId) ? kid(kidId).chores : []).map((c) => c.id);
-    let changed = false;
-    ids.forEach((id) => { if (!(id in state)) { state[id] = false; changed = true; } });
-    if (changed) write(key, state);
+    const chores = kid(kidId) ? kid(kidId).chores : [];
+    const bucketCache = {};
+    const state = {};
+    chores.forEach((c) => {
+      const p = periodOf(c);
+      if (!(p in bucketCache)) bucketCache[p] = read(choreKey(kidId, p), {}) || {};
+      state[c.id] = !!bucketCache[p][c.id];
+    });
     return state;
   }
 
@@ -79,15 +97,16 @@ const QuestStore = (() => {
   function setAcorns(kidId, n) { write(acornKey(kidId), Math.max(0, n)); }
 
   function toggleChore(kidId, choreId) {
-    const wk = getWeekKey();
-    const key = choreKey(kidId, wk);
-    const state = getChoreState(kidId);
-    const done = !state[choreId];
-    state[choreId] = done;
-    write(key, state);
+    const period = periodOf(choreDef(kidId, choreId));
+    const key = choreKey(kidId, period);
+    const bucket = read(key, {}) || {};
+    const done = !bucket[choreId];
+    bucket[choreId] = done;
+    write(key, bucket);
 
     // Optimistic acorn update for an instant UI; the server is authoritative and
-    // reconciles below.
+    // reconciles below. (Acorns are lifetime — a daily reset never subtracts one,
+    // since it's a new day's bucket, not an uncheck.)
     const acorns = done ? getAcorns(kidId) + 1 : Math.max(0, getAcorns(kidId) - 1);
     setAcorns(kidId, acorns);
 
@@ -95,7 +114,7 @@ const QuestStore = (() => {
     window.dispatchEvent(new CustomEvent('questupdate', { detail: getFamilyProgress() }));
 
     // Write through to D1 and reconcile the acorn count to the server's value.
-    post({ action: 'toggle', week: wk, kidId, choreId, done })
+    post({ action: 'toggle', period, kidId, choreId, done })
       .then((res) => (res && res.ok ? res.json() : null))
       .then((data) => {
         if (!data || typeof data.acorns !== 'number') return;
@@ -150,12 +169,15 @@ const QuestStore = (() => {
   function isNewWeek() { return read(CUR_WEEK_KEY, null) !== getWeekKey(); }
   function ensureWeekMarker() { write(CUR_WEEK_KEY, getWeekKey()); }
 
-  // Clears this week's chore completion + quest meta. Acorns are untouched.
+  // Clears this week's WEEKLY chore completion + quest meta. Daily chores reset
+  // on their own each day (date-keyed bucket). Acorns are untouched.
   function resetWeek() {
     const wk = getWeekKey();
     kids().forEach((k) => {
+      const weekly = (k.chores || []).filter((c) => !isDaily(c));
+      if (!weekly.length) return;
       const st = {};
-      k.chores.forEach((c) => { st[c.id] = false; });
+      weekly.forEach((c) => { st[c.id] = false; });
       write(choreKey(k.id, wk), st);
     });
     write(questKey(wk), { completed: false, celebrationShown: false });
@@ -174,10 +196,10 @@ const QuestStore = (() => {
     if (pendingWrites > 0) return;
     const wk = getWeekKey();
     try {
-      const res = await fetch(`${API}?week=${encodeURIComponent(wk)}`, { cache: 'no-store' });
+      const res = await fetch(`${API}?week=${encodeURIComponent(wk)}&date=${encodeURIComponent(dayKey())}`, { cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
-      hydrate(wk, data);
+      hydrate(data);
       window.dispatchEvent(new CustomEvent('choreupdate', { detail: {} }));
       window.dispatchEvent(new CustomEvent('questupdate', { detail: getFamilyProgress() }));
     } catch (e) {
@@ -185,15 +207,26 @@ const QuestStore = (() => {
     }
   }
 
-  // Overwrite the local cache for the current week with the shared D1 state.
-  function hydrate(wk, data) {
+  // Rebuild the local period buckets from the shared D1 state. The GET returns
+  // completion for both this week and today; each chore is filed into its own
+  // period bucket (daily = date, weekly = week), so the buckets exactly mirror
+  // the server (a chore with no row reads as false).
+  function hydrate(data) {
     if (!data || typeof data !== 'object') return;
     const completion = data.completion || {};
-    kids().forEach((k) => { write(choreKey(k.id, wk), completion[k.id] || {}); });
+    kids().forEach((k) => {
+      const kc = completion[k.id] || {};
+      const buckets = {};
+      (k.chores || []).forEach((c) => {
+        const p = periodOf(c);
+        (buckets[p] = buckets[p] || {})[c.id] = !!kc[c.id];
+      });
+      Object.keys(buckets).forEach((p) => write(choreKey(k.id, p), buckets[p]));
+    });
     const acorns = data.acorns || {};
     Object.keys(acorns).forEach((kidId) => setAcorns(kidId, parseInt(acorns[kidId], 10) || 0));
     const q = data.quest || {};
-    write(questKey(wk), { completed: !!q.completed, celebrationShown: !!q.celebrationShown });
+    write(questKey(getWeekKey()), { completed: !!q.completed, celebrationShown: !!q.celebrationShown });
   }
 
   return {

@@ -159,35 +159,50 @@ Keys:
 
 Everything shared across devices lives in **Cloudflare D1**: the **household**
 (family name + address in `settings`; **members** in `kids`: name, role
-Parent/Kid, `on_chore_board`), **chore definitions** (`chores`), and — as of
-migration `0004` — the **daily progress** a family taps every day: per-week chore
-**completion** (`chore_completion`), lifetime **acorns** (`acorns`), and weekly
-**quest meta** (`quest_meta`). So opening the site on a phone or a second tablet
-shows the same live board. Members + settings are edited in the **Settings** tab;
-chores in the **Chores** tab → **Manage**.
+Parent/Kid, `on_chore_board`), **chore definitions** (`chores`), and the
+**progress** a family taps every day: chore **completion** (`chore_completion`),
+lifetime **acorns** (`acorns`), and weekly **quest meta** (`quest_meta`). So
+opening the site on a phone or a second tablet shows the same live board. Members
++ settings are edited in the **Settings** tab; chores in the **Chores** tab.
+
+**Completion is keyed by `period`** (migration `0005`): a **daily** chore's
+period is the calendar date (`YYYY-MM-DD`) so it **resets each day**; a **weekly**
+chore's period is the ISO week number so it **resets each week**. Acorns are a
+lifetime running total (never reset) — checking a chore adds one, so re-doing
+daily chores day after day keeps acorns summing up.
 
 - `db/schema.sql` — all tables. On an existing database run the migrations once:
   `0002_household.sql` (settings table, member role/board, chore days),
-  `0003_birthdate.sql`, and **`0004_progress.sql`** (the progress tables above).
+  `0003_birthdate.sql`, **`0004_progress.sql`** (progress tables), and
+  **`0005_daily_period.sql`** (renames `chore_completion.week` → `period`).
 - `functions/api/` — `settings.js` (GET/PUT), `chores.js` + `chores/[id].js`,
-  `kids.js` + `kids/[id].js`, and **`progress.js`** (GET `?week=NN` returns the
-  week's completion/acorns/quest; POST `{action}` — `toggle` upserts a completion
-  and adjusts that kid's acorns ±1 server-side/clamped, `quest` upserts quest
-  meta, `reset` clears a week). The D1 binding is auto-detected by any name
-  (`pickDB`), so the dashboard binding can be `DB`/`D1`/`db`.
+  `kids.js` + `kids/[id].js` (PUT accepts `sort` for card reordering), and
+  **`progress.js`** (GET `?week=NN&date=YYYY-MM-DD` returns completion for both
+  the week's weekly chores and today's daily chores, plus acorns/quest; POST
+  `{action}` — `toggle` upserts a completion for its `period` + adjusts the kid's
+  acorns ±1 server-side/clamped, `quest` upserts quest meta, `reset` clears a
+  week's weekly completion + quest meta). The D1 binding is auto-detected by any
+  name (`pickDB`), so the dashboard binding can be `DB`/`D1`/`db`.
 - `src/data/ChoreData.js` (roster + chores) and `src/data/SettingsData.js`
   (family/address) fetch the API, cache to localStorage, fall back to defaults,
   and dispatch `choresupdated` / `settingsupdated`. Chores show only members with
   `onBoard`; Settings shows everyone.
-- `src/quest/QuestStore.js` — daily progress. **Reads stay synchronous** (served
-  from a localStorage cache) so callers are unchanged; **writes are optimistic**
-  (update local + fire events instantly, then write through to `/api/progress` and
-  reconcile the acorn count to the server's authoritative value). `load()` pulls
-  the shared state on app start (chained after `ChoreData.load()` so `KIDS` is
-  ready) and on **wake** (`SleepScreen.wake()`). **No background polling** — a
-  change on one device appears on another on its next load/wake. localStorage is
-  the offline cache, so the wall tablet still works when the API is briefly down
-  and re-syncs on the next `load()`.
+- `src/quest/QuestStore.js` — progress. Each chore reads/writes its own **period
+  bucket** (`periodOf(chore)`: date for daily, week for weekly); resets are
+  automatic (a new day/week just starts with an empty bucket). **Reads stay
+  synchronous** (localStorage cache) so callers are unchanged; **writes are
+  optimistic** (update local + fire events instantly, then write through to
+  `/api/progress` with the chore's `period` and reconcile the acorn count to the
+  server's value). `load()` pulls shared state (for the current week + today) on
+  app start (after `ChoreData.load()`), on **wake** (`SleepScreen.wake()`), and on
+  a 60s visible-only sync (`main.js`); it skips while a write is in flight so a
+  sync can't revert a fresh tap. localStorage is the offline cache — the tablet
+  works when the API is briefly down and re-syncs on the next `load()`.
+- `src/quest/KidChorePanel.js` — the Chores screen groups each kid's chores
+  **Daily first, then by weekday** (today highlighted); the dashboard card shows
+  only **today's** due chores (daily + weekly scheduled today). `dueToday` /
+  `groupChores` live here. Card order (Manage-mode ◀▶ arrows) persists via
+  `ChoreData.reorderBoardKid` → `sort`.
 
 ### One-time D1 setup (per Cloudflare account)
 
