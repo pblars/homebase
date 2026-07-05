@@ -21,10 +21,20 @@
 
 .cal-month, .cal-up {
   min-height: 0; display: flex; flex-direction: column;
-  border-radius: var(--radius);
+  border-radius: var(--radius); border: 1px solid var(--edge);
+  box-shadow: var(--soft-shadow), inset 0 1.5px 0 var(--edge-top);
 }
-.cal-month { padding: clamp(14px, 1.8vw, 24px) clamp(16px, 2vw, 26px) clamp(12px, 1.4vw, 18px); }
-.cal-up { padding: clamp(14px, 1.8vw, 22px) clamp(14px, 1.6vw, 20px) clamp(10px, 1.2vw, 14px); }
+/* Month grid = dense hero panel; Upcoming = secondary panel. */
+.cal-month {
+  padding: clamp(14px, 1.8vw, 24px) clamp(16px, 2vw, 26px) clamp(12px, 1.4vw, 18px);
+  background: var(--glass-specular), var(--glass-sheen), var(--hero-bg);
+  backdrop-filter: blur(var(--hero-blur)) saturate(150%); -webkit-backdrop-filter: blur(var(--hero-blur)) saturate(150%);
+}
+.cal-up {
+  padding: clamp(14px, 1.8vw, 22px) clamp(14px, 1.6vw, 20px) clamp(10px, 1.2vw, 14px);
+  background: var(--glass-sheen), var(--sec-bg);
+  backdrop-filter: blur(var(--sec-blur)) saturate(145%); -webkit-backdrop-filter: blur(var(--sec-blur)) saturate(145%);
+}
 
 /* ---- month header + nav ---- */
 .cal-mhead { display: flex; align-items: center; gap: 12px; flex: none; margin-bottom: clamp(8px, 1.2vh, 14px); }
@@ -66,13 +76,13 @@
   display: flex; align-items: center; justify-content: center; border-radius: 50%;
   font-weight: 700; font-size: clamp(11px, 1.1vw, 14px); color: var(--text-secondary);
 }
-.cal-cell--today .cal-cell-num { background: var(--teal); color: #fff; }
+.cal-cell--today .cal-cell-num { background: var(--teal); color: #fff; box-shadow: 0 3px 10px rgba(58, 157, 150, 0.45); }
 .cal-cell-evs { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 2px; }
 
 .cal-chip {
-  display: flex; align-items: center; gap: 5px; padding: 2px 6px;
-  border-radius: 6px; background: rgba(255, 255, 255, 0.06);
-  font-size: clamp(9px, 0.85vw, 11px); font-weight: 600; color: var(--text-primary);
+  display: flex; align-items: center; gap: 5px; padding: 2px 7px;
+  border-radius: 999px; background: var(--inner-surface); border: 1px solid var(--field-border);
+  font-size: clamp(9px, 0.85vw, 11px); font-weight: 700; color: var(--text-primary);
   white-space: nowrap; overflow: hidden;
 }
 .cal-chip-dot { flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--text-secondary); }

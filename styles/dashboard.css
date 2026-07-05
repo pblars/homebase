@@ -8,64 +8,132 @@
   --serif: "Newsreader", Georgia, "Times New Roman", serif;
   --sans: "Mulish", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
-  /* Adaptive frosted-glass material — defaults to the DARK recipe; the
-     html[data-scene="light"] block below overrides for bright scenes. */
-  --glass-bg: rgba(30, 28, 44, 0.24);
-  --glass-border: rgba(255, 255, 255, 0.16);
-  --glass-shadow: 0 12px 34px rgba(20, 16, 30, 0.28);
-  /* bright inner bevel (top edge) + faint bottom shade — the refraction catch */
-  --glass-highlight: rgba(255, 255, 255, 0.55);
-  --glass-lowlight: rgba(20, 16, 30, 0.32);
-  /* diagonal light sheen + a soft specular glow off the top-left corner */
-  --glass-sheen: linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 52%);
-  --glass-specular: radial-gradient(130% 95% at 6% -12%, rgba(255, 255, 255, 0.30), rgba(255, 255, 255, 0) 46%);
-  --text-primary: #fdf8ee;
-  --text-secondary: rgba(255, 255, 255, 0.60);
-  --text-accent: rgba(255, 236, 214, 0.85);
-  --track: rgba(255, 255, 255, 0.16);
-  --radius: 24px;
+  /* ===================================================================== */
+  /* ADAPTIVE GLASS MATERIAL SYSTEM                                        */
+  /* :root = NIGHT (smoky glass). html[data-scene="light"] below = DAY     */
+  /* (warm ivory glass). main.js sets data-scene to "dark" | "light".      */
+  /* Custom props resolve at use-time, so aliases below follow the scene   */
+  /* automatically — only the base tokens need overriding for day.         */
+  /* ===================================================================== */
 
-  /* Shadow for text placed DIRECTLY over the sky (screen headings, breadcrumb,
-     weather current) — a strong dark halo that keeps light text legible over
-     both dark night skies and bright daytime skies. */
+  /* Text — soft off-white at night (never pure white) */
+  --text-primary: #F7F4EA;
+  --text-secondary: #D8D2C6;
+  --text-accent: #E7C8A0;
+
+  /* Three glass tiers: hero (dense) / secondary (medium) / utility (light) */
+  --hero-bg: rgba(24, 22, 30, 0.72);   --hero-blur: 28px;
+  --sec-bg:  rgba(28, 26, 36, 0.56);   --sec-blur: 20px;
+  --util-bg: rgba(52, 50, 62, 0.42);   --util-blur: 15px;
+
+  /* Edges, glow, shadow, scrim — light refraction, never flat gray/black */
+  --edge: rgba(255, 255, 255, 0.20);          /* soft border */
+  --edge-top: rgba(255, 255, 255, 0.34);       /* bright top bevel */
+  --inner-glow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  --soft-shadow: 0 16px 44px rgba(8, 6, 14, 0.40);
+  --scrim: linear-gradient(180deg, rgba(16, 14, 22, 0), rgba(16, 14, 22, 0.36) 94%);
+  --track: rgba(255, 255, 255, 0.20);
+
+  /* Inner surfaces: nested content surface + form fields (readable scrims) */
+  --inner-surface: rgba(255, 255, 255, 0.08);
+  --field-bg: rgba(255, 255, 255, 0.10);
+  --field-border: rgba(255, 255, 255, 0.22);
+
+  /* Radii */
+  --radius: 24px; --radius-hero: 30px; --radius-sec: 20px; --radius-util: 14px;
+
+  /* Accents (shared across scenes) */
+  --accent-green: #7BA366;  /* muted meadow */
+  --accent-amber: #D6A24E;  /* acorn / reward */
+  --accent-blue:  #7FB0DE;  /* weather */
+  --accent-terra: #D98A5A;  /* meals */
+  --accent-lav:   #B79BE0;  /* photos / children */
+
+  /* Shadow for text placed DIRECTLY over the sky (headings, breadcrumb, etc.) */
   --sky-shadow: 0 1px 3px rgba(0, 0, 0, 0.55), 0 2px 14px rgba(0, 0, 0, 0.4);
 
-  /* legacy tokens still used by the Settings + full Chores screens */
-  --ink: #3a352d; --ink-soft: #6f675a; --muted: #9a8f7d;
-  --card-bg: rgba(252, 248, 240, 0.9); --card-bg-hover: rgba(252, 248, 240, 0.95);
-  --card-border: rgba(180, 165, 140, 0.4); --card-shadow: 0 4px 24px rgba(80, 60, 30, 0.12);
-  --sage: #9bb38a; --sage-deep: #6f9a5c; --teal: #3a9d96; --coral: #e2745f;
+  /* Typography scale */
+  --fs-title: clamp(34px, 4.4vw, 54px);
+  --fs-heading: clamp(17px, 1.9vw, 22px);
+  --fs-label: clamp(11px, 1.05vw, 12px);
+  --fs-body: clamp(15px, 1.5vw, 17px);
+  --fs-secondary: clamp(13px, 1.3vw, 15px);
+
+  /* ---- back-compat aliases (existing rules read these; they follow scene) ---- */
+  --glass-bg: var(--sec-bg);
+  --glass-border: var(--edge);
+  --glass-shadow: var(--soft-shadow);
+  --glass-highlight: var(--edge-top);
+  --glass-lowlight: rgba(8, 6, 14, 0.30);
+  --glass-sheen: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0) 55%);
+  --glass-specular: radial-gradient(130% 95% at 6% -12%, rgba(255, 255, 255, 0.20), rgba(255, 255, 255, 0) 46%);
+
+  /* legacy tokens (Settings / full Chores / Calendar) remapped to the system */
+  --ink: var(--text-primary); --ink-soft: var(--text-secondary); --muted: rgba(216, 210, 198, 0.66);
+  --card-bg: var(--hero-bg); --card-bg-hover: var(--hero-bg);
+  --card-border: var(--edge); --card-shadow: var(--soft-shadow);
+  --sage: #9bb38a; --sage-deep: #6f9a5c; --teal: #3a9d96; --coral: var(--accent-terra);
   --kid-green: #6bbf73; --kid-blue: #5b9bd5; --kid-purple: #a47fd0;
 }
 
 html[data-scene="light"] {
-  --glass-bg: rgba(253, 247, 236, 0.34);
-  --glass-border: rgba(255, 255, 255, 0.55);
-  --glass-shadow: 0 12px 34px rgba(90, 70, 45, 0.18);
-  --text-primary: #2f2a22;
-  --text-secondary: rgba(60, 52, 40, 0.62);
-  --text-accent: #8a6a2e;
-  --track: rgba(90, 70, 45, 0.18);
-  --glass-highlight: rgba(255, 255, 255, 0.88);
-  --glass-lowlight: rgba(90, 70, 45, 0.12);
-  --glass-sheen: linear-gradient(135deg, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0) 55%);
-  --glass-specular: radial-gradient(130% 95% at 6% -12%, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0) 46%);
+  /* Day — dark charcoal text on warm ivory milky glass */
+  --text-primary: #2D2A26;
+  --text-secondary: #676158;
+  --text-accent: #9A6B2E;
+
+  --hero-bg: rgba(250, 246, 238, 0.86);
+  --sec-bg:  rgba(250, 246, 238, 0.70);
+  --util-bg: rgba(255, 252, 246, 0.56);
+
+  --edge: rgba(255, 255, 255, 0.65);
+  --edge-top: rgba(255, 255, 255, 0.92);
+  --inner-glow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  --soft-shadow: 0 16px 40px rgba(90, 70, 45, 0.16);
+  --scrim: linear-gradient(180deg, rgba(60, 50, 38, 0), rgba(60, 50, 38, 0.10) 94%);
+  --track: rgba(90, 70, 45, 0.20);
+
+  --inner-surface: rgba(255, 255, 255, 0.55);
+  --field-bg: rgba(255, 255, 255, 0.72);
+  --field-border: rgba(120, 100, 70, 0.28);
+
+  --muted: #8A8175;
+
+  --glass-lowlight: rgba(90, 70, 45, 0.10);
+  --glass-sheen: linear-gradient(135deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0) 55%);
+  --glass-specular: radial-gradient(130% 95% at 6% -12%, rgba(255, 255, 255, 0.40), rgba(255, 255, 255, 0) 46%);
 }
 
-/* Shared frosted-glass material. The sheen gradient sits over the tint; the
-   layered box-shadow adds a bright inner bevel on the top edge and a soft inner
-   shade at the bottom, so the panel reads as a refractive pane of glass rather
-   than a flat frosted rectangle. saturate() enriches the sky bleeding through. */
-.glass {
-  background: var(--glass-specular), var(--glass-sheen), var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  box-shadow:
-    var(--glass-shadow),
-    inset 0 1.5px 0 var(--glass-highlight),
-    inset 0 -1.5px 0 var(--glass-lowlight);
-  backdrop-filter: blur(14px) saturate(190%) brightness(1.05);
-  -webkit-backdrop-filter: blur(14px) saturate(190%) brightness(1.05);
+/* HERO glass — dense frosted panels (main containers). The sheen + bright top
+   bevel + soft shadow read as a refractive pane, not a flat rectangle. */
+.glass, .glass-hero {
+  background: var(--glass-specular), var(--glass-sheen), var(--hero-bg);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius-hero);
+  box-shadow: var(--soft-shadow), inset 0 1.5px 0 var(--edge-top), var(--inner-glow);
+  backdrop-filter: blur(var(--hero-blur)) saturate(150%);
+  -webkit-backdrop-filter: blur(var(--hero-blur)) saturate(150%);
 }
+/* SECONDARY glass — medium panels (side cards, forecast, dinner, detail). */
+.glass-sec {
+  background: var(--glass-sheen), var(--sec-bg);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius-sec);
+  box-shadow: var(--soft-shadow), inset 0 1px 0 var(--edge-top);
+  backdrop-filter: blur(var(--sec-blur)) saturate(145%);
+  -webkit-backdrop-filter: blur(var(--sec-blur)) saturate(145%);
+}
+/* UTILITY glass — light controls (chips, buttons, tiles). Brighter highlight. */
+.glass-util {
+  background: var(--glass-sheen), var(--util-bg);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius-util);
+  box-shadow: inset 0 1px 0 var(--edge-top);
+  backdrop-filter: blur(var(--util-blur)) saturate(145%);
+  -webkit-backdrop-filter: blur(var(--util-blur)) saturate(145%);
+}
+/* Nested content surface / scrim behind text-heavy regions inside a card. */
+.glass-surface { background: var(--inner-surface); border-radius: 16px; }
 
 /* ----- Shell: header / body / meals / nav stacked over the sky ----------- */
 
@@ -106,10 +174,12 @@ html[data-scene="light"] {
 
 .dash-body { flex: 1; min-height: 0; display: flex; gap: clamp(10px, 1.5vh, 15px); }
 .dash-agenda { flex: none; width: clamp(220px, 22vw, 300px); display: flex; flex-direction: column; border-radius: var(--radius); padding: clamp(14px, 1.4vw, 18px); }
+/* Meadow Quest is a framed storybook illustration — a subtle ivory frame, NOT a
+   blurred glass panel (the art must stay crisp). */
 .quest-card {
   flex: 1; min-width: 0; position: relative; border-radius: var(--radius); overflow: hidden;
-  border: 1px solid var(--glass-border);
-  box-shadow: 0 16px 44px rgba(20, 16, 30, 0.34), inset 0 1.5px 0 var(--glass-highlight), inset 0 -1.5px 0 var(--glass-lowlight);
+  border: 1px solid var(--edge);
+  box-shadow: var(--soft-shadow), inset 0 0 0 3px rgba(255, 250, 240, 0.45), inset 0 1.5px 0 var(--edge-top);
 }
 /* Glass sheen laid over the painted quest backdrop: sits above the art + trail
    (z 0/1) but below the text/progress (z 2), so the scene reads as a pane of
@@ -154,19 +224,29 @@ html[data-scene="light"] {
 
 /* ----- Bottom nav -------------------------------------------------------- */
 
+/* Floating glass dock — consistent across every screen; adapts day/night. */
 .navbar {
   flex: none; display: flex; align-items: center; justify-content: space-around; gap: 4px;
-  border-radius: 20px; padding: clamp(6px, 0.8vh, 8px) clamp(8px, 1.2vw, 10px);
-  background: var(--glass-specular), var(--glass-sheen), var(--glass-bg); border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow), inset 0 1.5px 0 var(--glass-highlight), inset 0 -1.5px 0 var(--glass-lowlight);
-  backdrop-filter: blur(14px) saturate(190%) brightness(1.05); -webkit-backdrop-filter: blur(14px) saturate(190%) brightness(1.05);
+  border-radius: 22px; padding: clamp(6px, 0.8vh, 8px) clamp(8px, 1.2vw, 10px);
+  background: var(--glass-specular), var(--glass-sheen), var(--hero-bg); border: 1px solid var(--edge);
+  box-shadow: var(--soft-shadow), inset 0 1.5px 0 var(--edge-top), var(--inner-glow);
+  backdrop-filter: blur(22px) saturate(150%); -webkit-backdrop-filter: blur(22px) saturate(150%);
 }
-.navtab { flex: 0 1 auto; background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 7px 12px; border-radius: 14px; color: var(--text-secondary); font-family: var(--sans); }
+/* Inactive tabs: lower opacity, monochrome icons. */
+.navtab { flex: 0 1 auto; background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 7px 12px; border-radius: 14px; color: var(--text-secondary); font-family: var(--sans); opacity: 0.72; transition: opacity 0.18s ease, background 0.18s ease; }
+.navtab:hover { opacity: 0.9; }
 .navtab-ic { width: clamp(20px, 2vw, 24px); height: clamp(20px, 2vw, 24px); display: flex; }
 .nav-ic { width: 100%; height: 100%; stroke: currentColor; stroke-width: 1.7; fill: none; stroke-linecap: round; stroke-linejoin: round; }
 .navtab-label { font-size: clamp(10px, 1.1vw, 12px); font-weight: 600; }
-.navtab.is-active { flex-direction: row; gap: 9px; padding: 9px 18px; border-radius: 14px; background: var(--glass-border); color: var(--text-primary); }
-.navtab.is-active .nav-ic { stroke-width: 2; }
+/* Active tab: brighter raised glass pill with a soft glow + colored icon. */
+.navtab.is-active {
+  flex-direction: row; gap: 9px; padding: 9px 18px; border-radius: 16px; opacity: 1;
+  color: var(--text-primary);
+  background: var(--glass-sheen), var(--util-bg);
+  border: 1px solid var(--edge-top);
+  box-shadow: 0 6px 18px rgba(123, 163, 102, 0.28), inset 0 1px 0 var(--edge-top);
+}
+.navtab.is-active .nav-ic { stroke-width: 2; color: var(--accent-green); }
 .navtab.is-active .navtab-label { font-weight: 700; }
 
 /* ----- Placeholder tab screens ------------------------------------------- */

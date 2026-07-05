@@ -194,7 +194,8 @@ const KidChorePanel = (() => {
     // cs-row is a div (not a button) so the Manage-mode delete button can nest.
     const groups = groupChores(k.chores);
     const list = groups.map((g) =>
-      '<div class="cs-group' + (g.today ? ' is-today' : '') + '">' +
+      '<div class="cs-group' + (g.today ? ' is-today' : '') +
+        (!g.today && g.label !== 'Daily' ? ' is-upcoming' : '') + '">' +
         '<div class="cs-group-label">' + esc(g.label) +
           (g.today ? '<span class="cs-today-tag">Today</span>' : '') +
         '</div>' +

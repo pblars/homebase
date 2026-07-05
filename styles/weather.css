@@ -73,13 +73,12 @@ html[data-scene="light"] .weather-screen { --glass-bg: rgba(253, 247, 236, 0.78)
   font-size: clamp(10px, 1.1vw, 12px); font-weight: 600; color: #ffb4a2;
 }
 
-/* Three columns — current summary · compact middle stack · tall radar — sized
-   to fit the viewport row with no page scroll (the radar is its own full-height
-   column, giving it a ~1:2 portrait footprint). */
+/* Two columns — current summary (hero) · scrollable right stack of nested
+   glass panels (hourly, daily+tiles, precip, a 1:1 radar). */
 .wx-main {
-  min-height: 0; overflow: hidden;
-  display: grid; grid-template-columns: minmax(170px, 210px) minmax(0, 1fr) minmax(280px, 0.5fr);
-  gap: clamp(12px, 1.6vw, 22px);
+  min-height: 0; overflow-y: auto;
+  display: grid; grid-template-columns: minmax(190px, 240px) minmax(0, 1fr);
+  gap: clamp(14px, 1.8vw, 26px); padding-right: 4px;
 }
 .wx-main::-webkit-scrollbar { width: 6px; }
 .wx-main::-webkit-scrollbar-thumb { background: var(--track); border-radius: 999px; }
@@ -90,8 +89,13 @@ html[data-scene="light"] .weather-screen { --glass-bg: rgba(253, 247, 236, 0.78)
    out). Bolder/larger than the on-card text for the same reason. */
 .wx-left {
   display: flex; flex-direction: column; align-items: flex-start;
-  padding-top: clamp(4px, 1vh, 12px);
-  --sky-shadow: 0 1px 3px rgba(0, 0, 0, 0.55), 0 2px 14px rgba(0, 0, 0, 0.4);
+  padding: clamp(10px, 1.4vw, 18px) clamp(12px, 1.5vw, 18px);
+  /* Soft feathered scrim so the hero text never floats on the raw scene, while
+     staying card-less (no hard edge). Bolder white text + strong shadow keep it
+     the clearest element on the screen in every condition. */
+  border-radius: 24px;
+  background: radial-gradient(125% 95% at 22% 24%, rgba(12, 10, 18, 0.34), rgba(12, 10, 18, 0) 72%);
+  --sky-shadow: 0 1px 3px rgba(0, 0, 0, 0.6), 0 2px 16px rgba(0, 0, 0, 0.45);
 }
 .wx-cur-icon .wx { width: clamp(84px, 9vw, 128px); height: auto; display: block; filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.3)); }
 .wx-cur-temp { font-family: var(--serif); font-weight: 600; font-size: clamp(58px, 8vw, 108px); line-height: 0.95; letter-spacing: -0.02em; color: #fff; text-shadow: var(--sky-shadow); }
@@ -116,13 +120,12 @@ html[data-scene="light"] .weather-screen { --glass-bg: rgba(253, 247, 236, 0.78)
 
 .wx-empty { font-family: var(--serif); font-style: italic; color: var(--text-secondary); font-size: clamp(12px, 1.3vw, 15px); padding: 8px 2px; }
 
-/* ---- radar (Leaflet map + RainViewer animation) — its own tall column ---- */
-.wx-radar-card { min-height: 0; display: flex; flex-direction: column; }
-.wx-radar { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: clamp(6px, 1vh, 10px); }
-/* The map fills the tall radar column. Leaflet adds .leaflet-container to THIS
-   same element, so keep sizing here and do NOT put height:100% on
-   .leaflet-container (its auto parent would collapse it to 0). */
-.wx-radar-map { position: relative; flex: 1 1 auto; width: 100%; min-height: 200px; border-radius: 14px; overflow: hidden; background: rgba(20, 16, 30, 0.25); }
+/* ---- radar (Leaflet map + RainViewer animation) — a 1:1 square card ---- */
+.wx-radar { display: flex; flex-direction: column; gap: clamp(6px, 1vh, 10px); }
+/* Square map. Leaflet adds .leaflet-container to THIS same element, so keep
+   sizing here and do NOT put height:100% on .leaflet-container (its auto parent
+   would collapse it to 0). */
+.wx-radar-map { position: relative; flex: 0 0 auto; width: 100%; aspect-ratio: 1 / 1; height: auto; max-height: 60vh; min-height: 260px; border-radius: 14px; overflow: hidden; background: rgba(20, 16, 30, 0.25); }
 .wx-radar .leaflet-container { background: rgba(20, 16, 30, 0.28); font-family: var(--sans); border-radius: 14px; }
 .wx-radar .leaflet-control-zoom { border: none; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25); }
 .wx-radar .leaflet-control-zoom a {
@@ -202,10 +205,10 @@ html[data-scene="light"] .weather-screen { --glass-bg: rgba(253, 247, 236, 0.78)
 .wx-precip-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(150px, 200px); gap: clamp(14px, 2vw, 26px); align-items: stretch; }
 .wx-chart { display: flex; align-items: flex-end; gap: clamp(6px, 1.2vw, 16px); min-height: clamp(76px, 10vh, 120px); }
 .wx-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
-.wx-bar-val { font-weight: 700; font-size: clamp(9px, 1vw, 12px); color: var(--text-secondary); }
-.wx-bar-track { width: clamp(14px, 1.8vw, 26px); flex: 1; display: flex; align-items: flex-end; }
-.wx-bar { width: 100%; min-height: 3px; border-radius: 7px 7px 3px 3px; background: linear-gradient(180deg, #6fade0, #4a86c5); }
-.wx-bar-lbl { font-weight: 700; font-size: clamp(9px, 1vw, 11px); color: var(--text-secondary); white-space: nowrap; }
+.wx-bar-val { font-weight: 800; font-size: clamp(11px, 1.2vw, 14px); color: var(--text-primary); }
+.wx-bar-track { width: clamp(16px, 2vw, 28px); flex: 1; display: flex; align-items: flex-end; }
+.wx-bar { width: 100%; min-height: 3px; border-radius: 8px 8px 4px 4px; background: linear-gradient(180deg, var(--accent-blue), #4a86c5); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 6px rgba(74, 134, 197, 0.35); }
+.wx-bar-lbl { font-weight: 700; font-size: clamp(10px, 1.1vw, 12px); color: var(--text-secondary); white-space: nowrap; }
 .wx-trend-note { align-self: center; border-left: 1px solid var(--glass-border); padding-left: clamp(12px, 1.6vw, 20px); }
 .wx-trend-note-h { font-family: var(--serif); font-weight: 600; font-size: clamp(14px, 1.6vw, 19px); margin-bottom: 6px; }
 .wx-trend-note-b { font-size: clamp(11px, 1.2vw, 14px); color: var(--text-secondary); line-height: 1.5; }

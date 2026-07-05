@@ -275,11 +275,11 @@ const WeatherDetail = (() => {
             '<div class="wx-card-head"><span class="wx-card-title">Precipitation Trend</span></div>' +
             '<div class="wx-precip-body" data-wx-trend></div>' +
           '</section>' +
+          '<section class="wx-card glass wx-radar-card">' +
+            '<div class="wx-card-head"><span class="wx-card-title">Radar</span></div>' +
+            '<div class="wx-radar" data-wx-radar></div>' +
+          '</section>' +
         '</div>' +
-        '<section class="wx-card glass wx-radar-card">' +
-          '<div class="wx-card-head"><span class="wx-card-title">Radar</span></div>' +
-          '<div class="wx-radar" data-wx-radar></div>' +
-        '</section>' +
       '</div>';
     root.appendChild(NavBar.render('weather'));
     root.insertBefore(Breadcrumb.render('Weather'), root.firstChild);

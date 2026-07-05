@@ -31,6 +31,13 @@
 
 .qb-photo { position: absolute; inset: 0; z-index: 0; background-size: cover; background-position: center bottom; background-repeat: no-repeat; }
 
+/* Soft ivory top scrim so the quest title + progress read cleanly over the
+   illustration without blurring the art. Sits above the art, below the text. */
+.qb-scene::after {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 48%; z-index: 1; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 252, 244, 0.62), rgba(255, 252, 244, 0));
+}
+
 /* When a painted backdrop is in use it already has a signpost + path + chest, so
    drop the duplicate code signposts and add legibility insurance to the text
    overlays (title halo + a soft cream chip behind the percentage). */
@@ -137,10 +144,12 @@
 .cs-grid { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(8px, 1.2vw, 18px); }
 @media (max-width: 900px) { .cs-grid { grid-template-columns: 1fr; } }
 
+/* Each child card is a dense HERO glass panel. */
 .cs-kid {
   position: relative; display: flex; flex-direction: column; min-height: 0; overflow: hidden;
-  background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius);
-  box-shadow: var(--card-shadow); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  background: var(--glass-specular), var(--glass-sheen), var(--hero-bg);
+  border: 1px solid var(--edge); border-radius: var(--radius);
+  box-shadow: var(--soft-shadow), inset 0 1.5px 0 var(--edge-top); backdrop-filter: blur(var(--hero-blur)) saturate(150%); -webkit-backdrop-filter: blur(var(--hero-blur)) saturate(150%);
   padding: clamp(10px, 1.2vw, 18px);
 }
 .cs-kid-head { display: flex; align-items: center; gap: 10px; }
@@ -149,9 +158,9 @@
 .cs-kid-name { font-weight: 700; font-size: clamp(14px, 1.5vw, 20px); color: var(--ink); }
 .cs-kid-acorns { display: flex; align-items: center; gap: 4px; font-size: clamp(11px, 1.1vw, 14px); font-weight: 600; color: #a9742f; }
 .cs-acorn-word { color: var(--muted); font-weight: 500; }
-.cs-kid-frac { font-size: clamp(13px, 1.4vw, 18px); font-weight: 700; color: var(--muted); }
-.cs-bar { height: 7px; border-radius: 4px; background: var(--track); margin: clamp(6px, 1vh, 12px) 0; overflow: hidden; }
-.cs-bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease-out; }
+.cs-kid-frac { font-size: clamp(13px, 1.4vw, 18px); font-weight: 800; color: var(--ink); }
+.cs-bar { height: 9px; border-radius: 999px; background: var(--track); margin: clamp(6px, 1vh, 12px) 0; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.14); }
+.cs-bar-fill { height: 100%; border-radius: 999px; transition: width 0.4s ease-out; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35); }
 .cs-list { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: clamp(4px, 0.7vh, 9px); overflow-y: auto; }
 
 /* Day groups: "Daily", then each weekday. Today's group is accented. */
@@ -167,21 +176,26 @@
   font-size: clamp(8px, 0.8vw, 10px); font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
   color: #fff; background: var(--sage-deep); border-radius: 999px; padding: 1px 8px;
 }
-.cs-group.is-today .cs-row { border-color: rgba(111, 154, 95, 0.55); }
-.cs-row { display: flex; align-items: center; gap: 10px; text-align: left; cursor: pointer; font-family: var(--sans); background: rgba(255, 255, 255, 0.4); border: 1px solid rgba(180, 165, 140, 0.3); border-radius: 10px; padding: clamp(5px, 0.8vh, 9px) clamp(8px, 1vw, 12px); }
-.cs-check { flex: 0 0 auto; width: clamp(18px, 1.8vw, 24px); height: clamp(18px, 1.8vw, 24px); border-radius: 50%; border: 2px solid #c9bfa9; display: inline-flex; align-items: center; justify-content: center; color: #fff; }
+.cs-group.is-today .cs-row { border-color: rgba(123, 163, 102, 0.5); }
+/* Upcoming (non-today) day groups read as secondary. */
+.cs-group.is-upcoming { opacity: 0.66; }
+/* Each task is its own readable frosted capsule (nested surface). */
+.cs-row { display: flex; align-items: center; gap: 10px; text-align: left; cursor: pointer; font-family: var(--sans); background: var(--inner-surface); border: 1px solid var(--field-border); border-radius: 12px; padding: clamp(6px, 0.9vh, 10px) clamp(9px, 1.1vw, 13px); }
+.cs-check { flex: 0 0 auto; width: clamp(18px, 1.8vw, 24px); height: clamp(18px, 1.8vw, 24px); border-radius: 50%; border: 2px solid var(--field-border); display: inline-flex; align-items: center; justify-content: center; color: #fff; }
 .cs-check .check-svg { width: 70%; }
-.cs-row.is-done .cs-check { background: #6bbf73; border-color: #4ea65a; }
+/* Completed rows: subtle green tint + green check. */
+.cs-row.is-done { background: rgba(123, 163, 102, 0.20); border-color: rgba(123, 163, 102, 0.46); }
+.cs-row.is-done .cs-check { background: var(--accent-green); border-color: var(--accent-green); }
 .cs-row-body { flex: 1; min-width: 0; }
-.cs-row-name { display: block; font-weight: 600; font-size: clamp(12px, 1.2vw, 16px); color: var(--ink); }
-.cs-row.is-done .cs-row-name { text-decoration: line-through; color: var(--muted); }
+.cs-row-name { display: block; font-weight: 600; font-size: var(--fs-body); color: var(--ink); }
+.cs-row.is-done .cs-row-name { text-decoration: line-through; color: var(--ink-soft); }
 .cs-row-desc { display: block; font-size: clamp(10px, 1vw, 13px); color: var(--muted); }
 .cs-freq { flex: 0 0 auto; font-size: clamp(8px, 0.85vw, 11px); font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 2px 7px; border-radius: 999px; }
 .cs-freq--daily { background: #e3efd9; color: #5a8a3f; }
 .cs-freq--weekly { background: #dee9f6; color: #3a6ea5; }
 
 /* ----- Manage mode: add / remove chores ---------------------------------- */
-.cs-manage { margin-left: auto; align-self: center; background: rgba(255, 255, 255, 0.65); border: 1px solid var(--card-border); border-radius: 999px; padding: 5px 16px; cursor: pointer; font-family: var(--sans); font-size: clamp(11px, 1.2vw, 14px); font-weight: 600; color: var(--sage-deep); }
+.cs-manage { margin-left: auto; align-self: center; background: var(--field-bg); border: 1px solid var(--card-border); border-radius: 999px; padding: 5px 16px; cursor: pointer; font-family: var(--sans); font-size: clamp(11px, 1.2vw, 14px); font-weight: 600; color: var(--sage-deep); }
 .cs-managing .cs-manage { background: var(--sage-deep); color: #fff; border-color: var(--sage-deep); }
 
 .cs-del { display: none; flex: 0 0 auto; margin-left: 6px; width: 24px; height: 24px; border: none; border-radius: 50%; background: rgba(226, 116, 95, 0.16); color: #d2543f; font-size: 17px; line-height: 1; cursor: pointer; }
@@ -197,15 +211,15 @@
 .cs-addchore {
   margin-top: 8px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   padding: 7px 12px; border: 1.5px dashed var(--card-border); border-radius: 10px;
-  background: rgba(255, 255, 255, 0.35); color: var(--sage-deep);
+  background: var(--inner-surface); color: var(--sage-deep);
   font-family: var(--sans); font-weight: 700; font-size: clamp(11px, 1.1vw, 13px); cursor: pointer;
 }
-.cs-addchore:hover { background: rgba(255, 255, 255, 0.6); }
+.cs-addchore:hover { background: var(--field-bg); }
 .cs-plus { font-size: 1.25em; line-height: 0; font-weight: 700; }
 .cs-kid.is-adding .cs-addchore { display: none; }
 .cs-add-cancel {
   padding: 6px 12px; border: 1px solid var(--card-border); border-radius: 8px;
-  background: rgba(255, 255, 255, 0.6); color: var(--ink-soft);
+  background: var(--field-bg); color: var(--ink-soft);
   font-family: var(--sans); font-size: clamp(11px, 1.1vw, 13px); cursor: pointer;
 }
 
@@ -214,12 +228,12 @@
 .cs-managing .cs-move { display: inline-flex; }
 .cs-move-btn {
   width: 26px; height: 26px; flex: 0 0 auto; border: 1px solid var(--card-border); border-radius: 8px;
-  background: rgba(255, 255, 255, 0.8); color: var(--sage-deep); font-size: 11px; line-height: 1;
+  background: var(--field-bg); color: var(--sage-deep); font-size: 11px; line-height: 1;
   cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
 }
 .cs-move-btn:disabled { opacity: 0.3; cursor: default; }
-.cs-add-name, .cs-add-desc { flex: 1 1 120px; min-width: 0; padding: 6px 10px; border: 1px solid var(--card-border); border-radius: 8px; background: rgba(255, 255, 255, 0.85); font-family: var(--sans); font-size: clamp(11px, 1.1vw, 13px); }
-.cs-add-freq { padding: 6px 8px; border: 1px solid var(--card-border); border-radius: 8px; background: rgba(255, 255, 255, 0.85); font-family: var(--sans); font-size: clamp(11px, 1.1vw, 13px); }
+.cs-add-name, .cs-add-desc { flex: 1 1 120px; min-width: 0; padding: 6px 10px; border: 1px solid var(--card-border); border-radius: 8px; background: var(--field-bg); font-family: var(--sans); font-size: clamp(11px, 1.1vw, 13px); }
+.cs-add-freq { padding: 6px 8px; border: 1px solid var(--card-border); border-radius: 8px; background: var(--field-bg); font-family: var(--sans); font-size: clamp(11px, 1.1vw, 13px); }
 .cs-add-btn { padding: 6px 14px; border: none; border-radius: 8px; background: var(--sage-deep); color: #fff; font-weight: 600; cursor: pointer; font-family: var(--sans); font-size: clamp(11px, 1.1vw, 13px); }
 .cs-add-btn:disabled { opacity: 0.6; }
 
@@ -227,15 +241,19 @@
 .cs-addkid { display: none; gap: 6px; align-items: center; margin-left: auto; }
 .cs-managing .cs-addkid { display: flex; }
 .cs-managing .cs-manage { margin-left: 8px; }        /* addkid form takes the auto margin */
-.cs-addkid-name { padding: 6px 10px; border: 1px solid var(--card-border); border-radius: 8px; background: rgba(255, 255, 255, 0.85); font-family: var(--sans); font-size: clamp(11px, 1.1vw, 13px); }
+.cs-addkid-name { padding: 6px 10px; border: 1px solid var(--card-border); border-radius: 8px; background: var(--field-bg); font-family: var(--sans); font-size: clamp(11px, 1.1vw, 13px); }
 .cs-del-kid { display: none; flex: 0 0 auto; margin-left: 8px; width: 26px; height: 26px; border: none; border-radius: 50%; background: rgba(226, 116, 95, 0.16); color: #d2543f; font-size: 18px; line-height: 1; cursor: pointer; }
 .cs-managing .cs-del-kid { display: inline-flex; align-items: center; justify-content: center; }
 
 /* day-of-week picker: only shown for a Weekly chore (form gets .freq-weekly) */
 .cs-days { display: none; flex-basis: 100%; flex-wrap: wrap; gap: 4px; }
 .cs-add.freq-weekly .cs-days { display: flex; }
-.cs-day { display: inline-flex; align-items: center; gap: 3px; padding: 3px 7px; border: 1px solid var(--card-border); border-radius: 6px; background: rgba(255, 255, 255, 0.8); font-family: var(--sans); font-size: clamp(10px, 1vw, 12px); cursor: pointer; }
+.cs-day { display: inline-flex; align-items: center; gap: 3px; padding: 3px 7px; border: 1px solid var(--card-border); border-radius: 6px; background: var(--field-bg); font-family: var(--sans); font-size: clamp(10px, 1vw, 12px); cursor: pointer; }
 .cs-day input { margin: 0; accent-color: var(--sage-deep); }
+/* Adaptive text for the add-chore fields so they stay legible on the smoky
+   night field surface (they sit on var(--field-bg), which flips dark at night). */
+.cs-add-name, .cs-add-desc, .cs-add-freq, .cs-addkid-name, .cs-day { color: var(--ink); }
+.cs-add-name::placeholder, .cs-add-desc::placeholder { color: var(--muted); }
 
 /* =========================================================================
    New-Quest toast
