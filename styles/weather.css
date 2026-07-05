@@ -118,7 +118,10 @@ html[data-scene="light"] .weather-screen { --glass-bg: rgba(253, 247, 236, 0.78)
    here and NOT be overridden by a height:100% on .leaflet-container (whose auto
    parent would collapse it to 0). Use min-height + flex:none so nothing squashes
    the (empty) map in the flex column. */
-.wx-radar-map { position: relative; flex: 0 0 auto; width: 100%; height: clamp(220px, 34vh, 420px); min-height: clamp(220px, 34vh, 420px); border-radius: 14px; overflow: hidden; background: rgba(20, 16, 30, 0.25); }
+/* Prominent, roughly square radar. aspect-ratio drives the shape; max-height
+   caps it on wide columns, min-height floors it on short screens. flex:none so
+   the (empty) map is never squashed in the flex column. */
+.wx-radar-map { position: relative; flex: 0 0 auto; width: 100%; aspect-ratio: 1 / 1; height: auto; max-height: 62vh; min-height: 300px; border-radius: 14px; overflow: hidden; background: rgba(20, 16, 30, 0.25); }
 .wx-radar .leaflet-container { background: rgba(20, 16, 30, 0.28); font-family: var(--sans); border-radius: 14px; }
 .wx-radar .leaflet-control-zoom { border: none; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25); }
 .wx-radar .leaflet-control-zoom a {
@@ -129,15 +132,8 @@ html[data-scene="light"] .weather-screen { --glass-bg: rgba(253, 247, 236, 0.78)
 .wx-radar .leaflet-control-attribution { background: rgba(0, 0, 0, 0.4); color: rgba(255, 255, 255, 0.72); font-size: 9px; padding: 1px 5px; }
 .wx-radar .leaflet-control-attribution a { color: rgba(255, 255, 255, 0.88); }
 
-.wx-radar-bar { display: flex; align-items: center; gap: clamp(8px, 1.2vw, 14px); }
-.wx-radar-play {
-  flex: none; width: 34px; height: 34px; border-radius: 999px; cursor: pointer;
-  border: 1px solid var(--glass-border); background: var(--glass-bg); color: var(--text-primary);
-  font-size: 12px; line-height: 1; display: inline-flex; align-items: center; justify-content: center;
-}
-.wx-radar-play:hover { background: var(--glass-border); }
-.wx-radar-scrub { flex: 1; min-width: 0; accent-color: var(--teal); cursor: pointer; height: 4px; }
-.wx-radar-time { flex: none; min-width: clamp(78px, 9vw, 108px); text-align: right; font-weight: 700; font-size: clamp(11px, 1.2vw, 14px); color: var(--text-secondary); }
+.wx-radar-legend { display: flex; align-items: center; gap: 7px; font-size: clamp(10px, 1.1vw, 12px); font-weight: 600; color: var(--text-secondary); }
+.wx-radar-dot { width: 8px; height: 8px; flex: none; border-radius: 50%; background: #5b9bd5; box-shadow: 0 0 0 3px rgba(91, 155, 213, 0.25); }
 .wx-radar-fallback { padding: 24px 12px; text-align: center; color: var(--text-secondary); font-style: italic; font-size: clamp(12px, 1.3vw, 15px); }
 
 /* hourly strip */
@@ -156,14 +152,20 @@ html[data-scene="light"] .weather-screen { --glass-bg: rgba(253, 247, 236, 0.78)
 .wx-hour-pop { display: flex; align-items: center; gap: 3px; font-weight: 700; font-size: clamp(9px, 1vw, 11px); color: #5b9bd5; }
 .wx-hour-pop .wx-glyph { width: 10px; height: 10px; }
 
+/* Compact the Daily Forecast + Precipitation Trend cards so the radar is the
+   focus and they don't eat more vertical space than needed. */
+.wx-daily, .wx-precip { padding: clamp(9px, 1.1vw, 14px) clamp(12px, 1.4vw, 18px); }
+.wx-daily .wx-card-head, .wx-precip .wx-card-head { margin-bottom: clamp(5px, 0.8vh, 9px); }
+.wx-daily .wx-card-title, .wx-precip .wx-card-title { font-size: clamp(14px, 1.5vw, 18px); }
+
 /* mid row: daily forecast + stat tiles */
 .wx-mid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: clamp(12px, 1.6vh, 20px); align-items: stretch; }
 .wx-daily-row { display: flex; justify-content: space-between; gap: clamp(4px, 0.8vw, 10px); }
-.wx-day { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; }
+.wx-day { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 0; }
 .wx-day-name { font-weight: 700; font-size: clamp(9px, 1vw, 11px); letter-spacing: 0.06em; color: var(--text-secondary); }
-.wx-day-ic .wx { width: clamp(26px, 3vw, 40px); height: auto; display: block; }
-.wx-day-hi { font-family: var(--serif); font-weight: 600; font-size: clamp(14px, 1.6vw, 19px); }
-.wx-day-lo { font-weight: 600; font-size: clamp(11px, 1.2vw, 13px); color: var(--text-secondary); }
+.wx-day-ic .wx { width: clamp(22px, 2.4vw, 32px); height: auto; display: block; }
+.wx-day-hi { font-family: var(--serif); font-weight: 600; font-size: clamp(13px, 1.4vw, 17px); }
+.wx-day-lo { font-weight: 600; font-size: clamp(10px, 1.1vw, 12px); color: var(--text-secondary); }
 
 .wx-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(8px, 1.1vw, 14px); }
 .wx-tile {
@@ -189,7 +191,7 @@ html[data-scene="light"] .weather-screen { --glass-bg: rgba(253, 247, 236, 0.78)
 
 /* precipitation trend */
 .wx-precip-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(150px, 200px); gap: clamp(14px, 2vw, 26px); align-items: stretch; }
-.wx-chart { display: flex; align-items: flex-end; gap: clamp(6px, 1.2vw, 16px); min-height: clamp(110px, 16vh, 170px); }
+.wx-chart { display: flex; align-items: flex-end; gap: clamp(6px, 1.2vw, 16px); min-height: clamp(76px, 10vh, 120px); }
 .wx-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
 .wx-bar-val { font-weight: 700; font-size: clamp(9px, 1vw, 12px); color: var(--text-secondary); }
 .wx-bar-track { width: clamp(14px, 1.8vw, 26px); flex: 1; display: flex; align-items: flex-end; }
