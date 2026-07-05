@@ -26,6 +26,7 @@ const WeatherDetail = (() => {
   let root = null;
   let els = {};
   let subscribed = false;
+  let radarMounted = false;
 
   let selectedId = 'home';
   const snaps = {};        // id -> weather snapshot (partial=current-only or full)
@@ -274,6 +275,10 @@ const WeatherDetail = (() => {
             '<div class="wx-card-head"><span class="wx-card-title">Precipitation Trend</span></div>' +
             '<div class="wx-precip-body" data-wx-trend></div>' +
           '</section>' +
+          '<section class="wx-card glass wx-radar-card">' +
+            '<div class="wx-card-head"><span class="wx-card-title">Radar</span></div>' +
+            '<div class="wx-radar" data-wx-radar></div>' +
+          '</section>' +
         '</div>' +
       '</div>';
     root.appendChild(NavBar.render('weather'));
@@ -286,6 +291,7 @@ const WeatherDetail = (() => {
       daily: root.querySelector('[data-wx-daily]'),
       tiles: root.querySelector('[data-wx-tiles]'),
       trend: root.querySelector('[data-wx-trend]'),
+      radar: root.querySelector('[data-wx-radar]'),
     };
 
     // Switcher interactions (event delegation).
@@ -308,6 +314,21 @@ const WeatherDetail = (() => {
     if (root.parentNode !== sr) sr.appendChild(root);
     render();
     loadAll();
+    // Radar: mount once (centered on home), then just resume on later visits so
+    // Leaflet re-measures its container after being re-attached to the DOM.
+    if (window.WeatherRadar) {
+      if (!radarMounted) {
+        const home = (window.WeatherLocations && WeatherLocations.get('home')) || {};
+        const cfg = window.CONFIG || {};
+        WeatherRadar.mount(els.radar, {
+          lat: home.lat != null ? home.lat : cfg.LAT,
+          lon: home.lon != null ? home.lon : cfg.LON,
+        });
+        radarMounted = true;
+      } else {
+        WeatherRadar.resume();
+      }
+    }
     if (!subscribed) {
       WeatherSystem.onUpdate(() => {
         if (!root || !root.isConnected) return;
@@ -320,6 +341,7 @@ const WeatherDetail = (() => {
   }
 
   function hide() {
+    if (window.WeatherRadar) WeatherRadar.pause();
     if (root && root.parentNode) root.parentNode.removeChild(root);
   }
 

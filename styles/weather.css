@@ -112,6 +112,30 @@ html[data-scene="light"] .weather-screen { --glass-bg: rgba(253, 247, 236, 0.78)
 
 .wx-empty { font-family: var(--serif); font-style: italic; color: var(--text-secondary); font-size: clamp(12px, 1.3vw, 15px); padding: 8px 2px; }
 
+/* ---- radar (Leaflet map + RainViewer tiles) ---- */
+.wx-radar { display: flex; flex-direction: column; gap: clamp(8px, 1.2vh, 12px); }
+.wx-radar-map { position: relative; width: 100%; height: clamp(220px, 34vh, 420px); border-radius: 14px; overflow: hidden; background: rgba(20, 16, 30, 0.25); }
+.wx-radar .leaflet-container { width: 100%; height: 100%; background: rgba(20, 16, 30, 0.28); font-family: var(--sans); border-radius: 14px; }
+.wx-radar .leaflet-control-zoom { border: none; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25); }
+.wx-radar .leaflet-control-zoom a {
+  background: var(--glass-bg); color: var(--text-primary); border: 1px solid var(--glass-border);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.wx-radar .leaflet-control-zoom a:hover { background: var(--glass-border); }
+.wx-radar .leaflet-control-attribution { background: rgba(0, 0, 0, 0.4); color: rgba(255, 255, 255, 0.72); font-size: 9px; padding: 1px 5px; }
+.wx-radar .leaflet-control-attribution a { color: rgba(255, 255, 255, 0.88); }
+
+.wx-radar-bar { display: flex; align-items: center; gap: clamp(8px, 1.2vw, 14px); }
+.wx-radar-play {
+  flex: none; width: 34px; height: 34px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--glass-border); background: var(--glass-bg); color: var(--text-primary);
+  font-size: 12px; line-height: 1; display: inline-flex; align-items: center; justify-content: center;
+}
+.wx-radar-play:hover { background: var(--glass-border); }
+.wx-radar-scrub { flex: 1; min-width: 0; accent-color: var(--teal); cursor: pointer; height: 4px; }
+.wx-radar-time { flex: none; min-width: clamp(78px, 9vw, 108px); text-align: right; font-weight: 700; font-size: clamp(11px, 1.2vw, 14px); color: var(--text-secondary); }
+.wx-radar-fallback { padding: 24px 12px; text-align: center; color: var(--text-secondary); font-style: italic; font-size: clamp(12px, 1.3vw, 15px); }
+
 /* hourly strip */
 .wx-hourly-strip { display: flex; gap: clamp(6px, 1vw, 14px); overflow-x: auto; padding-bottom: 4px; }
 .wx-hourly-strip::-webkit-scrollbar { height: 6px; }
