@@ -61,11 +61,65 @@ const KidChorePanel = (() => {
     if (form && form.frequency) form.classList.toggle('freq-weekly', form.frequency.value === 'Weekly');
   }
 
-  function progressOf(k) {
+  // --- day-of-week awareness -------------------------------------------------
+  const DAY_TOKENS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const DAY_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const isDaily = (c) => c.frequency !== 'Weekly';
+  const choreDays = (c) => String(c.days || '').split(',').filter(Boolean);
+  // Earliest scheduled weekday index for a weekly chore, or -1 if none set.
+  function earliestDayIdx(c) {
+    const idxs = choreDays(c).map((t) => DAY_TOKENS.indexOf(t)).filter((i) => i >= 0);
+    return idxs.length ? Math.min.apply(null, idxs) : -1;
+  }
+  // Is this chore due today? Daily always; weekly only on its scheduled day(s)
+  // (a weekly chore with no days set is treated as due any day so it never
+  // silently disappears from the board).
+  function dueToday(c) {
+    if (isDaily(c)) return true;
+    const d = choreDays(c);
+    return d.length === 0 || d.indexOf(DAY_TOKENS[new Date().getDay()]) !== -1;
+  }
+  function todaysChores(k) { return (k.chores || []).filter(dueToday); }
+
+  // Group a kid's chores for the full Chores page: Daily first, then each
+  // weekday (Sun→Sat) that has a weekly chore, then any dayless weekly chores.
+  // A weekly chore appears once, under its earliest scheduled day.
+  function groupChores(chores) {
+    const groups = [];
+    const daily = chores.filter(isDaily);
+    if (daily.length) groups.push({ label: 'Daily', today: false, chores: daily });
+    const weekly = chores.filter((c) => !isDaily(c));
+    const todayIdx = new Date().getDay();
+    for (let wd = 0; wd < 7; wd++) {
+      const inDay = weekly.filter((c) => earliestDayIdx(c) === wd);
+      if (inDay.length) groups.push({ label: DAY_FULL[wd], today: wd === todayIdx, chores: inDay });
+    }
+    const noDay = weekly.filter((c) => earliestDayIdx(c) === -1);
+    if (noDay.length) groups.push({ label: 'Weekly', today: false, chores: noDay });
+    return groups;
+  }
+
+  // Completion stats over a chore list (defaults to all the kid's chores).
+  function progressOf(k, list) {
+    const chores = list || k.chores;
     const st = QuestStore.getChoreState(k.id);
-    const total = k.chores.length;
-    const done = k.chores.filter((c) => st[c.id]).length;
+    const total = chores.length;
+    const done = chores.filter((c) => st[c.id]).length;
     return { st, total, done, pct: total ? Math.round((done / total) * 100) : 0 };
+  }
+
+  // One chore row for the full Chores screen (used inside the day groups).
+  function choreRowHTML(kidId, c, st) {
+    const badge = choreBadge(c);
+    return '<div class="cs-row' + (st[c.id] ? ' is-done' : '') + '" role="button" tabindex="0" data-kid="' + kidId + '" data-chore="' + c.id + '">' +
+      '<span class="cs-check">' + (st[c.id] ? ICONS.check : '') + '</span>' +
+      '<span class="cs-row-body">' +
+        '<span class="cs-row-name">' + esc(c.name) + '</span>' +
+        '<span class="cs-row-desc">' + esc(c.description) + '</span>' +
+      '</span>' +
+      '<span class="cs-freq cs-freq--' + badge.cls + '">' + esc(badge.text) + '</span>' +
+      '<button type="button" class="cs-del" data-del="' + c.id + '" title="Remove chore" aria-label="Remove chore">&times;</button>' +
+    '</div>';
   }
 
   function acornChip(kidId) {
@@ -84,11 +138,15 @@ const KidChorePanel = (() => {
   // ---- dashboard summary ----------------------------------------------------
 
   function kidSummaryHTML(k) {
-    const p = progressOf(k);
-    const items = k.chores.map((c) =>
-      '<button type="button" class="kcp-chip' + (p.st[c.id] ? ' is-done' : '') + '" data-kid="' + k.id + '" data-chore="' + c.id + '">' +
-        '<span class="kcp-dot">' + (p.st[c.id] ? ICONS.check : '') + '</span>' + esc(c.name) +
-      '</button>').join('');
+    // Dashboard shows only what's due TODAY (daily + weekly scheduled today).
+    const today = todaysChores(k);
+    const p = progressOf(k, today);
+    const items = today.length
+      ? today.map((c) =>
+          '<button type="button" class="kcp-chip' + (p.st[c.id] ? ' is-done' : '') + '" data-kid="' + k.id + '" data-chore="' + c.id + '">' +
+            '<span class="kcp-dot">' + (p.st[c.id] ? ICONS.check : '') + '</span>' + esc(c.name) +
+          '</button>').join('')
+      : '<div class="kcp-empty">No chores today</div>';
     return (
       '<div class="kcp-kid" data-kid="' + k.id + '">' +
         '<div class="kcp-head">' +
@@ -132,19 +190,16 @@ const KidChorePanel = (() => {
 
   function kidSectionHTML(k, idx, count) {
     const p = progressOf(k);
+    // Organized by Daily first, then by weekday in week order (today highlighted).
     // cs-row is a div (not a button) so the Manage-mode delete button can nest.
-    const rows = k.chores.map((c) => {
-      const badge = choreBadge(c);
-      return '<div class="cs-row' + (p.st[c.id] ? ' is-done' : '') + '" role="button" tabindex="0" data-kid="' + k.id + '" data-chore="' + c.id + '">' +
-        '<span class="cs-check">' + (p.st[c.id] ? ICONS.check : '') + '</span>' +
-        '<span class="cs-row-body">' +
-          '<span class="cs-row-name">' + esc(c.name) + '</span>' +
-          '<span class="cs-row-desc">' + esc(c.description) + '</span>' +
-        '</span>' +
-        '<span class="cs-freq cs-freq--' + badge.cls + '">' + esc(badge.text) + '</span>' +
-        '<button type="button" class="cs-del" data-del="' + c.id + '" title="Remove chore" aria-label="Remove chore">&times;</button>' +
-      '</div>';
-    }).join('');
+    const groups = groupChores(k.chores);
+    const list = groups.map((g) =>
+      '<div class="cs-group' + (g.today ? ' is-today' : '') + '">' +
+        '<div class="cs-group-label">' + esc(g.label) +
+          (g.today ? '<span class="cs-today-tag">Today</span>' : '') +
+        '</div>' +
+        g.chores.map((c) => choreRowHTML(k.id, c, p.st)).join('') +
+      '</div>').join('');
     const addForm =
       '<form class="cs-add" data-add-kid="' + k.id + '">' +
         '<input class="cs-add-name" name="name" list="chore-name-options" autocomplete="off" placeholder="New chore" maxlength="40" required>' +
@@ -172,7 +227,7 @@ const KidChorePanel = (() => {
           '<div class="cs-kid-frac">' + p.done + '/' + p.total + '</div>' +
         '</div>' +
         '<div class="cs-bar"><div class="cs-bar-fill" style="width:' + p.pct + '%;background:' + k.color + '"></div></div>' +
-        '<div class="cs-list">' + rows + '</div>' +
+        '<div class="cs-list">' + list + '</div>' +
         '<button type="button" class="cs-addchore" data-add-toggle="' + k.id + '"><span class="cs-plus" aria-hidden="true">+</span>Add chore</button>' +
         addForm +
       '</section>'
