@@ -73,11 +73,13 @@ html[data-scene="light"] .weather-screen { --glass-bg: rgba(253, 247, 236, 0.78)
   font-size: clamp(10px, 1.1vw, 12px); font-weight: 600; color: #ffb4a2;
 }
 
+/* Three columns — current summary · compact middle stack · tall radar — sized
+   to fit the viewport row with no page scroll (the radar is its own full-height
+   column, giving it a ~1:2 portrait footprint). */
 .wx-main {
-  min-height: 0; overflow-y: auto;
-  display: grid; grid-template-columns: minmax(200px, 260px) minmax(0, 1fr);
-  gap: clamp(14px, 2vw, 28px);
-  padding-right: 4px;
+  min-height: 0; overflow: hidden;
+  display: grid; grid-template-columns: minmax(170px, 210px) minmax(0, 1fr) minmax(280px, 0.5fr);
+  gap: clamp(12px, 1.6vw, 22px);
 }
 .wx-main::-webkit-scrollbar { width: 6px; }
 .wx-main::-webkit-scrollbar-thumb { background: var(--track); border-radius: 999px; }
@@ -104,24 +106,23 @@ html[data-scene="light"] .weather-screen { --glass-bg: rgba(253, 247, 236, 0.78)
 }
 .wx-cur-feels { margin-top: 8px; font-weight: 700; font-size: clamp(12px, 1.3vw, 15px); color: rgba(255, 255, 255, 0.9); text-shadow: var(--sky-shadow); }
 
-/* ---- right column ---- */
-.wx-right { min-width: 0; display: flex; flex-direction: column; gap: clamp(12px, 1.6vh, 20px); }
-.wx-card { border-radius: var(--radius); padding: clamp(14px, 1.6vw, 22px) clamp(16px, 1.8vw, 24px); }
-.wx-card-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: clamp(10px, 1.4vh, 16px); }
-.wx-card-title { font-family: var(--serif); font-weight: 600; font-size: clamp(16px, 1.9vw, 22px); color: var(--text-primary); }
+/* ---- middle column (hourly / daily+tiles / precip), compacted ---- */
+.wx-right { min-width: 0; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: clamp(8px, 1.1vh, 14px); padding-right: 2px; }
+.wx-right::-webkit-scrollbar { width: 6px; }
+.wx-right::-webkit-scrollbar-thumb { background: var(--track); border-radius: 999px; }
+.wx-card { border-radius: var(--radius); padding: clamp(9px, 1.1vw, 15px) clamp(12px, 1.4vw, 18px); }
+.wx-card-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: clamp(6px, 0.9vh, 10px); }
+.wx-card-title { font-family: var(--serif); font-weight: 600; font-size: clamp(14px, 1.6vw, 19px); color: var(--text-primary); }
 
 .wx-empty { font-family: var(--serif); font-style: italic; color: var(--text-secondary); font-size: clamp(12px, 1.3vw, 15px); padding: 8px 2px; }
 
-/* ---- radar (Leaflet map + RainViewer tiles) ---- */
-.wx-radar { display: flex; flex-direction: column; gap: clamp(8px, 1.2vh, 12px); }
-/* Leaflet adds .leaflet-container to THIS same element, so the height must live
-   here and NOT be overridden by a height:100% on .leaflet-container (whose auto
-   parent would collapse it to 0). Use min-height + flex:none so nothing squashes
-   the (empty) map in the flex column. */
-/* Prominent, roughly square radar. aspect-ratio drives the shape; max-height
-   caps it on wide columns, min-height floors it on short screens. flex:none so
-   the (empty) map is never squashed in the flex column. */
-.wx-radar-map { position: relative; flex: 0 0 auto; width: 100%; aspect-ratio: 1 / 1; height: auto; max-height: 62vh; min-height: 300px; border-radius: 14px; overflow: hidden; background: rgba(20, 16, 30, 0.25); }
+/* ---- radar (Leaflet map + RainViewer animation) — its own tall column ---- */
+.wx-radar-card { min-height: 0; display: flex; flex-direction: column; }
+.wx-radar { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: clamp(6px, 1vh, 10px); }
+/* The map fills the tall radar column. Leaflet adds .leaflet-container to THIS
+   same element, so keep sizing here and do NOT put height:100% on
+   .leaflet-container (its auto parent would collapse it to 0). */
+.wx-radar-map { position: relative; flex: 1 1 auto; width: 100%; min-height: 200px; border-radius: 14px; overflow: hidden; background: rgba(20, 16, 30, 0.25); }
 .wx-radar .leaflet-container { background: rgba(20, 16, 30, 0.28); font-family: var(--sans); border-radius: 14px; }
 .wx-radar .leaflet-control-zoom { border: none; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25); }
 .wx-radar .leaflet-control-zoom a {
@@ -132,8 +133,16 @@ html[data-scene="light"] .weather-screen { --glass-bg: rgba(253, 247, 236, 0.78)
 .wx-radar .leaflet-control-attribution { background: rgba(0, 0, 0, 0.4); color: rgba(255, 255, 255, 0.72); font-size: 9px; padding: 1px 5px; }
 .wx-radar .leaflet-control-attribution a { color: rgba(255, 255, 255, 0.88); }
 
-.wx-radar-legend { display: flex; align-items: center; gap: 7px; font-size: clamp(10px, 1.1vw, 12px); font-weight: 600; color: var(--text-secondary); }
-.wx-radar-dot { width: 8px; height: 8px; flex: none; border-radius: 50%; background: #5b9bd5; box-shadow: 0 0 0 3px rgba(91, 155, 213, 0.25); }
+/* animation control bar (play / scrub / time) */
+.wx-radar-bar { flex: none; display: flex; align-items: center; gap: clamp(8px, 1.2vw, 14px); }
+.wx-radar-play {
+  flex: none; width: 32px; height: 32px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--glass-border); background: var(--glass-bg); color: var(--text-primary);
+  font-size: 11px; line-height: 1; display: inline-flex; align-items: center; justify-content: center;
+}
+.wx-radar-play:hover { background: var(--glass-border); }
+.wx-radar-scrub { flex: 1; min-width: 0; accent-color: var(--teal); cursor: pointer; height: 4px; }
+.wx-radar-time { flex: none; min-width: clamp(72px, 8vw, 100px); text-align: right; font-weight: 700; font-size: clamp(10px, 1.1vw, 13px); color: var(--text-secondary); }
 .wx-radar-fallback { padding: 24px 12px; text-align: center; color: var(--text-secondary); font-style: italic; font-size: clamp(12px, 1.3vw, 15px); }
 
 /* hourly strip */
@@ -141,14 +150,14 @@ html[data-scene="light"] .weather-screen { --glass-bg: rgba(253, 247, 236, 0.78)
 .wx-hourly-strip::-webkit-scrollbar { height: 6px; }
 .wx-hourly-strip::-webkit-scrollbar-thumb { background: var(--track); border-radius: 999px; }
 .wx-hour {
-  flex: 0 0 auto; min-width: clamp(56px, 6.4vw, 82px);
-  display: flex; flex-direction: column; align-items: center; gap: 5px;
-  padding: clamp(6px, 0.9vh, 10px) 4px; border-radius: 14px;
+  flex: 0 0 auto; min-width: clamp(50px, 5.6vw, 72px);
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: clamp(4px, 0.6vh, 7px) 4px; border-radius: 12px;
 }
 .wx-hour:first-child { background: rgba(255, 255, 255, 0.07); }
-.wx-hour-lbl { font-weight: 700; font-size: clamp(10px, 1.1vw, 12px); color: var(--text-secondary); }
-.wx-hour-ic .wx { width: clamp(26px, 3vw, 38px); height: auto; display: block; }
-.wx-hour-temp { font-family: var(--serif); font-weight: 600; font-size: clamp(15px, 1.7vw, 20px); }
+.wx-hour-lbl { font-weight: 700; font-size: clamp(9px, 1vw, 11px); color: var(--text-secondary); }
+.wx-hour-ic .wx { width: clamp(22px, 2.6vw, 32px); height: auto; display: block; }
+.wx-hour-temp { font-family: var(--serif); font-weight: 600; font-size: clamp(14px, 1.5vw, 18px); }
 .wx-hour-pop { display: flex; align-items: center; gap: 3px; font-weight: 700; font-size: clamp(9px, 1vw, 11px); color: #5b9bd5; }
 .wx-hour-pop .wx-glyph { width: 10px; height: 10px; }
 
@@ -167,22 +176,22 @@ html[data-scene="light"] .weather-screen { --glass-bg: rgba(253, 247, 236, 0.78)
 .wx-day-hi { font-family: var(--serif); font-weight: 600; font-size: clamp(13px, 1.4vw, 17px); }
 .wx-day-lo { font-weight: 600; font-size: clamp(10px, 1.1vw, 12px); color: var(--text-secondary); }
 
-.wx-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(8px, 1.1vw, 14px); }
+.wx-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(6px, 0.9vw, 11px); }
 .wx-tile {
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: clamp(10px, 1.3vw, 16px); border-radius: 18px;
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: clamp(7px, 0.9vw, 12px); border-radius: 14px;
   background: var(--glass-specular), var(--glass-sheen), var(--glass-bg);
   border: 1px solid var(--glass-border);
 }
 .wx-tile-ic {
-  flex: none; width: clamp(30px, 3.4vw, 40px); height: clamp(30px, 3.4vw, 40px);
-  display: flex; align-items: center; justify-content: center; border-radius: 12px;
+  flex: none; width: clamp(26px, 2.9vw, 34px); height: clamp(26px, 2.9vw, 34px);
+  display: flex; align-items: center; justify-content: center; border-radius: 10px;
   background: rgba(91, 155, 213, 0.16); color: #5b9bd5;
 }
 .wx-tile-ic .wx-glyph { width: 60%; height: 60%; }
 .wx-tile-body { min-width: 0; }
-.wx-tile-label { font-weight: 700; font-size: clamp(9px, 1vw, 12px); letter-spacing: 0.04em; color: var(--text-secondary); }
-.wx-tile-value { font-family: var(--serif); font-weight: 600; font-size: clamp(18px, 2.2vw, 26px); line-height: 1.1; margin-top: 2px; }
+.wx-tile-label { font-weight: 700; font-size: clamp(8px, 0.95vw, 11px); letter-spacing: 0.04em; color: var(--text-secondary); }
+.wx-tile-value { font-family: var(--serif); font-weight: 600; font-size: clamp(16px, 2vw, 23px); line-height: 1.1; margin-top: 1px; }
 .wx-tile-value .wx-unit { font-size: 0.6em; font-weight: 600; color: var(--text-secondary); }
 .wx-tile-sub { font-size: clamp(9px, 1vw, 12px); color: var(--text-secondary); margin-top: 1px; }
 
@@ -202,6 +211,12 @@ html[data-scene="light"] .weather-screen { --glass-bg: rgba(253, 247, 236, 0.78)
 .wx-trend-note-b { font-size: clamp(11px, 1.2vw, 14px); color: var(--text-secondary); line-height: 1.5; }
 
 @media (max-width: 900px) {
+  /* Narrow screens can't hold three columns — stack and allow scrolling, with
+     the radar a full-width block of its own. */
+  .wx-main { grid-template-columns: 1fr; overflow-y: auto; }
+  .wx-right { overflow: visible; }
+  .wx-radar-card { min-height: 360px; }
+  .wx-radar-map { min-height: 300px; }
   .wx-mid { grid-template-columns: 1fr; }
   .wx-precip-body { grid-template-columns: 1fr; }
   .wx-trend-note { border-left: none; border-top: 1px solid var(--glass-border); padding-left: 0; padding-top: 12px; }
