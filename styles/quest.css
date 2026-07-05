@@ -126,9 +126,12 @@
 .chores-screen { position: absolute; inset: 0; display: grid; grid-template-rows: auto 1fr auto; padding: clamp(10px, 1.4vw, 20px); padding-bottom: clamp(8px, 1vw, 14px); }
 .cs-inner { min-height: 0; display: flex; flex-direction: column; gap: clamp(8px, 1.4vh, 16px); overflow: hidden; }
 .cs-header { display: flex; align-items: baseline; gap: 10px; }
-.cs-heading { font-family: var(--serif); font-weight: 300; font-size: clamp(24px, 3.4vw, 44px); color: var(--ink); text-shadow: 0 2px 14px rgba(0, 0, 0, 0.2); }
-.cs-sub { font-size: clamp(11px, 1.2vw, 15px); color: var(--ink-soft); }
-.cs-header .leaf-mini { width: clamp(16px, 1.8vw, 24px); align-self: center; }
+/* Heading + subtitle sit directly over the sky, so use light text + the strong
+   sky-shadow (readable over dark night AND bright daytime skies) — the dark
+   --ink tokens vanished on dark/stormy skies. */
+.cs-heading { font-family: var(--serif); font-weight: 500; font-size: clamp(24px, 3.4vw, 44px); color: #fff; text-shadow: var(--sky-shadow); }
+.cs-sub { font-size: clamp(11px, 1.2vw, 15px); color: rgba(255, 255, 255, 0.92); text-shadow: var(--sky-shadow); }
+.cs-header .leaf-mini { width: clamp(16px, 1.8vw, 24px); align-self: center; color: #fff; filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5)); }
 
 .cs-grid { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(8px, 1.2vw, 18px); }
 @media (max-width: 900px) { .cs-grid { grid-template-columns: 1fr; } }
@@ -170,7 +173,35 @@
 .cs-managing .cs-row { cursor: default; }
 
 .cs-add { display: none; gap: 6px; margin-top: 8px; flex-wrap: wrap; align-items: center; }
-.cs-managing .cs-add { display: flex; }
+.cs-managing .cs-add,
+.cs-kid.is-adding .cs-add { display: flex; }
+
+/* Quick "+ Add chore" button — always available on each card (no Manage mode
+   needed). Hidden while that card's inline add form is open. */
+.cs-addchore {
+  margin-top: 8px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 7px 12px; border: 1.5px dashed var(--card-border); border-radius: 10px;
+  background: rgba(255, 255, 255, 0.35); color: var(--sage-deep);
+  font-family: var(--sans); font-weight: 700; font-size: clamp(11px, 1.1vw, 13px); cursor: pointer;
+}
+.cs-addchore:hover { background: rgba(255, 255, 255, 0.6); }
+.cs-plus { font-size: 1.25em; line-height: 0; font-weight: 700; }
+.cs-kid.is-adding .cs-addchore { display: none; }
+.cs-add-cancel {
+  padding: 6px 12px; border: 1px solid var(--card-border); border-radius: 8px;
+  background: rgba(255, 255, 255, 0.6); color: var(--ink-soft);
+  font-family: var(--sans); font-size: clamp(11px, 1.1vw, 13px); cursor: pointer;
+}
+
+/* Reorder arrows on each kid card (Manage mode). */
+.cs-move { display: none; align-items: center; gap: 3px; margin-right: 2px; }
+.cs-managing .cs-move { display: inline-flex; }
+.cs-move-btn {
+  width: 26px; height: 26px; flex: 0 0 auto; border: 1px solid var(--card-border); border-radius: 8px;
+  background: rgba(255, 255, 255, 0.8); color: var(--sage-deep); font-size: 11px; line-height: 1;
+  cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+}
+.cs-move-btn:disabled { opacity: 0.3; cursor: default; }
 .cs-add-name, .cs-add-desc { flex: 1 1 120px; min-width: 0; padding: 6px 10px; border: 1px solid var(--card-border); border-radius: 8px; background: rgba(255, 255, 255, 0.85); font-family: var(--sans); font-size: clamp(11px, 1.1vw, 13px); }
 .cs-add-freq { padding: 6px 8px; border: 1px solid var(--card-border); border-radius: 8px; background: rgba(255, 255, 255, 0.85); font-family: var(--sans); font-size: clamp(11px, 1.1vw, 13px); }
 .cs-add-btn { padding: 6px 14px; border: none; border-radius: 8px; background: var(--sage-deep); color: #fff; font-weight: 600; cursor: pointer; font-family: var(--sans); font-size: clamp(11px, 1.1vw, 13px); }

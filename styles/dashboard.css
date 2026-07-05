@@ -25,6 +25,11 @@
   --track: rgba(255, 255, 255, 0.16);
   --radius: 24px;
 
+  /* Shadow for text placed DIRECTLY over the sky (screen headings, breadcrumb,
+     weather current) — a strong dark halo that keeps light text legible over
+     both dark night skies and bright daytime skies. */
+  --sky-shadow: 0 1px 3px rgba(0, 0, 0, 0.55), 0 2px 14px rgba(0, 0, 0, 0.4);
+
   /* legacy tokens still used by the Settings + full Chores screens */
   --ink: #3a352d; --ink-soft: #6f675a; --muted: #9a8f7d;
   --card-bg: rgba(252, 248, 240, 0.9); --card-bg-hover: rgba(252, 248, 240, 0.95);

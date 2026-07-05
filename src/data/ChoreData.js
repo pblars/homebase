@@ -111,7 +111,34 @@ const ChoreData = (() => {
     await load();
   }
 
-  return { load, addChore, removeChore, updateChore, addKid, removeKid, updateKid };
+  // Move a board member's card one slot left/right and persist the new order.
+  // Optimistic: reorders window.KIDS + repaints immediately, then writes a
+  // normalized 0..n-1 `sort` to every kid so all devices show the same order.
+  async function reorderBoardKid(kidId, dir) {
+    const all = (window.KIDS || []).slice();
+    const board = all.filter((k) => k.onBoard !== false);
+    const bi = board.findIndex((k) => k.id === kidId);
+    if (bi < 0) return;
+    const ni = bi + (dir === 'left' ? -1 : 1);
+    if (ni < 0 || ni >= board.length) return;           // already at an edge
+    // Swap the two board members' positions within the full KIDS array.
+    const ai = all.findIndex((k) => k.id === board[bi].id);
+    const bj = all.findIndex((k) => k.id === board[ni].id);
+    const tmp = all[ai]; all[ai] = all[bj]; all[bj] = tmp;
+    apply(all); cacheSet(all); emit();                   // optimistic repaint
+    try {
+      await Promise.all(all.map((k, i) => fetch(KIDS_API + '/' + encodeURIComponent(k.id), {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ sort: i }),
+      })));
+      await load();                                      // resync canonical order
+    } catch (e) {
+      console.warn('[ChoreData] reorder persist failed (kept local):', e.message);
+    }
+  }
+
+  return { load, addChore, removeChore, updateChore, addKid, removeKid, updateKid, reorderBoardKid };
 })();
 
 window.ChoreData = ChoreData;

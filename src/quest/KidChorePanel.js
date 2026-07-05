@@ -130,7 +130,7 @@ const KidChorePanel = (() => {
 
   // ---- full chores screen ---------------------------------------------------
 
-  function kidSectionHTML(k) {
+  function kidSectionHTML(k, idx, count) {
     const p = progressOf(k);
     // cs-row is a div (not a button) so the Manage-mode delete button can nest.
     const rows = k.chores.map((c) => {
@@ -152,10 +152,18 @@ const KidChorePanel = (() => {
         '<select class="cs-add-freq" name="frequency"><option>Daily</option><option>Weekly</option></select>' +
         daysChipsHTML('') +
         '<button type="submit" class="cs-add-btn">Add</button>' +
+        '<button type="button" class="cs-add-cancel" data-add-cancel>Cancel</button>' +
       '</form>';
+    // Move arrows (shown in Manage mode) to reorder this card left/right.
+    const move =
+      '<div class="cs-move">' +
+        '<button type="button" class="cs-move-btn" data-move="left" data-kid="' + k.id + '"' + (idx === 0 ? ' disabled' : '') + ' title="Move left" aria-label="Move ' + esc(k.name) + ' left">&#9664;</button>' +
+        '<button type="button" class="cs-move-btn" data-move="right" data-kid="' + k.id + '"' + (idx === count - 1 ? ' disabled' : '') + ' title="Move right" aria-label="Move ' + esc(k.name) + ' right">&#9654;</button>' +
+      '</div>';
     return (
       '<section class="cs-kid" data-kid="' + k.id + '">' +
         '<div class="cs-kid-head">' +
+          move +
           '<span class="cs-avatar" style="background:' + k.avatarBg + ';color:' + k.color + '">' + avatarInner(k) + '</span>' +
           '<div class="cs-kid-meta">' +
             '<div class="cs-kid-name">' + esc(k.name) + '</div>' +
@@ -165,6 +173,7 @@ const KidChorePanel = (() => {
         '</div>' +
         '<div class="cs-bar"><div class="cs-bar-fill" style="width:' + p.pct + '%;background:' + k.color + '"></div></div>' +
         '<div class="cs-list">' + rows + '</div>' +
+        '<button type="button" class="cs-addchore" data-add-toggle="' + k.id + '"><span class="cs-plus" aria-hidden="true">+</span>Add chore</button>' +
         addForm +
       '</section>'
     );
@@ -175,7 +184,8 @@ const KidChorePanel = (() => {
     const grid = detailRoot.querySelector('[data-cs-grid]');
     if (!grid) return;
     buildNameIndex(); // for the "New chore" name autocomplete + auto-fill
-    grid.innerHTML = datalistHTML() + boardKids().map(kidSectionHTML).join('');
+    const board = boardKids();
+    grid.innerHTML = datalistHTML() + board.map((k, i) => kidSectionHTML(k, i, board.length)).join('');
   }
 
   function setManaging(on) {
@@ -201,6 +211,11 @@ const KidChorePanel = (() => {
       await ChoreData.addChore(form.dataset.addKid, {
         name, description: form.description.value.trim(), frequency, days,
       });
+      // Close this card's add form and repaint so the new chore shows (the
+      // isEditing() guard would otherwise skip the refresh while it's open).
+      const section = form.closest('.cs-kid');
+      if (section) section.classList.remove('is-adding');
+      renderDetail();
     } catch (err) {
       console.error('[KidChorePanel] add failed:', err);
       alert('Could not add the chore. Make sure the chore database is set up.');
@@ -232,6 +247,13 @@ const KidChorePanel = (() => {
 
     detailRoot.addEventListener('click', (e) => {
       if (e.target.closest('[data-manage]')) { setManaging(!managing); return; }
+      // Reorder a kid card (Manage mode arrows).
+      const mv = e.target.closest('[data-move]');
+      if (mv) { if (!mv.disabled && window.ChoreData) ChoreData.reorderBoardKid(mv.dataset.kid, mv.dataset.move); return; }
+      // Quick add-chore: open/close the inline add form for one card (no Manage).
+      const addBtn = e.target.closest('[data-add-toggle]');
+      if (addBtn) { openAdd(addBtn.closest('.cs-kid')); return; }
+      if (e.target.closest('[data-add-cancel]')) { closeAdd(e.target.closest('.cs-kid')); return; }
       const del = e.target.closest('[data-del]');
       if (del) { removeById(del.dataset.del); return; }
       if (managing) return; // rows don't toggle completion while managing
@@ -280,9 +302,29 @@ const KidChorePanel = (() => {
 
   // ---- shared update + effects ----------------------------------------------
 
+  // Open/close a single card's inline add-chore form (independent of Manage mode).
+  function openAdd(section) {
+    if (!section) return;
+    section.classList.add('is-adding');
+    const input = section.querySelector('.cs-add-name');
+    if (input) input.focus();
+  }
+  function closeAdd(section) {
+    if (section) section.classList.remove('is-adding');
+  }
+
+  // True while someone is mid-add (form open or an add field focused) — used to
+  // avoid rebuilding the grid out from under them on a background refresh.
+  function isEditing() {
+    if (!detailRoot) return false;
+    if (detailRoot.querySelector('.cs-kid.is-adding')) return true;
+    const a = document.activeElement;
+    return !!(a && detailRoot.contains(a) && a.matches('input, select'));
+  }
+
   function refresh() {
     if (document.getElementById('chores-card')) renderSummary();
-    if (detailMounted) renderDetail();
+    if (detailMounted && !isEditing()) renderDetail();
   }
 
   function _acornTargets(kidId) {

@@ -40,6 +40,7 @@ export async function onRequestPut({ params, request, env }) {
     if (b[key] != null) { sets.push(map[key] + ' = ?'); vals.push(String(b[key])); }
   }
   if (b.onBoard != null) { sets.push('on_chore_board = ?'); vals.push(b.onBoard ? 1 : 0); }
+  if (b.sort != null) { sets.push('sort = ?'); vals.push(parseInt(b.sort, 10) || 0); }
   if (!sets.length) return json({ error: 'no updatable fields provided' }, 400);
   vals.push(params.id);
   await DB.prepare('UPDATE kids SET ' + sets.join(', ') + ' WHERE id = ?').bind(...vals).run();
