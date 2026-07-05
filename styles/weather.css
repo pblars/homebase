@@ -114,8 +114,12 @@ html[data-scene="light"] .weather-screen { --glass-bg: rgba(253, 247, 236, 0.78)
 
 /* ---- radar (Leaflet map + RainViewer tiles) ---- */
 .wx-radar { display: flex; flex-direction: column; gap: clamp(8px, 1.2vh, 12px); }
-.wx-radar-map { position: relative; width: 100%; height: clamp(220px, 34vh, 420px); border-radius: 14px; overflow: hidden; background: rgba(20, 16, 30, 0.25); }
-.wx-radar .leaflet-container { width: 100%; height: 100%; background: rgba(20, 16, 30, 0.28); font-family: var(--sans); border-radius: 14px; }
+/* Leaflet adds .leaflet-container to THIS same element, so the height must live
+   here and NOT be overridden by a height:100% on .leaflet-container (whose auto
+   parent would collapse it to 0). Use min-height + flex:none so nothing squashes
+   the (empty) map in the flex column. */
+.wx-radar-map { position: relative; flex: 0 0 auto; width: 100%; height: clamp(220px, 34vh, 420px); min-height: clamp(220px, 34vh, 420px); border-radius: 14px; overflow: hidden; background: rgba(20, 16, 30, 0.25); }
+.wx-radar .leaflet-container { background: rgba(20, 16, 30, 0.28); font-family: var(--sans); border-radius: 14px; }
 .wx-radar .leaflet-control-zoom { border: none; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25); }
 .wx-radar .leaflet-control-zoom a {
   background: var(--glass-bg); color: var(--text-primary); border: 1px solid var(--glass-border);
