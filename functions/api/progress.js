@@ -7,9 +7,10 @@
 // ('27') so they reset each week. The client sends each chore's period.
 //
 // GET  /api/progress?week=NN&date=YYYY-MM-DD
-//   -> { week, completion: {kidId:{choreId:bool}}, acorns: {kidId:n},
-//        quest: {completed, celebrationShown} }
-//   completion covers BOTH the given week (weekly chores) and date (daily chores).
+//   -> { week, date, completion: {period:{kidId:{choreId:bool}}},
+//        acorns: {kidId:n}, quest: {completed, celebrationShown} }
+//   completion is keyed by PERIOD and covers both the week (weekly chores) and
+//   the date (daily chores); the client reads each chore from its own period.
 // POST /api/progress { action, ... }
 //   action 'toggle' {period, kidId, choreId, done}
 //     -> upserts completion for that period; adjusts that kid's acorns +1/-1
@@ -56,20 +57,25 @@ export async function onRequestGet({ request, env }) {
   const date = new URL(request.url).searchParams.get('date') || week;
 
   const [comp, acorns, quest] = await Promise.all([
-    DB.prepare('SELECT kid_id, chore_id, done FROM chore_completion WHERE period IN (?, ?)').bind(week, date).all(),
+    DB.prepare('SELECT period, kid_id, chore_id, done FROM chore_completion WHERE period IN (?, ?)').bind(week, date).all(),
     DB.prepare('SELECT kid_id, count FROM acorns').all(),
     DB.prepare('SELECT completed, celebration_shown FROM quest_meta WHERE week = ?').bind(week).first(),
   ]);
 
+  // Keyed by PERIOD so the client reads each chore from its own bucket (daily →
+  // date, weekly → week). Flattening the two periods would let a stale week-keyed
+  // daily row (e.g. from before migration 0005) leak into today's view.
   const completion = {};
   for (const r of comp.results || []) {
-    (completion[r.kid_id] = completion[r.kid_id] || {})[r.chore_id] = r.done !== 0;
+    const per = (completion[r.period] = completion[r.period] || {});
+    (per[r.kid_id] = per[r.kid_id] || {})[r.chore_id] = r.done !== 0;
   }
   const acornMap = {};
   for (const r of acorns.results || []) acornMap[r.kid_id] = r.count || 0;
 
   return json({
     week,
+    date,
     completion,
     acorns: acornMap,
     quest: {

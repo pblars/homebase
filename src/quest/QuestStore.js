@@ -208,18 +208,18 @@ const QuestStore = (() => {
   }
 
   // Rebuild the local period buckets from the shared D1 state. The GET returns
-  // completion for both this week and today; each chore is filed into its own
-  // period bucket (daily = date, weekly = week), so the buckets exactly mirror
-  // the server (a chore with no row reads as false).
+  // completion keyed by PERIOD; each chore is read from its own period (daily =
+  // date, weekly = week), so a stale week-keyed daily row can't leak into today
+  // and the buckets exactly mirror the server (a chore with no row reads false).
   function hydrate(data) {
     if (!data || typeof data !== 'object') return;
     const completion = data.completion || {};
     kids().forEach((k) => {
-      const kc = completion[k.id] || {};
       const buckets = {};
       (k.chores || []).forEach((c) => {
         const p = periodOf(c);
-        (buckets[p] = buckets[p] || {})[c.id] = !!kc[c.id];
+        const perKid = completion[p] && completion[p][k.id];
+        (buckets[p] = buckets[p] || {})[c.id] = !!(perKid && perKid[c.id]);
       });
       Object.keys(buckets).forEach((p) => write(choreKey(k.id, p), buckets[p]));
     });
