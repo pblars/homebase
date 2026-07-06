@@ -25,7 +25,7 @@ const WeatherRadar = (() => {
   let map = null, els = {}, container = null;
   let host = '', frames = [], layers = [], idx = 0;
   let playTimer = null, refreshTimer = null, playing = true, visible = false;
-  let center = [35.9251, -86.8689], zoom = 8, mountTries = 0, resizeObs = null;
+  let center = [35.9251, -86.8689], zoom = 7, mountTries = 0, resizeObs = null;
 
   const ready = () => typeof L !== 'undefined' && L.map;
 
