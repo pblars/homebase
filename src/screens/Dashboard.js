@@ -184,6 +184,9 @@ const Dashboard = (() => {
     renderClock();
     renderWeather();
     renderAgenda();
+    // Refresh the shared meal plan each time Home is shown, so a dinner planned
+    // in the Meals tab shows up on the card when you come back.
+    if (window.MealsData) MealsData.load();
 
     if (tickHandle) clearInterval(tickHandle);
     tickHandle = setInterval(renderClock, 1000);
