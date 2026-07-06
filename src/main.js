@@ -90,6 +90,11 @@
     // 'calendarupdate' when events land.
     if (window.CalendarSystem) CalendarSystem.init();
 
+    // Shared meal plan (pushed from The Family Table into /api/mealplan). Feeds
+    // window.MEALS for the dashboard dinner bar + the Meals tab; dispatches
+    // 'mealsupdated'. Falls back to the placeholder meals.js when empty.
+    if (window.MealsData) MealsData.load();
+
     // Mount the resting screen. Screens register themselves with the Router on
     // load. The SleepScreen is the ambient default (time + temp); tapping it
     // wakes to the full Dashboard.

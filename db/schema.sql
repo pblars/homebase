@@ -94,3 +94,11 @@ CREATE TABLE IF NOT EXISTS quest_meta (
   completed         INTEGER NOT NULL DEFAULT 0,
   celebration_shown INTEGER NOT NULL DEFAULT 0
 );
+
+-- Shared meal plan pushed from The Family Table (see db/migrations/0006_meals.sql).
+CREATE TABLE IF NOT EXISTS meal_plan (
+  date TEXT NOT NULL,          -- 'YYYY-MM-DD' (local date of the meal)
+  meal TEXT NOT NULL,          -- meal type, e.g. 'Dinner'
+  name TEXT NOT NULL DEFAULT '',
+  PRIMARY KEY (date, meal)
+);

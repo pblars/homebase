@@ -186,6 +186,11 @@ const Dashboard = (() => {
       if (typeof CalendarSystem !== 'undefined') {
         CalendarSystem.onUpdate(() => { if (root && root.isConnected) renderAgenda(); });
       }
+      // Meal plan (from The Family Table) landed → refresh the dinner bar.
+      window.addEventListener('mealsupdated', () => {
+        const bar = root && root.querySelector('.dash-meals');
+        if (bar && root.isConnected) bar.innerHTML = mealsHTML();
+      });
       weatherSubscribed = true;
     }
   }

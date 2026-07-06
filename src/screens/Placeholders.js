@@ -13,7 +13,6 @@ const Placeholders = (() => {
   // (CalendarDetail) register their own real screens with the Router, so they're
   // intentionally absent here.
   const SCREENS = [
-    { id: 'meals',    label: 'Meals' },
     { id: 'photos',   label: 'Photos' },
   ];
 
