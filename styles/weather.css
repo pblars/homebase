@@ -73,13 +73,16 @@ html[data-scene="light"] .weather-screen { --glass-bg: rgba(253, 247, 236, 0.78)
   font-size: clamp(10px, 1.1vw, 12px); font-weight: 600; color: #ffb4a2;
 }
 
-/* Two columns — current summary (hero) · scrollable right stack of nested
-   glass panels (hourly, daily+tiles, precip, a 1:1 radar). */
+/* Three columns — current summary (hero) · middle stack (hourly, daily, metric
+   tiles) · a 1:1 radar square on the right. */
 .wx-main {
   min-height: 0; overflow-y: auto;
-  display: grid; grid-template-columns: minmax(190px, 240px) minmax(0, 1fr);
-  gap: clamp(14px, 1.8vw, 26px); padding-right: 4px;
+  display: grid; grid-template-columns: minmax(180px, 220px) minmax(0, 1fr) minmax(230px, 320px);
+  gap: clamp(12px, 1.6vw, 22px); padding-right: 4px;
 }
+/* Right column: radar square, top-aligned. */
+.wx-side { min-width: 0; display: flex; flex-direction: column; gap: clamp(10px, 1.3vh, 16px); }
+.wx-side .wx-radar-card { align-self: start; width: 100%; }
 .wx-main::-webkit-scrollbar { width: 6px; }
 .wx-main::-webkit-scrollbar-thumb { background: var(--track); border-radius: 999px; }
 
@@ -125,7 +128,7 @@ html[data-scene="light"] .weather-screen { --glass-bg: rgba(253, 247, 236, 0.78)
 /* Square map. Leaflet adds .leaflet-container to THIS same element, so keep
    sizing here and do NOT put height:100% on .leaflet-container (its auto parent
    would collapse it to 0). */
-.wx-radar-map { position: relative; flex: 0 0 auto; width: 100%; aspect-ratio: 1 / 1; height: auto; max-height: 60vh; min-height: 260px; border-radius: 14px; overflow: hidden; background: rgba(20, 16, 30, 0.25); }
+.wx-radar-map { position: relative; flex: 0 0 auto; width: 100%; aspect-ratio: 1 / 1; height: auto; min-height: 190px; border-radius: 14px; overflow: hidden; background: rgba(20, 16, 30, 0.25); }
 .wx-radar .leaflet-container { background: rgba(20, 16, 30, 0.28); font-family: var(--sans); border-radius: 14px; }
 .wx-radar .leaflet-control-zoom { border: none; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25); }
 .wx-radar .leaflet-control-zoom a {
@@ -149,7 +152,7 @@ html[data-scene="light"] .weather-screen { --glass-bg: rgba(253, 247, 236, 0.78)
 .wx-radar-fallback { padding: 24px 12px; text-align: center; color: var(--text-secondary); font-style: italic; font-size: clamp(12px, 1.3vw, 15px); }
 
 /* hourly strip */
-.wx-hourly-strip { display: flex; gap: clamp(6px, 1vw, 14px); overflow-x: auto; padding-bottom: 4px; }
+.wx-hourly-strip { display: flex; justify-content: space-between; gap: clamp(6px, 1vw, 14px); overflow-x: auto; padding-bottom: 4px; }
 .wx-hourly-strip::-webkit-scrollbar { height: 6px; }
 .wx-hourly-strip::-webkit-scrollbar-thumb { background: var(--track); border-radius: 999px; }
 .wx-hour {

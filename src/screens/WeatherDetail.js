@@ -181,7 +181,6 @@ const WeatherDetail = (() => {
     els.hourly.innerHTML = hourlyHTML(w.hourly || []);
     els.daily.innerHTML = dailyHTML(w.forecast || []);
     els.tiles.innerHTML = tilesHTML(w);
-    els.trend.innerHTML = trendHTML(w.hourly || []);
   }
 
   function render() { renderSwitch(); renderFull(); }
@@ -264,17 +263,13 @@ const WeatherDetail = (() => {
             '<div class="wx-card-head"><span class="wx-card-title">Hourly Forecast</span></div>' +
             '<div class="wx-hourly-strip" data-wx-hourly></div>' +
           '</section>' +
-          '<div class="wx-mid">' +
-            '<section class="wx-card glass wx-daily">' +
-              '<div class="wx-card-head"><span class="wx-card-title">Daily Forecast</span></div>' +
-              '<div class="wx-daily-row" data-wx-daily></div>' +
-            '</section>' +
-            '<div class="wx-tiles" data-wx-tiles></div>' +
-          '</div>' +
-          '<section class="wx-card glass wx-precip">' +
-            '<div class="wx-card-head"><span class="wx-card-title">Precipitation Trend</span></div>' +
-            '<div class="wx-precip-body" data-wx-trend></div>' +
+          '<section class="wx-card glass wx-daily">' +
+            '<div class="wx-card-head"><span class="wx-card-title">Daily Forecast</span></div>' +
+            '<div class="wx-daily-row" data-wx-daily></div>' +
           '</section>' +
+          '<div class="wx-tiles" data-wx-tiles></div>' +
+        '</div>' +
+        '<div class="wx-side">' +
           '<section class="wx-card glass wx-radar-card">' +
             '<div class="wx-card-head"><span class="wx-card-title">Radar</span></div>' +
             '<div class="wx-radar" data-wx-radar></div>' +
@@ -290,7 +285,6 @@ const WeatherDetail = (() => {
       hourly: root.querySelector('[data-wx-hourly]'),
       daily: root.querySelector('[data-wx-daily]'),
       tiles: root.querySelector('[data-wx-tiles]'),
-      trend: root.querySelector('[data-wx-trend]'),
       radar: root.querySelector('[data-wx-radar]'),
     };
 
