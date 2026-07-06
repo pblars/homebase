@@ -95,6 +95,10 @@
     // 'mealsupdated'. Falls back to the placeholder meals.js when empty.
     if (window.MealsData) MealsData.load();
 
+    // Idle timeout: return the wall tablet to the SleepScreen after a period of
+    // no interaction (configurable in Settings → Display; 0 = never).
+    if (window.IdleTimer) IdleTimer.init();
+
     // Mount the resting screen. Screens register themselves with the Router on
     // load. The SleepScreen is the ambient default (time + temp); tapping it
     // wakes to the full Dashboard.

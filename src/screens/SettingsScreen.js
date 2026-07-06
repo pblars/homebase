@@ -51,9 +51,24 @@ const SettingsScreen = (() => {
     );
   }
 
+  // Sleep-timeout options (minutes; 0 = never). Per-device display preference.
+  const TIMEOUTS = [[0, 'Never'], [1, '1 min'], [5, '5 min'], [10, '10 min'], [15, '15 min'], [30, '30 min'], [60, '1 hour']];
+  function displayHTML() {
+    const cur = window.IdleTimer ? IdleTimer.getMinutes() : 10;
+    const opts = TIMEOUTS.map(([v, label]) =>
+      '<option value="' + v + '"' + (v === cur ? ' selected' : '') + '>' + label + '</option>').join('');
+    return (
+      '<div class="set-field"><label>Return to sleep screen after</label>' +
+        '<select class="set-role" data-idle-timeout>' + opts + '</select></div>' +
+      '<p class="set-hint">Inactivity on the dashboard returns to the ambient clock. Tap to wake.</p>'
+    );
+  }
+
   function render() {
     if (!root) return;
     root.querySelector('[data-household]').innerHTML = fieldsHTML();
+    const disp = root.querySelector('[data-display]');
+    if (disp) disp.innerHTML = displayHTML();
     root.querySelector('[data-members]').innerHTML =
       members().map(memberRowHTML).join('') +
       '<form class="set-addmember" data-addmember>' +
@@ -97,6 +112,7 @@ const SettingsScreen = (() => {
       '<div class="set-inner">' +
         '<h1 class="set-heading">Settings</h1>' +
         '<section class="set-card"><h2 class="set-title">Household</h2><div data-household></div></section>' +
+        '<section class="set-card"><h2 class="set-title">Display</h2><div data-display></div></section>' +
         '<section class="set-card"><h2 class="set-title">Family Members</h2>' +
           '<p class="set-hint">Anyone with “Chore board” on appears in Chores.</p>' +
           '<div class="set-members" data-members></div>' +
@@ -116,6 +132,8 @@ const SettingsScreen = (() => {
       if (form) { e.preventDefault(); addMember(form); }
     });
     root.addEventListener('change', (e) => {
+      const idle = e.target.closest('[data-idle-timeout]');
+      if (idle) { if (window.IdleTimer) IdleTimer.setMinutes(idle.value); return; }
       const f = e.target.closest('.set-member [data-field]');
       if (!f) return;
       const row = f.closest('.set-member');
