@@ -150,12 +150,15 @@ html[data-scene="light"] {
 /* ----- Header: greeting + clock (left), weather pill (right) ------------- */
 
 .dash-header { display: flex; align-items: center; gap: 16px; flex: none; }
-.dash-hello { flex: 1; min-width: 0; text-shadow: 0 2px 14px rgba(0, 0, 0, 0.3); }
-.hello-greeting { font-weight: 700; font-size: clamp(11px, 1.2vw, 13px); letter-spacing: 0.02em; color: var(--text-accent); }
-.hello-clock { display: flex; align-items: baseline; gap: 9px; margin-top: 2px; }
-.clk-time { font-family: var(--serif); font-weight: 500; font-size: clamp(40px, 5.8vw, 62px); line-height: 0.9; letter-spacing: -0.01em; }
-.clk-ampm { font-weight: 600; font-size: clamp(13px, 1.5vw, 20px); letter-spacing: 0.06em; color: var(--text-secondary); }
-.clk-date { font-weight: 700; font-size: clamp(10px, 1.1vw, 12px); letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-secondary); margin-left: 8px; }
+/* Greeting + clock sit directly over the sky, so use fixed light text + the
+   strong sky-shadow (legible over dark night AND bright daytime skies) rather
+   than the scene-adaptive tokens, which washed out on some skies. */
+.dash-hello { flex: 1; min-width: 0; }
+.hello-greeting { font-weight: 800; font-size: clamp(15px, 1.8vw, 21px); letter-spacing: 0.01em; color: #fff; text-shadow: var(--sky-shadow); }
+.hello-clock { display: flex; align-items: baseline; gap: 10px; margin-top: 3px; }
+.clk-time { font-family: var(--serif); font-weight: 600; font-size: clamp(44px, 6.2vw, 68px); line-height: 0.9; letter-spacing: -0.01em; color: #fff; text-shadow: var(--sky-shadow); }
+.clk-ampm { font-weight: 700; font-size: clamp(14px, 1.6vw, 22px); letter-spacing: 0.06em; color: rgba(255, 255, 255, 0.92); text-shadow: var(--sky-shadow); }
+.clk-date { font-weight: 800; font-size: clamp(11px, 1.2vw, 13px); letter-spacing: 0.18em; text-transform: uppercase; color: rgba(255, 255, 255, 0.92); text-shadow: var(--sky-shadow); margin-left: 8px; }
 
 .weather-pill { flex: none; display: flex; align-items: center; gap: clamp(10px, 1.4vw, 16px); border-radius: 22px; padding: clamp(8px, 1vw, 12px) clamp(12px, 1.6vw, 20px); cursor: pointer; }
 .wp-now { display: flex; align-items: center; gap: clamp(7px, 0.9vw, 11px); }
