@@ -165,20 +165,27 @@
 
 /* Day groups: "Daily", then each weekday. Today's group is accented. */
 .cs-group { display: flex; flex-direction: column; gap: clamp(4px, 0.6vh, 8px); }
-.cs-group + .cs-group { margin-top: clamp(4px, 0.8vh, 10px); }
+.cs-group + .cs-group { margin-top: clamp(4px, 0.8vh, 8px); }
+/* Group header doubles as the accordion toggle (full-width button). */
 .cs-group-label {
-  display: flex; align-items: center; gap: 7px; padding: 0 2px 1px;
-  font-size: clamp(9px, 0.9vw, 11px); font-weight: 800; letter-spacing: 0.09em;
+  display: flex; align-items: center; gap: 7px; padding: clamp(3px, 0.5vh, 6px) 2px;
+  width: 100%; background: none; border: none; cursor: pointer; text-align: left;
+  font-family: var(--sans); font-size: clamp(9px, 0.9vw, 11px); font-weight: 800; letter-spacing: 0.09em;
   text-transform: uppercase; color: var(--muted);
 }
 .cs-group.is-today .cs-group-label { color: var(--sage-deep); }
+.cs-group-chevron { font-size: 0.85em; line-height: 1; transition: transform 0.18s ease; transform: rotate(90deg); }
+.cs-group.is-collapsed .cs-group-chevron { transform: rotate(0deg); }
+.cs-group-count { margin-left: auto; font-weight: 800; color: var(--muted); letter-spacing: 0; }
 .cs-today-tag {
   font-size: clamp(8px, 0.8vw, 10px); font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
   color: #fff; background: var(--sage-deep); border-radius: 999px; padding: 1px 8px;
 }
+.cs-group-body { display: flex; flex-direction: column; gap: clamp(4px, 0.6vh, 8px); }
+.cs-group.is-collapsed .cs-group-body { display: none; }
 .cs-group.is-today .cs-row { border-color: rgba(123, 163, 102, 0.5); }
 /* Upcoming (non-today) day groups read as secondary. */
-.cs-group.is-upcoming { opacity: 0.66; }
+.cs-group.is-upcoming .cs-group-body { opacity: 0.82; }
 /* Each task is its own readable frosted capsule (nested surface). */
 .cs-row { display: flex; align-items: center; gap: 10px; text-align: left; cursor: pointer; font-family: var(--sans); background: var(--inner-surface); border: 1px solid var(--field-border); border-radius: 12px; padding: clamp(6px, 0.9vh, 10px) clamp(9px, 1.1vw, 13px); }
 .cs-check { flex: 0 0 auto; width: clamp(18px, 1.8vw, 24px); height: clamp(18px, 1.8vw, 24px); border-radius: 50%; border: 2px solid var(--field-border); display: inline-flex; align-items: center; justify-content: center; color: #fff; }

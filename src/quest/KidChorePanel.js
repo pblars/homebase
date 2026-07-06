@@ -15,6 +15,7 @@ const KidChorePanel = (() => {
   let detailRoot = null;     // full-screen container (built lazily)
   let detailMounted = false; // is the detail screen currently shown?
   let managing = false;      // Chores screen "Manage" (add/remove) mode
+  const openGroups = {};     // `${kidId}|${label}` -> true(open)/false(collapsed), remembers accordion state
 
   function kids() { return window.KIDS || []; }
   function kid(id) { return kids().find((k) => k.id === id) || null; }
@@ -193,14 +194,25 @@ const KidChorePanel = (() => {
     // Organized by Daily first, then by weekday in week order (today highlighted).
     // cs-row is a div (not a button) so the Manage-mode delete button can nest.
     const groups = groupChores(k.chores);
-    const list = groups.map((g) =>
-      '<div class="cs-group' + (g.today ? ' is-today' : '') +
-        (!g.today && g.label !== 'Daily' ? ' is-upcoming' : '') + '">' +
-        '<div class="cs-group-label">' + esc(g.label) +
+    const list = groups.map((g) => {
+      const upcoming = !g.today && g.label !== 'Daily';
+      const key = k.id + '|' + g.label;
+      // Accordion: Daily + today open by default, upcoming days collapsed, but a
+      // user's manual open/close is remembered (openGroups) across re-renders.
+      const collapsed = (key in openGroups) ? !openGroups[key] : upcoming;
+      const done = g.chores.filter((c) => p.st[c.id]).length;
+      return '<div class="cs-group' + (g.today ? ' is-today' : '') + (upcoming ? ' is-upcoming' : '') + (collapsed ? ' is-collapsed' : '') + '">' +
+        '<button type="button" class="cs-group-label" data-group-toggle="' + esc(key) + '">' +
+          '<span class="cs-group-chevron" aria-hidden="true">&#9656;</span>' +
+          '<span class="cs-group-name">' + esc(g.label) + '</span>' +
           (g.today ? '<span class="cs-today-tag">Today</span>' : '') +
+          '<span class="cs-group-count">' + done + '/' + g.chores.length + '</span>' +
+        '</button>' +
+        '<div class="cs-group-body">' +
+          g.chores.map((c) => choreRowHTML(k.id, c, p.st)).join('') +
         '</div>' +
-        g.chores.map((c) => choreRowHTML(k.id, c, p.st)).join('') +
-      '</div>').join('');
+      '</div>';
+    }).join('');
     const addForm =
       '<form class="cs-add" data-add-kid="' + k.id + '">' +
         '<input class="cs-add-name" name="name" list="chore-name-options" autocomplete="off" placeholder="New chore" maxlength="40" required>' +
@@ -303,6 +315,14 @@ const KidChorePanel = (() => {
 
     detailRoot.addEventListener('click', (e) => {
       if (e.target.closest('[data-manage]')) { setManaging(!managing); return; }
+      // Accordion: expand/collapse a day group (state remembered in openGroups).
+      const gt = e.target.closest('[data-group-toggle]');
+      if (gt) {
+        const grp = gt.closest('.cs-group');
+        const nowCollapsed = grp.classList.toggle('is-collapsed');
+        openGroups[gt.getAttribute('data-group-toggle')] = !nowCollapsed;
+        return;
+      }
       // Reorder a kid card (Manage mode arrows).
       const mv = e.target.closest('[data-move]');
       if (mv) { if (!mv.disabled && window.ChoreData) ChoreData.reorderBoardKid(mv.dataset.kid, mv.dataset.move); return; }
