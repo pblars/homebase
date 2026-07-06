@@ -173,7 +173,21 @@ html[data-scene="light"] {
 /* ----- Body: agenda | quest | chores ------------------------------------- */
 
 .dash-body { flex: 1; min-height: 0; display: flex; gap: clamp(10px, 1.5vh, 15px); }
-.dash-agenda { flex: none; width: clamp(220px, 22vw, 300px); display: flex; flex-direction: column; border-radius: var(--radius); padding: clamp(14px, 1.4vw, 18px); }
+/* Left column stacks the agenda (calendar) card + the meals card. */
+.dash-left { flex: none; width: clamp(220px, 22vw, 300px); min-height: 0; display: flex; flex-direction: column; gap: clamp(10px, 1.5vh, 15px); }
+.dash-agenda { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; border-radius: var(--radius); padding: clamp(14px, 1.4vw, 18px); }
+
+/* Meals card — sits under the agenda; taps through to the Meals tab. */
+.dash-meals-card { flex: none; cursor: pointer; border-radius: var(--radius); padding: clamp(12px, 1.3vw, 16px) clamp(14px, 1.4vw, 18px); }
+.dm-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: clamp(6px, 1vh, 10px); }
+.dm-fork { width: clamp(26px, 2.8vw, 34px); height: clamp(26px, 2.8vw, 34px); flex: none; border-radius: 10px; background: var(--accent-terra); display: flex; align-items: center; justify-content: center; }
+.dm-fork .nav-ic { width: 54%; height: 54%; stroke: #fff; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.dm-tonight { font-family: var(--serif); font-weight: 600; font-size: clamp(15px, 1.7vw, 20px); line-height: 1.12; color: var(--text-primary); }
+.dm-tonight.is-empty { font-style: italic; font-size: clamp(13px, 1.4vw, 16px); color: var(--text-secondary); }
+.dm-up { display: flex; flex-direction: column; gap: clamp(3px, 0.5vh, 6px); margin-top: clamp(8px, 1.2vh, 12px); padding-top: clamp(8px, 1.2vh, 12px); border-top: 1px solid var(--glass-border); }
+.dm-row { display: flex; align-items: baseline; gap: 10px; }
+.dm-day { flex: none; width: clamp(30px, 4vw, 42px); font-weight: 800; font-size: clamp(9px, 1vw, 11px); letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-secondary); }
+.dm-name { min-width: 0; font-weight: 600; font-size: clamp(12px, 1.3vw, 14px); color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* Meadow Quest is a framed storybook illustration — a subtle ivory frame, NOT a
    blurred glass panel (the art must stay crisp). */
 .quest-card {
@@ -208,19 +222,6 @@ html[data-scene="light"] {
 .ag-sub { font-size: clamp(10px, 1.1vw, 12px); color: var(--text-secondary); margin-top: 1px; }
 .ag-empty { font-family: var(--serif); font-style: italic; font-size: clamp(12px, 1.3vw, 15px); color: var(--text-secondary); padding-top: 4px; }
 .ag-foot { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--glass-border); font-family: var(--serif); font-style: italic; font-size: clamp(11px, 1.2vw, 13px); color: var(--text-secondary); }
-
-/* ----- Meals strip ------------------------------------------------------- */
-
-.dash-meals { flex: none; display: flex; align-items: center; gap: 18px; border-radius: 22px; padding: clamp(9px, 1vw, 12px) clamp(12px, 1.5vw, 18px); }
-.meal-tonight { flex: none; display: flex; align-items: center; gap: 12px; padding-right: 18px; border-right: 1px solid var(--glass-border); }
-.meal-fork { width: 50px; height: 50px; flex: none; border-radius: 14px; background: #d98a4e; display: flex; align-items: center; justify-content: center; }
-.meal-fork .nav-ic { width: 54%; height: 54%; stroke: #fff; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.meal-eyebrow { font-weight: 800; font-size: clamp(8px, 0.9vw, 10px); letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-accent); margin-bottom: 3px; }
-.meal-name { font-family: var(--serif); font-weight: 600; font-size: clamp(14px, 1.6vw, 17px); line-height: 1.05; color: var(--text-primary); }
-.meal-rest { flex: 1; display: flex; justify-content: space-around; }
-.meal-day-col { display: flex; flex-direction: column; gap: 2px; }
-.meal-dcode { font-weight: 800; font-size: clamp(8px, 0.9vw, 10px); letter-spacing: 0.06em; color: var(--text-secondary); }
-.meal-dname { font-weight: 600; font-size: clamp(11px, 1.2vw, 13px); color: var(--text-primary); }
 
 /* ----- Bottom nav -------------------------------------------------------- */
 

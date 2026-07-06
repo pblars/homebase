@@ -84,18 +84,23 @@ const Dashboard = (() => {
     if (els.agendaEyebrow) els.agendaEyebrow.textContent = window.AGENDA_LABEL || "Today's Agenda";
   }
 
-  function mealsHTML() {
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  }
+
+  // Meals card (lives under the agenda in the left column). Reads window.MEALS
+  // (fed by MealsData ← the shared meal plan). Tapping it opens the Meals tab.
+  function mealsCardHTML() {
     const m = window.MEALS || { tonight: {}, upcoming: [] };
-    const rest = (m.upcoming || []).map((u) =>
-      '<div class="meal-day-col"><span class="meal-dcode">' + u.day + '</span>' +
-      '<span class="meal-dname">' + u.name + '</span></div>').join('');
+    const tonight = (m.tonight && m.tonight.name) || '';
+    const up = (m.upcoming || []).slice(0, 3).map((u) =>
+      '<div class="dm-row"><span class="dm-day">' + esc(u.day) + '</span>' +
+      '<span class="dm-name">' + esc(u.name) + '</span></div>').join('');
     return (
-      '<div class="meal-tonight">' +
-        '<div class="meal-fork">' + ICONS.nav.meals + '</div>' +
-        '<div><div class="meal-eyebrow">Tonight\'s Dinner</div>' +
-          '<div class="meal-name">' + ((m.tonight && m.tonight.name) || '') + '</div></div>' +
-      '</div>' +
-      '<div class="meal-rest">' + rest + '</div>'
+      '<div class="dm-head"><span class="ag-eyebrow">Dinner</span>' +
+        '<span class="dm-fork">' + ICONS.nav.meals + '</span></div>' +
+      '<div class="dm-tonight' + (tonight ? '' : ' is-empty') + '">' + (tonight ? esc(tonight) : 'Tap to plan dinner') + '</div>' +
+      (up ? '<div class="dm-up">' + up + '</div>' : '')
     );
   }
 
@@ -139,11 +144,13 @@ const Dashboard = (() => {
     root.innerHTML =
       headerHTML() +
       '<div class="dash-body">' +
-        '<section class="dash-agenda glass">' + agendaHTML() + '</section>' +
+        '<div class="dash-left">' +
+          '<section class="dash-agenda glass">' + agendaHTML() + '</section>' +
+          '<section class="dash-meals-card glass" data-nav="meals">' + mealsCardHTML() + '</section>' +
+        '</div>' +
         '<div class="quest-card" id="quest-banner-card"></div>' +
         '<div class="chores-card glass" id="chores-card"></div>' +
-      '</div>' +
-      '<div class="dash-meals glass">' + mealsHTML() + '</div>';
+      '</div>';
     root.appendChild(NavBar.render('dashboard'));
 
     els = {
@@ -186,10 +193,10 @@ const Dashboard = (() => {
       if (typeof CalendarSystem !== 'undefined') {
         CalendarSystem.onUpdate(() => { if (root && root.isConnected) renderAgenda(); });
       }
-      // Meal plan (from The Family Table) landed → refresh the dinner bar.
+      // Meal plan (from The Family Table) landed → refresh the meals card.
       window.addEventListener('mealsupdated', () => {
-        const bar = root && root.querySelector('.dash-meals');
-        if (bar && root.isConnected) bar.innerHTML = mealsHTML();
+        const card = root && root.querySelector('.dash-meals-card');
+        if (card && root.isConnected) card.innerHTML = mealsCardHTML();
       });
       weatherSubscribed = true;
     }
