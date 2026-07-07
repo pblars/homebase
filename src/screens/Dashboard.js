@@ -2,10 +2,11 @@
 // -----------------------------------------------------------------------------
 // The Home screen — frosted-glass cards over the sky, in the "2a" layout:
 //   • header: greeting + live clock (left), weather pill (right)
-//   • body:   Today's Agenda | Quest hero (#quest-banner-card) | Chores (#chores-card)
+//   • body:   Today's Agenda | Quest hero (#quest-banner-card) | Family Glow Jars (#glowjars-card)
 //   • meals strip, then the bottom nav
-// Weather reads WeatherSystem; the quest banner + chores are rendered by the
-// quest system into their slots. Registers with the Router as "dashboard".
+// Weather reads WeatherSystem; the quest banner + glow jars are rendered by the
+// quest system into their slots. (Chores keep their own full-screen tab.)
+// Registers with the Router as "dashboard".
 // -----------------------------------------------------------------------------
 
 const Dashboard = (() => {
@@ -149,7 +150,7 @@ const Dashboard = (() => {
           '<section class="dash-meals-card glass" data-nav="meals">' + mealsCardHTML() + '</section>' +
         '</div>' +
         '<div class="quest-card" id="quest-banner-card"></div>' +
-        '<div class="chores-card glass" id="chores-card"></div>' +
+        '<div class="glowjars-card glass" id="glowjars-card"></div>' +
       '</div>';
     root.appendChild(NavBar.render('dashboard'));
 
@@ -179,7 +180,7 @@ const Dashboard = (() => {
     if (root.parentNode !== screenRoot) screenRoot.appendChild(root);
 
     if (typeof QuestBanner !== 'undefined') QuestBanner.mount();
-    if (typeof KidChorePanel !== 'undefined') KidChorePanel.mountSummary();
+    if (typeof FamilyGlowJarsCard !== 'undefined') FamilyGlowJarsCard.mount();
 
     renderClock();
     renderWeather();

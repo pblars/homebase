@@ -1,0 +1,107 @@
+/* glowjars.css — Family Glow Jars dashboard panel (#glowjars-card).
+   A calm, magical companion to the chores/quest reward loop: each child keeps a
+   translucent jar of glowing lightning bugs. Matches the premium frosted-glass
+   dashboard system — glass tiles, thin highlight borders, warm off-white text,
+   each child's accent color, and a subtle amber firefly glow. Relies on the
+   :root palette + glass tokens defined in dashboard.css. */
+
+#glowjars-card { display: flex; flex-direction: column; }
+
+.gj-head-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: clamp(8px, 1.4vh, 12px); }
+.gj-hint { font-size: clamp(9px, 1vw, 11px); font-weight: 600; font-style: italic; color: var(--text-accent); }
+
+/* 2x2 grid for four kids; collapses to a single column when narrow. */
+.gj-grid {
+  flex: 1; min-height: 0; display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(8px, 1.2vh, 14px);
+  align-content: start;
+}
+@media (max-width: 760px) { .gj-grid { grid-template-columns: 1fr; } }
+
+/* One child's jar tile — borderless; the jar itself is the visual, floating on
+   the panel's glass. Just centers the head + jar + controls. */
+.gj-child {
+  position: relative; display: flex; flex-direction: column; align-items: center;
+  gap: clamp(3px, 0.5vh, 6px); padding: clamp(2px, 0.4vw, 6px);
+}
+
+.gj-child-head { display: flex; align-items: center; gap: 6px; max-width: 100%; min-width: 0; }
+.gj-avatar {
+  position: relative; overflow: hidden; flex: none;
+  width: clamp(18px, 2vw, 24px); height: clamp(18px, 2vw, 24px); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: clamp(10px, 1.1vw, 12px); color: #fff;
+}
+.gj-name { min-width: 0; font-weight: 700; font-size: clamp(11px, 1.2vw, 14px); color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ----- JarIllustration + FireflyCluster ---------------------------------- */
+
+/* The asset is a square PNG with the jar centered; the box matches (1:1) and the
+   image sits on TOP of the glow + fireflies so the bugs shine through the glass. */
+.gj-jar { position: relative; width: clamp(60px, 7.5vw, 94px); aspect-ratio: 581 / 998; display: block; }
+.gj-jar-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+
+/* Warm amber pool of light behind the bugs, centered in the glass body;
+   strengthens as the jar fills. */
+.gj-jar-glow {
+  position: absolute; left: 50%; top: 64%; width: 56%; height: 40%;
+  transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, var(--accent-amber), rgba(214, 162, 78, 0) 70%);
+  filter: blur(5px); transition: opacity 0.5s ease;
+}
+
+/* FireflyCluster — small glowing dots that gently drift AND pulse. The wrapper
+   (.gj-bug) drifts (translate); the inner ::before dot pulses (scale + glow), so
+   the two transforms never fight. Per-bug animation-delay (set inline) staggers
+   both, and nth-child tweaks vary the drift path/tempo so it reads organic. */
+.gj-swarm { position: absolute; inset: 0; pointer-events: none; }
+.gj-bug {
+  position: absolute; width: clamp(4px, 0.5vw, 6px); height: clamp(4px, 0.5vw, 6px);
+  margin: -3px 0 0 -3px;
+  animation: gj-drift 7s ease-in-out infinite;
+}
+.gj-bug::before {
+  content: ""; position: absolute; inset: 0; border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, #fff6cf, #f4c430 60%, rgba(244, 196, 48, 0) 100%);
+  box-shadow: 0 0 5px 1px rgba(244, 196, 48, 0.85);
+  animation: gj-pulse 2.6s ease-in-out infinite;
+  animation-delay: inherit; /* share the wrapper's staggered delay */
+}
+/* Vary tempo + direction so no two fireflies trace the same path in lockstep. */
+.gj-bug:nth-child(2n) { animation-duration: 8.5s; }
+.gj-bug:nth-child(3n) { animation-duration: 6s; animation-direction: reverse; }
+.gj-bug:nth-child(4n) { animation-duration: 9.5s; }
+@keyframes gj-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+@keyframes gj-drift {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(4px, -5px); }
+  45% { transform: translate(-4px, -8px); }
+  70% { transform: translate(-6px, -2px); }
+  85% { transform: translate(3px, 3px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gj-bug, .gj-bug::before { animation: none; }
+  .gj-bug::before { opacity: 0.9; }
+}
+
+/* ----- +/- controls + count ---------------------------------------------- */
+
+/* Compact controls: small round +/- flanking a small count. */
+.gj-controls { display: flex; align-items: center; justify-content: center; gap: clamp(5px, 0.6vw, 8px); }
+.gj-btn {
+  flex: none; width: clamp(16px, 1.7vw, 20px); height: clamp(16px, 1.7vw, 20px);
+  border-radius: 50%; cursor: pointer; font-size: clamp(11px, 1.1vw, 13px); line-height: 1; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--field-bg); border: 1px solid var(--field-border); color: var(--text-primary);
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+.gj-btn:hover { background: color-mix(in srgb, var(--gj-accent) 22%, var(--field-bg)); }
+.gj-btn:active { transform: scale(0.9); }
+.gj-btn:disabled { opacity: 0.35; cursor: default; }
+.gj-plus { border-color: color-mix(in srgb, var(--gj-accent) 45%, var(--field-border)); }
+
+.gj-count { min-width: clamp(12px, 1.6vw, 18px); text-align: center; font-family: var(--serif); font-weight: 600; font-size: clamp(12px, 1.3vw, 15px); line-height: 1; color: var(--text-primary); }

@@ -206,7 +206,9 @@ html[data-scene="light"] {
   border-radius: inherit;
   background: var(--glass-specular), var(--glass-sheen);
 }
-.chores-card { flex: none; width: clamp(240px, 25vw, 340px); display: flex; flex-direction: column; border-radius: var(--radius); padding: clamp(12px, 1.3vw, 18px) clamp(10px, 1.2vw, 16px); }
+/* Family Glow Jars panel (right column). Slightly narrower than the old chores
+   card so the center Quest card becomes the dominant visual focus. */
+.glowjars-card { flex: none; width: clamp(220px, 23vw, 320px); display: flex; flex-direction: column; border-radius: var(--radius); padding: clamp(12px, 1.3vw, 18px) clamp(10px, 1.2vw, 16px); }
 
 /* eyebrow used by agenda + chores + meals */
 .eyebrow, .ag-eyebrow { font-weight: 700; font-size: clamp(10px, 1.1vw, 12px); letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-secondary); }
