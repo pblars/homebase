@@ -10,12 +10,27 @@
 html,
 body {
   width: 100%;
+  /* height:100% is the fallback; iOS Safari sizes the visible area wrong for a
+     full-bleed kiosk, so IOSSupport (src/utils/ios.js) publishes the real
+     visible height as --app-height and we prefer it. */
   height: 100%;
+  height: var(--app-height, 100%);
   overflow: hidden;
+  overscroll-behavior: none; /* no iOS rubber-band bounce of the whole page */
   background: #0a0f0d; /* dark fallback before any image loads */
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color: #f4f1ea;
   user-select: none;
+}
+
+body {
+  /* Positioned so the full-bleed layers below (#sky-stage / #screen-root, both
+     `position:absolute; inset:0`) are sized by <body> — i.e. by --app-height —
+     rather than by the iOS large-viewport initial containing block. */
+  position: relative;
+  /* Kills double-tap-to-zoom + the 300ms tap delay on iOS (pinch-zoom is
+     blocked separately in ios.js). */
+  touch-action: manipulation;
 }
 
 /* ----- Sky layer -------------------------------------------------------- */
@@ -61,4 +76,17 @@ body {
   position: absolute;
   inset: 0;
   z-index: 10;
+  /* Reserve the iOS safe areas (status bar, home indicator, rounded corners)
+     with a transparent border. Screens inside are `position:absolute; inset:0`,
+     so their containing block is this element's padding box — inside the border
+     — which insets all UI into the safe area. The sky (#sky-stage) has no such
+     border, so the art still bleeds edge-to-edge behind the insets. On devices
+     with no insets (a Home-button iPad, or Chrome) every env() is 0 — no change. */
+  border-style: solid;
+  border-color: transparent;
+  border-width:
+    env(safe-area-inset-top, 0px)
+    env(safe-area-inset-right, 0px)
+    env(safe-area-inset-bottom, 0px)
+    env(safe-area-inset-left, 0px);
 }

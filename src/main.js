@@ -12,6 +12,10 @@
   function start() {
     console.log('%c[HomeBase] booting Phase 1 — sky system', 'color:#7fd1ae');
 
+    // iPad/iOS Safari support: visible-viewport height (--app-height), pinch-zoom
+    // block, safe-area layout, and Screen Wake Lock. No-ops off iOS.
+    if (window.IOSSupport) IOSSupport.init();
+
     // Order matters: Time + Weather provide the state SkyManager reads on init.
     TimeSystem.init();
     WeatherSystem.init();
