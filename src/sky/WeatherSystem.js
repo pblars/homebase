@@ -93,8 +93,8 @@ const WeatherSystem = (() => {
 
       const t = entry.main && typeof entry.main.temp === 'number' ? entry.main.temp : null;
       if (t !== null) {
-        bucket.high = Math.max(bucket.high, entry.main.temp_max ?? t);
-        bucket.low = Math.min(bucket.low, entry.main.temp_min ?? t);
+        bucket.high = Math.max(bucket.high, entry.main.temp_max != null ? entry.main.temp_max : t);
+        bucket.low = Math.min(bucket.low, entry.main.temp_min != null ? entry.main.temp_min : t);
       }
 
       const cond = mapCondition(entry.weather && entry.weather[0] && entry.weather[0].id);
@@ -134,19 +134,19 @@ const WeatherSystem = (() => {
   // Build a "current conditions" snapshot from an OWM /weather response.
   function _snapCurrent(json) {
     const owmId = json.weather && json.weather[0] && json.weather[0].id;
-    const tempF = Math.round(json.main?.temp ?? 72);
-    const windDeg = json.wind?.deg != null ? json.wind.deg : null;
+    const tempF = Math.round(json.main && json.main.temp != null ? json.main.temp : 72);
+    const windDeg = json.wind && json.wind.deg != null ? json.wind.deg : null;
     return {
       condition: mapCondition(owmId),
       tempF,
-      feelsLikeF: Math.round(json.main?.feels_like ?? tempF),
+      feelsLikeF: Math.round(json.main && json.main.feels_like != null ? json.main.feels_like : tempF),
       description: (json.weather && json.weather[0] && json.weather[0].description) || '',
-      humidity: json.main?.humidity ?? null,
-      windMph: json.wind?.speed != null ? Math.round(json.wind.speed) : null,
+      humidity: json.main && json.main.humidity != null ? json.main.humidity : null,
+      windMph: json.wind && json.wind.speed != null ? Math.round(json.wind.speed) : null,
       windDeg,
       windDir: windDeg != null ? _compass(windDeg) : '',
-      sunrise: json.sys?.sunrise ?? null,
-      sunset: json.sys?.sunset ?? null,
+      sunrise: json.sys && json.sys.sunrise != null ? json.sys.sunrise : null,
+      sunset: json.sys && json.sys.sunset != null ? json.sys.sunset : null,
       todayHigh: null, todayLow: null, forecast: [], hourly: [],
     };
   }
@@ -164,7 +164,7 @@ const WeatherSystem = (() => {
       const h = d.getHours();
       out.push({
         label: `${(h % 12) || 12} ${h < 12 ? 'AM' : 'PM'}`,
-        tempF: Math.round(entry.main?.temp ?? nowTempF),
+        tempF: Math.round(entry.main && entry.main.temp != null ? entry.main.temp : nowTempF),
         condition: mapCondition(entry.weather && entry.weather[0] && entry.weather[0].id),
         precipPct: typeof entry.pop === 'number' ? Math.round(entry.pop * 100) : 0,
       });

@@ -15,6 +15,45 @@
   <meta name="apple-mobile-web-app-title" content="Home Base" />
   <meta name="format-detection" content="telephone=no" />
 
+  <!-- Boot guard — MUST stay first, and MUST stay ES5.
+       Every script below is a classic <script>, so an uncaught error in any one
+       of them halts the boot: no screen mounts and the tablet shows nothing but
+       the body background. That is indistinguishable from a dead device, and
+       Safari on an iPad has no console without a tethered Mac, so it can't be
+       diagnosed in place. Paint the error on screen instead. Tap to dismiss. -->
+  <script>
+    (function () {
+      function show(title, detail) {
+        try {
+          var el = document.getElementById('boot-error');
+          if (!el) {
+            el = document.createElement('div');
+            el.id = 'boot-error';
+            el.onclick = function () {
+              if (el.parentNode) el.parentNode.removeChild(el);
+            };
+            (document.body || document.documentElement).appendChild(el);
+          }
+          el.style.cssText =
+            'position:fixed;z-index:99999;left:0;right:0;top:0;max-height:60%;' +
+            'overflow:auto;padding:16px 18px;background:rgba(122,28,28,0.97);' +
+            'color:#fff;white-space:pre-wrap;word-break:break-word;' +
+            'font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;';
+          el.textContent =
+            'Home Base failed to start\n(tap to dismiss)\n\n' + title + '\n' + detail;
+        } catch (e) { /* the reporter must never throw */ }
+      }
+      window.addEventListener('error', function (e) {
+        show(e.message || 'Script error',
+             (e.filename || '') + (e.lineno ? ':' + e.lineno : ''));
+      });
+      window.addEventListener('unhandledrejection', function (e) {
+        var r = e && e.reason;
+        show('Unhandled promise rejection', (r && (r.message || String(r))) || '');
+      });
+    })();
+  </script>
+
   <!-- Config MUST load first — defines the global CONFIG used by all scripts -->
   <script src="config.js"></script>
 

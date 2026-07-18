@@ -16,10 +16,23 @@
     // block, safe-area layout, and Screen Wake Lock. No-ops off iOS.
     if (window.IOSSupport) IOSSupport.init();
 
+    // A single failing subsystem must never leave the tablet on a silent black
+    // screen. These three used to run bare, so a parse error in any one of their
+    // scripts threw here and took the whole boot down with it — Router.show()
+    // below never ran, nothing mounted, and all you saw was the body background.
+    // Isolate each one so the screens still mount and the sky degrades instead.
+    function safe(label, fn) {
+      try {
+        fn();
+      } catch (err) {
+        console.error('[HomeBase] ' + label + ' failed:', err);
+      }
+    }
+
     // Order matters: Time + Weather provide the state SkyManager reads on init.
-    TimeSystem.init();
-    WeatherSystem.init();
-    SkyManager.init();
+    safe('TimeSystem.init', function () { TimeSystem.init(); });
+    safe('WeatherSystem.init', function () { WeatherSystem.init(); });
+    safe('SkyManager.init', function () { SkyManager.init(); });
 
     // Helper: pull the current slot + condition and push them to the sky.
     function syncSky() {
@@ -38,15 +51,20 @@
       const dark = DARK_SLOTS.has(slot) || DARK_CONDITIONS.has(condition);
       document.documentElement.dataset.scene = dark ? 'dark' : 'light';
     }
-    syncScene();
-    TimeSystem.onSlotChange(syncScene);
-    WeatherSystem.onUpdate(syncScene);
+    // Same isolation for the wiring: these all dereference TimeSystem /
+    // WeatherSystem, so if either failed to load this would throw before the
+    // screens mount.
+    safe('sky wiring', function () {
+      syncScene();
+      TimeSystem.onSlotChange(syncScene);
+      WeatherSystem.onUpdate(syncScene);
 
-    // Slot boundary crossed -> re-resolve the sky.
-    TimeSystem.onSlotChange(() => syncSky());
+      // Slot boundary crossed -> re-resolve the sky.
+      TimeSystem.onSlotChange(() => syncSky());
 
-    // Weather refreshed -> re-resolve the sky (condition may have changed).
-    WeatherSystem.onUpdate(() => syncSky());
+      // Weather refreshed -> re-resolve the sky (condition may have changed).
+      WeatherSystem.onUpdate(() => syncSky());
+    });
 
     // Quest + reward system: chore tracking, acorns, weekly quest trail,
     // Monday reset, and the chest celebration. Wires its own events + screens.
