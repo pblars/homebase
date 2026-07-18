@@ -31,9 +31,13 @@ from pathlib import Path
 
 STYLES = Path(__file__).resolve().parent.parent / "styles"
 
-# Reference viewport: the wall iPad in landscape. Only ever consulted by
-# browsers that cannot parse clamp(), so changing it cannot affect modern output.
-REF_W, REF_H = 1024, 768
+# Reference viewport: the wall iPad in PORTRAIT, which is how it is mounted.
+# This only decides WHICH branch a clamp takes (preferred term vs a bound) — the
+# preferred term is emitted as vw/vh and keeps scaling on any screen — so a wrong
+# guess here degrades gracefully instead of freezing everything at one size.
+# Only ever consulted by browsers that cannot parse clamp(); modern output is
+# unaffected either way.
+REF_W, REF_H = 768, 1024
 ROOT_FONT_PX = 16
 
 # A declaration whose value contains at least one clamp(). clamp() never
@@ -66,12 +70,26 @@ def to_px(token):
 
 
 def resolve(value, where):
+    """Pick the best fallback for one clamp().
+
+    Prefer the clamp's OWN preferred term (a vw/vh length) whenever it falls
+    between the bounds at the reference viewport. vw/vh work all the way back to
+    iOS 8, so that fallback scales with the real screen instead of freezing the
+    size of whatever viewport this script happened to run against — the bug that
+    made everything render about a third too large on a 768px iPad.
+
+    When a bound is what actually applies, emit that bound as a fixed px: it is
+    the correct value at every width where the bound binds.
+    """
     def one(m):
-        lo, pref, hi = (to_px(m.group(i)) for i in (1, 2, 3))
+        lo_t, pref_t, hi_t = (m.group(i).strip() for i in (1, 2, 3))
+        lo, pref, hi = (to_px(t) for t in (lo_t, pref_t, hi_t))
         if lo is None or pref is None or hi is None:
             raise ValueError(f"{where}: cannot resolve {m.group(0)!r}")
-        px = min(max(pref, lo), hi)
-        return f"{round(px, 2):g}px"
+        if lo <= pref <= hi:
+            return pref_t                      # scales: e.g. "6.2vw"
+        bound = lo if pref < lo else hi
+        return f"{round(bound, 2):g}px"        # the bound genuinely applies
 
     return CLAMP.sub(one, value)
 

@@ -5,9 +5,9 @@
 .weather-screen {
   position: absolute; top: 0; right: 0; bottom: 0; left: 0;
   display: grid; grid-template-rows: auto auto 1fr auto;
-  gap: 7.68px;
+  gap: 1vh;
   gap: clamp(6px, 1vh, 12px);
-  padding: 16.38px 20.48px 12.29px;
+  padding: 1.6vw 2vw 10px;
   padding: clamp(10px, 1.6vw, 18px) clamp(14px, 2vw, 22px) clamp(10px, 1.2vw, 14px);
   font-family: var(--sans); color: var(--text-primary);
 }
@@ -19,14 +19,14 @@
 html[data-scene="light"] .weather-screen { --glass-bg: rgba(253, 247, 236, 0.78); }
 
 /* ---- location switcher (primary + up to 3 saved; selected shows in full) ---- */
-.wx-switch { flex: none; display: flex; align-items: stretch; gap: 10.24px; gap: clamp(8px, 1vw, 14px); overflow-x: auto; padding-bottom: 4px; }
+.wx-switch { flex: none; display: flex; align-items: stretch; gap: 8px; gap: clamp(8px, 1vw, 14px); overflow-x: auto; padding-bottom: 4px; }
 .wx-switch::-webkit-scrollbar { height: 6px; }
 .wx-switch::-webkit-scrollbar-thumb { background: var(--track); border-radius: 999px; }
 .wx-loc {
-  flex: 0 0 auto; position: relative; display: flex; align-items: center; gap: 10.24px; gap: clamp(8px, 1vw, 12px);
-  min-width: 153.6px;
+  flex: 0 0 auto; position: relative; display: flex; align-items: center; gap: 8px; gap: clamp(8px, 1vw, 12px);
+  min-width: 150px;
   min-width: clamp(150px, 15vw, 200px); text-align: left; cursor: pointer;
-  padding: 8px 14.34px;
+  padding: 1vh 12px;
   padding: clamp(8px, 1vh, 12px) clamp(12px, 1.4vw, 16px); border-radius: 16px;
   font-family: var(--sans); color: var(--text-primary);
   background: var(--glass-specular), var(--glass-sheen), var(--glass-bg);
@@ -34,12 +34,12 @@ html[data-scene="light"] .weather-screen { --glass-bg: rgba(253, 247, 236, 0.78)
 }
 .wx-loc.is-active { border-color: var(--teal); box-shadow: inset 0 0 0 1px var(--teal); }
 .wx-loc-ic { flex: none; }
-.wx-loc-ic .wx { width: 34.82px; width: clamp(30px, 3.4vw, 42px); height: auto; display: block; }
+.wx-loc-ic .wx { width: 30px; width: clamp(30px, 3.4vw, 42px); height: auto; display: block; }
 .wx-loc-info { min-width: 0; display: flex; flex-direction: column; }
-.wx-loc-name { font-weight: 700; font-size: 13.31px; font-size: clamp(12px, 1.3vw, 15px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wx-loc-name { font-weight: 700; font-size: 12px; font-size: clamp(12px, 1.3vw, 15px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .wx-loc-star { color: var(--text-accent); margin-right: 4px; font-size: 0.85em; }
-.wx-loc-cond { font-size: 11.26px; font-size: clamp(10px, 1.1vw, 12px); color: var(--text-secondary); white-space: nowrap; }
-.wx-loc-temp { margin-left: auto; font-family: var(--serif); font-weight: 600; font-size: 24.58px; font-size: clamp(20px, 2.4vw, 30px); line-height: 1; }
+.wx-loc-cond { font-size: 10px; font-size: clamp(10px, 1.1vw, 12px); color: var(--text-secondary); white-space: nowrap; }
+.wx-loc-temp { margin-left: auto; font-family: var(--serif); font-weight: 600; font-size: 20px; font-size: clamp(20px, 2.4vw, 30px); line-height: 1; }
 .wx-loc-remove {
   position: absolute; top: 4px; right: 6px; width: 18px; height: 18px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center; font-size: 14px; line-height: 1;
@@ -50,34 +50,34 @@ html[data-scene="light"] .weather-screen { --glass-bg: rgba(253, 247, 236, 0.78)
 
 .wx-loc-add {
   flex: 0 0 auto; display: flex; align-items: center; gap: 8px; cursor: pointer;
-  padding: 0 16.38px;
+  padding: 0 14px;
   padding: 0 clamp(14px, 1.6vw, 20px); border-radius: 16px;
   border: 1px dashed var(--glass-border); background: rgba(255, 255, 255, 0.04);
-  color: var(--text-secondary); font-family: var(--sans); font-weight: 700; font-size: 12.29px; font-size: clamp(11px, 1.2vw, 14px);
+  color: var(--text-secondary); font-family: var(--sans); font-weight: 700; font-size: 11px; font-size: clamp(11px, 1.2vw, 14px);
 }
 .wx-loc-add:hover { color: var(--text-primary); background: rgba(255, 255, 255, 0.08); }
 .wx-loc-add-plus { font-size: 1.4em; line-height: 1; }
 
 .wx-loc-addform {
   flex: 0 0 auto; position: relative; display: flex; align-items: center; gap: 8px;
-  padding: 8px 14.34px;
+  padding: 1vh 12px;
   padding: clamp(8px, 1vh, 12px) clamp(12px, 1.4vw, 16px); border-radius: 16px;
   border: 1px solid var(--glass-border); background: var(--glass-bg);
 }
 .wx-loc-input {
-  width: 133.12px;
+  width: 120px;
   width: clamp(120px, 13vw, 170px); padding: 8px 10px; border-radius: 10px;
   border: 1px solid var(--glass-border); background: rgba(255, 255, 255, 0.1);
-  color: var(--text-primary); font-family: var(--sans); font-size: 13.31px; font-size: clamp(12px, 1.3vw, 15px);
+  color: var(--text-primary); font-family: var(--sans); font-size: 12px; font-size: clamp(12px, 1.3vw, 15px);
 }
 .wx-loc-input:focus { outline: none; border-color: var(--teal); }
-.wx-loc-addbtn { padding: 8px 14px; border-radius: 999px; border: none; cursor: pointer; background: var(--teal); color: #fff; font-family: var(--sans); font-weight: 700; font-size: 12.29px; font-size: clamp(11px, 1.2vw, 14px); }
+.wx-loc-addbtn { padding: 8px 14px; border-radius: 999px; border: none; cursor: pointer; background: var(--teal); color: #fff; font-family: var(--sans); font-weight: 700; font-size: 11px; font-size: clamp(11px, 1.2vw, 14px); }
 .wx-loc-addbtn[disabled] { opacity: 0.6; cursor: default; }
 .wx-loc-addcancel { background: none; border: none; cursor: pointer; color: var(--text-secondary); font-size: 18px; line-height: 1; padding: 2px 4px; }
 .wx-loc-addcancel:hover { color: var(--text-primary); }
 .wx-loc-err {
   position: absolute; top: calc(100% + 4px); left: 0; white-space: nowrap;
-  font-size: 11.26px;
+  font-size: 10px;
   font-size: clamp(10px, 1.1vw, 12px); font-weight: 600; color: #ffb4a2;
 }
 
@@ -86,11 +86,11 @@ html[data-scene="light"] .weather-screen { --glass-bg: rgba(253, 247, 236, 0.78)
 .wx-main {
   min-height: 0; overflow-y: auto;
   display: grid; grid-template-columns: minmax(180px, 220px) minmax(0, 1fr) minmax(230px, 320px);
-  gap: 16.38px;
+  gap: 1.6vw;
   gap: clamp(12px, 1.6vw, 22px); padding-right: 4px;
 }
 /* Right column: radar square, top-aligned. */
-.wx-side { min-width: 0; display: flex; flex-direction: column; gap: 10px; gap: clamp(10px, 1.3vh, 16px); }
+.wx-side { min-width: 0; display: flex; flex-direction: column; gap: 1.3vh; gap: clamp(10px, 1.3vh, 16px); }
 .wx-side .wx-radar-card { align-self: start; width: 100%; }
 .wx-main::-webkit-scrollbar { width: 6px; }
 .wx-main::-webkit-scrollbar-thumb { background: var(--track); border-radius: 999px; }
@@ -101,7 +101,7 @@ html[data-scene="light"] .weather-screen { --glass-bg: rgba(253, 247, 236, 0.78)
    out). Bolder/larger than the on-card text for the same reason. */
 .wx-left {
   display: flex; flex-direction: column; align-items: flex-start;
-  padding: 14.34px 15.36px;
+  padding: 1.4vw 12px;
   padding: clamp(10px, 1.4vw, 18px) clamp(12px, 1.5vw, 18px);
   /* Soft feathered scrim so the hero text never floats on the raw scene, while
      staying card-less (no hard edge). Bolder white text + strong shadow keep it
@@ -110,32 +110,32 @@ html[data-scene="light"] .weather-screen { --glass-bg: rgba(253, 247, 236, 0.78)
   background: radial-gradient(125% 95% at 22% 24%, rgba(12, 10, 18, 0.34), rgba(12, 10, 18, 0) 72%);
   --sky-shadow: 0 1px 3px rgba(0, 0, 0, 0.6), 0 2px 16px rgba(0, 0, 0, 0.45);
 }
-.wx-cur-icon .wx { width: 92.16px; width: clamp(84px, 9vw, 128px); height: auto; display: block; filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.3)); }
-.wx-cur-temp { font-family: var(--serif); font-weight: 600; font-size: 81.92px; font-size: clamp(58px, 8vw, 108px); line-height: 0.95; letter-spacing: -0.02em; color: #fff; text-shadow: var(--sky-shadow); }
+.wx-cur-icon .wx { width: 84px; width: clamp(84px, 9vw, 128px); height: auto; display: block; filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.3)); }
+.wx-cur-temp { font-family: var(--serif); font-weight: 600; font-size: 8vw; font-size: clamp(58px, 8vw, 108px); line-height: 0.95; letter-spacing: -0.02em; color: #fff; text-shadow: var(--sky-shadow); }
 .wx-cur-temp .wx-deg { font-weight: 400; }
-.wx-cur-cond { font-family: var(--serif); font-weight: 600; font-size: 23.55px; font-size: clamp(19px, 2.3vw, 30px); color: #fff; margin-top: 2px; text-shadow: var(--sky-shadow); }
-.wx-cur-hilo { display: flex; gap: 8px; margin-top: 12.29px; margin-top: clamp(10px, 1.6vh, 18px); font-weight: 800; font-size: 15.36px; font-size: clamp(13px, 1.5vw, 17px); color: #fff; text-shadow: var(--sky-shadow); }
+.wx-cur-cond { font-family: var(--serif); font-weight: 600; font-size: 19px; font-size: clamp(19px, 2.3vw, 30px); color: #fff; margin-top: 2px; text-shadow: var(--sky-shadow); }
+.wx-cur-hilo { display: flex; gap: 8px; margin-top: 1.6vh; margin-top: clamp(10px, 1.6vh, 18px); font-weight: 800; font-size: 13px; font-size: clamp(13px, 1.5vw, 17px); color: #fff; text-shadow: var(--sky-shadow); }
 .wx-cur-hilo .wx-sep { color: rgba(255, 255, 255, 0.7); }
 .wx-cur-loc {
-  margin-top: 12.29px;
-  margin-top: clamp(10px, 1.6vh, 18px); padding-top: 12.29px; padding-top: clamp(10px, 1.6vh, 18px);
+  margin-top: 1.6vh;
+  margin-top: clamp(10px, 1.6vh, 18px); padding-top: 1.6vh; padding-top: clamp(10px, 1.6vh, 18px);
   border-top: 1px solid rgba(255, 255, 255, 0.35); width: 100%;
-  font-weight: 800; font-size: 15.36px; font-size: clamp(14px, 1.5vw, 18px); color: #fff; text-shadow: var(--sky-shadow);
+  font-weight: 800; font-size: 14px; font-size: clamp(14px, 1.5vw, 18px); color: #fff; text-shadow: var(--sky-shadow);
 }
-.wx-cur-feels { margin-top: 8px; font-weight: 700; font-size: 13.31px; font-size: clamp(12px, 1.3vw, 15px); color: rgba(255, 255, 255, 0.9); text-shadow: var(--sky-shadow); }
+.wx-cur-feels { margin-top: 8px; font-weight: 700; font-size: 12px; font-size: clamp(12px, 1.3vw, 15px); color: rgba(255, 255, 255, 0.9); text-shadow: var(--sky-shadow); }
 
 /* ---- middle column (hourly / daily+tiles / precip), compacted ---- */
-.wx-right { min-width: 0; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 8.45px; gap: clamp(8px, 1.1vh, 14px); padding-right: 2px; }
+.wx-right { min-width: 0; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 1.1vh; gap: clamp(8px, 1.1vh, 14px); padding-right: 2px; }
 .wx-right::-webkit-scrollbar { width: 6px; }
 .wx-right::-webkit-scrollbar-thumb { background: var(--track); border-radius: 999px; }
-.wx-card { border-radius: var(--radius); padding: 11.26px 14.34px; padding: clamp(9px, 1.1vw, 15px) clamp(12px, 1.4vw, 18px); }
-.wx-card-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6.91px; margin-bottom: clamp(6px, 0.9vh, 10px); }
-.wx-card-title { font-family: var(--serif); font-weight: 600; font-size: 16.38px; font-size: clamp(14px, 1.6vw, 19px); color: var(--text-primary); }
+.wx-card { border-radius: var(--radius); padding: 9px 12px; padding: clamp(9px, 1.1vw, 15px) clamp(12px, 1.4vw, 18px); }
+.wx-card-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 0.9vh; margin-bottom: clamp(6px, 0.9vh, 10px); }
+.wx-card-title { font-family: var(--serif); font-weight: 600; font-size: 14px; font-size: clamp(14px, 1.6vw, 19px); color: var(--text-primary); }
 
-.wx-empty { font-family: var(--serif); font-style: italic; color: var(--text-secondary); font-size: 13.31px; font-size: clamp(12px, 1.3vw, 15px); padding: 8px 2px; }
+.wx-empty { font-family: var(--serif); font-style: italic; color: var(--text-secondary); font-size: 12px; font-size: clamp(12px, 1.3vw, 15px); padding: 8px 2px; }
 
 /* ---- radar (Leaflet map + RainViewer animation) — a 1:1 square card ---- */
-.wx-radar { display: flex; flex-direction: column; gap: 7.68px; gap: clamp(6px, 1vh, 10px); }
+.wx-radar { display: flex; flex-direction: column; gap: 10px; gap: clamp(6px, 1vh, 10px); }
 /* Square map. Leaflet adds .leaflet-container to THIS same element, so keep
    sizing here and do NOT put height:100% on .leaflet-container (its auto parent
    would collapse it to 0). */
@@ -151,7 +151,7 @@ html[data-scene="light"] .weather-screen { --glass-bg: rgba(253, 247, 236, 0.78)
 .wx-radar .leaflet-control-attribution a { color: rgba(255, 255, 255, 0.88); }
 
 /* animation control bar (play / scrub / time) */
-.wx-radar-bar { flex: none; display: flex; align-items: center; gap: 12.29px; gap: clamp(8px, 1.2vw, 14px); }
+.wx-radar-bar { flex: none; display: flex; align-items: center; gap: 1.2vw; gap: clamp(8px, 1.2vw, 14px); }
 .wx-radar-play {
   flex: none; width: 32px; height: 32px; border-radius: 999px; cursor: pointer;
   border: 1px solid var(--glass-border); background: var(--glass-bg); color: var(--text-primary);
@@ -159,75 +159,75 @@ html[data-scene="light"] .weather-screen { --glass-bg: rgba(253, 247, 236, 0.78)
 }
 .wx-radar-play:hover { background: var(--glass-border); }
 .wx-radar-scrub { flex: 1; min-width: 0; accent-color: var(--teal); cursor: pointer; height: 4px; }
-.wx-radar-time { flex: none; min-width: 81.92px; min-width: clamp(72px, 8vw, 100px); text-align: right; font-weight: 700; font-size: 11.26px; font-size: clamp(10px, 1.1vw, 13px); color: var(--text-secondary); }
-.wx-radar-fallback { padding: 24px 12px; text-align: center; color: var(--text-secondary); font-style: italic; font-size: 13.31px; font-size: clamp(12px, 1.3vw, 15px); }
+.wx-radar-time { flex: none; min-width: 72px; min-width: clamp(72px, 8vw, 100px); text-align: right; font-weight: 700; font-size: 10px; font-size: clamp(10px, 1.1vw, 13px); color: var(--text-secondary); }
+.wx-radar-fallback { padding: 24px 12px; text-align: center; color: var(--text-secondary); font-style: italic; font-size: 12px; font-size: clamp(12px, 1.3vw, 15px); }
 
 /* hourly strip */
-.wx-hourly-strip { display: flex; justify-content: space-between; gap: 10.24px; gap: clamp(6px, 1vw, 14px); overflow-x: auto; padding-bottom: 4px; }
+.wx-hourly-strip { display: flex; justify-content: space-between; gap: 1vw; gap: clamp(6px, 1vw, 14px); overflow-x: auto; padding-bottom: 4px; }
 .wx-hourly-strip::-webkit-scrollbar { height: 6px; }
 .wx-hourly-strip::-webkit-scrollbar-thumb { background: var(--track); border-radius: 999px; }
 .wx-hour {
-  flex: 0 0 auto; min-width: 57.34px; min-width: clamp(50px, 5.6vw, 72px);
+  flex: 0 0 auto; min-width: 50px; min-width: clamp(50px, 5.6vw, 72px);
   display: flex; flex-direction: column; align-items: center; gap: 3px;
-  padding: 4.61px 4px;
+  padding: 0.6vh 4px;
   padding: clamp(4px, 0.6vh, 7px) 4px; border-radius: 12px;
 }
 .wx-hour:first-child { background: rgba(255, 255, 255, 0.07); }
-.wx-hour-lbl { font-weight: 700; font-size: 10.24px; font-size: clamp(9px, 1vw, 11px); color: var(--text-secondary); }
-.wx-hour-ic .wx { width: 26.62px; width: clamp(22px, 2.6vw, 32px); height: auto; display: block; }
-.wx-hour-temp { font-family: var(--serif); font-weight: 600; font-size: 15.36px; font-size: clamp(14px, 1.5vw, 18px); }
-.wx-hour-pop { display: flex; align-items: center; gap: 3px; font-weight: 700; font-size: 10.24px; font-size: clamp(9px, 1vw, 11px); color: #5b9bd5; }
+.wx-hour-lbl { font-weight: 700; font-size: 9px; font-size: clamp(9px, 1vw, 11px); color: var(--text-secondary); }
+.wx-hour-ic .wx { width: 22px; width: clamp(22px, 2.6vw, 32px); height: auto; display: block; }
+.wx-hour-temp { font-family: var(--serif); font-weight: 600; font-size: 14px; font-size: clamp(14px, 1.5vw, 18px); }
+.wx-hour-pop { display: flex; align-items: center; gap: 3px; font-weight: 700; font-size: 9px; font-size: clamp(9px, 1vw, 11px); color: #5b9bd5; }
 .wx-hour-pop .wx-glyph { width: 10px; height: 10px; }
 
 /* Compact the Daily Forecast + Precipitation Trend cards so the radar is the
    focus and they don't eat more vertical space than needed. */
-.wx-daily, .wx-precip { padding: 11.26px 14.34px; padding: clamp(9px, 1.1vw, 14px) clamp(12px, 1.4vw, 18px); }
-.wx-daily .wx-card-head, .wx-precip .wx-card-head { margin-bottom: 6.14px; margin-bottom: clamp(5px, 0.8vh, 9px); }
-.wx-daily .wx-card-title, .wx-precip .wx-card-title { font-size: 15.36px; font-size: clamp(14px, 1.5vw, 18px); }
+.wx-daily, .wx-precip { padding: 9px 12px; padding: clamp(9px, 1.1vw, 14px) clamp(12px, 1.4vw, 18px); }
+.wx-daily .wx-card-head, .wx-precip .wx-card-head { margin-bottom: 0.8vh; margin-bottom: clamp(5px, 0.8vh, 9px); }
+.wx-daily .wx-card-title, .wx-precip .wx-card-title { font-size: 14px; font-size: clamp(14px, 1.5vw, 18px); }
 
 /* mid row: daily forecast + stat tiles */
-.wx-mid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 12.29px; gap: clamp(12px, 1.6vh, 20px); align-items: stretch; }
-.wx-daily-row { display: flex; justify-content: space-between; gap: 8.19px; gap: clamp(4px, 0.8vw, 10px); }
+.wx-mid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 1.6vh; gap: clamp(12px, 1.6vh, 20px); align-items: stretch; }
+.wx-daily-row { display: flex; justify-content: space-between; gap: 0.8vw; gap: clamp(4px, 0.8vw, 10px); }
 .wx-day { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 0; }
-.wx-day-name { font-weight: 700; font-size: 10.24px; font-size: clamp(9px, 1vw, 11px); letter-spacing: 0.06em; color: var(--text-secondary); }
-.wx-day-ic .wx { width: 24.58px; width: clamp(22px, 2.4vw, 32px); height: auto; display: block; }
-.wx-day-hi { font-family: var(--serif); font-weight: 600; font-size: 14.34px; font-size: clamp(13px, 1.4vw, 17px); }
-.wx-day-lo { font-weight: 600; font-size: 11.26px; font-size: clamp(10px, 1.1vw, 12px); color: var(--text-secondary); }
+.wx-day-name { font-weight: 700; font-size: 9px; font-size: clamp(9px, 1vw, 11px); letter-spacing: 0.06em; color: var(--text-secondary); }
+.wx-day-ic .wx { width: 22px; width: clamp(22px, 2.4vw, 32px); height: auto; display: block; }
+.wx-day-hi { font-family: var(--serif); font-weight: 600; font-size: 13px; font-size: clamp(13px, 1.4vw, 17px); }
+.wx-day-lo { font-weight: 600; font-size: 10px; font-size: clamp(10px, 1.1vw, 12px); color: var(--text-secondary); }
 
-.wx-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9.22px; gap: clamp(6px, 0.9vw, 11px); }
+.wx-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.9vw; gap: clamp(6px, 0.9vw, 11px); }
 .wx-tile {
   display: flex; align-items: flex-start; gap: 8px;
-  padding: 9.22px;
+  padding: 7px;
   padding: clamp(7px, 0.9vw, 12px); border-radius: 14px;
   background: var(--glass-specular), var(--glass-sheen), var(--glass-bg);
   border: 1px solid var(--glass-border);
 }
 .wx-tile-ic {
-  flex: none; width: 29.7px; width: clamp(26px, 2.9vw, 34px); height: 29.7px; height: clamp(26px, 2.9vw, 34px);
+  flex: none; width: 26px; width: clamp(26px, 2.9vw, 34px); height: 26px; height: clamp(26px, 2.9vw, 34px);
   display: flex; align-items: center; justify-content: center; border-radius: 10px;
   background: rgba(91, 155, 213, 0.16); color: #5b9bd5;
 }
 .wx-tile-ic .wx-glyph { width: 60%; height: 60%; }
 .wx-tile-body { min-width: 0; }
-.wx-tile-label { font-weight: 700; font-size: 9.73px; font-size: clamp(8px, 0.95vw, 11px); letter-spacing: 0.04em; color: var(--text-secondary); }
-.wx-tile-value { font-family: var(--serif); font-weight: 600; font-size: 20.48px; font-size: clamp(16px, 2vw, 23px); line-height: 1.1; margin-top: 1px; }
+.wx-tile-label { font-weight: 700; font-size: 8px; font-size: clamp(8px, 0.95vw, 11px); letter-spacing: 0.04em; color: var(--text-secondary); }
+.wx-tile-value { font-family: var(--serif); font-weight: 600; font-size: 16px; font-size: clamp(16px, 2vw, 23px); line-height: 1.1; margin-top: 1px; }
 .wx-tile-value .wx-unit { font-size: 0.6em; font-weight: 600; color: var(--text-secondary); }
-.wx-tile-sub { font-size: 10.24px; font-size: clamp(9px, 1vw, 12px); color: var(--text-secondary); margin-top: 1px; }
+.wx-tile-sub { font-size: 9px; font-size: clamp(9px, 1vw, 12px); color: var(--text-secondary); margin-top: 1px; }
 
 /* shared glyph outline */
 .wx-glyph { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; display: block; }
 
 /* precipitation trend */
-.wx-precip-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(150px, 200px); gap: 20.48px; gap: clamp(14px, 2vw, 26px); align-items: stretch; }
-.wx-chart { display: flex; align-items: flex-end; gap: 12.29px; gap: clamp(6px, 1.2vw, 16px); min-height: 76.8px; min-height: clamp(76px, 10vh, 120px); }
+.wx-precip-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(150px, 200px); gap: 2vw; gap: clamp(14px, 2vw, 26px); align-items: stretch; }
+.wx-chart { display: flex; align-items: flex-end; gap: 1.2vw; gap: clamp(6px, 1.2vw, 16px); min-height: 10vh; min-height: clamp(76px, 10vh, 120px); }
 .wx-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
-.wx-bar-val { font-weight: 800; font-size: 12.29px; font-size: clamp(11px, 1.2vw, 14px); color: var(--text-primary); }
-.wx-bar-track { width: 20.48px; width: clamp(16px, 2vw, 28px); flex: 1; display: flex; align-items: flex-end; }
+.wx-bar-val { font-weight: 800; font-size: 11px; font-size: clamp(11px, 1.2vw, 14px); color: var(--text-primary); }
+.wx-bar-track { width: 16px; width: clamp(16px, 2vw, 28px); flex: 1; display: flex; align-items: flex-end; }
 .wx-bar { width: 100%; min-height: 3px; border-radius: 8px 8px 4px 4px; background: linear-gradient(180deg, var(--accent-blue), #4a86c5); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 6px rgba(74, 134, 197, 0.35); }
-.wx-bar-lbl { font-weight: 700; font-size: 11.26px; font-size: clamp(10px, 1.1vw, 12px); color: var(--text-secondary); white-space: nowrap; }
-.wx-trend-note { align-self: center; border-left: 1px solid var(--glass-border); padding-left: 16.38px; padding-left: clamp(12px, 1.6vw, 20px); }
-.wx-trend-note-h { font-family: var(--serif); font-weight: 600; font-size: 16.38px; font-size: clamp(14px, 1.6vw, 19px); margin-bottom: 6px; }
-.wx-trend-note-b { font-size: 12.29px; font-size: clamp(11px, 1.2vw, 14px); color: var(--text-secondary); line-height: 1.5; }
+.wx-bar-lbl { font-weight: 700; font-size: 10px; font-size: clamp(10px, 1.1vw, 12px); color: var(--text-secondary); white-space: nowrap; }
+.wx-trend-note { align-self: center; border-left: 1px solid var(--glass-border); padding-left: 1.6vw; padding-left: clamp(12px, 1.6vw, 20px); }
+.wx-trend-note-h { font-family: var(--serif); font-weight: 600; font-size: 14px; font-size: clamp(14px, 1.6vw, 19px); margin-bottom: 6px; }
+.wx-trend-note-b { font-size: 11px; font-size: clamp(11px, 1.2vw, 14px); color: var(--text-secondary); line-height: 1.5; }
 
 @media (max-width: 900px) {
   /* Narrow screens can't hold three columns — stack and allow scrolling, with
