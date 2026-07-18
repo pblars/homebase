@@ -2,7 +2,7 @@
    Uses the :root palette + .navbar from dashboard.css. */
 
 .settings-screen {
-  position: absolute; inset: 0; display: grid; grid-template-rows: auto 1fr auto;
+  position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: grid; grid-template-rows: auto 1fr auto;
   padding: clamp(10px, 1.4vw, 20px); padding-bottom: clamp(8px, 1vw, 14px);
   font-family: var(--sans); color: var(--ink);
 }

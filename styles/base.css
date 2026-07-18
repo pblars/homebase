@@ -37,14 +37,14 @@ body {
 
 #sky-stage {
   position: absolute;
-  inset: 0;
+  top: 0; right: 0; bottom: 0; left: 0;
   z-index: 0;
   background: #0a0f0d;
 }
 
 .sky-layer {
   position: absolute;
-  inset: 0;
+  top: 0; right: 0; bottom: 0; left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -74,7 +74,7 @@ body {
 
 #screen-root {
   position: absolute;
-  inset: 0;
+  top: 0; right: 0; bottom: 0; left: 0;
   z-index: 10;
   /* Reserve the iOS safe areas (status bar, home indicator, rounded corners)
      with a transparent border. Screens inside are `position:absolute; inset:0`,
@@ -84,6 +84,10 @@ body {
      with no insets (a Home-button iPad, or Chrome) every env() is 0 — no change. */
   border-style: solid;
   border-color: transparent;
+  /* Fallback FIRST: Safari before 11.2 has no env(), which makes the second
+     declaration invalid and dropped. Without this, border-width would fall back
+     to its default of `medium` (~3px) and inset every screen by 3px. */
+  border-width: 0;
   border-width:
     env(safe-area-inset-top, 0px)
     env(safe-area-inset-right, 0px)

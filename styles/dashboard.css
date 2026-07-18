@@ -138,7 +138,7 @@ html[data-scene="light"] {
 /* ----- Shell: header / body / meals / nav stacked over the sky ----------- */
 
 .dashboard {
-  position: absolute; inset: 0;
+  position: absolute; top: 0; right: 0; bottom: 0; left: 0;
   display: flex; flex-direction: column;
   gap: clamp(10px, 1.5vh, 15px);
   padding: clamp(14px, 2vw, 22px) clamp(14px, 2vw, 22px) clamp(10px, 1.2vw, 14px);
@@ -202,7 +202,7 @@ html[data-scene="light"] {
    (z 0/1) but below the text/progress (z 2), so the scene reads as a pane of
    glass without hiding the illustration. */
 .quest-card::after {
-  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  content: ""; position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 1; pointer-events: none;
   border-radius: inherit;
   background: var(--glass-specular), var(--glass-sheen);
 }
@@ -257,7 +257,7 @@ html[data-scene="light"] {
 
 /* ----- Placeholder tab screens ------------------------------------------- */
 
-.placeholder-screen { position: absolute; inset: 0; display: grid; grid-template-rows: auto 1fr auto; padding: clamp(14px, 2vw, 22px) clamp(14px, 2vw, 22px) clamp(10px, 1.2vw, 14px); }
+.placeholder-screen { position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: grid; grid-template-rows: auto 1fr auto; padding: clamp(14px, 2vw, 22px) clamp(14px, 2vw, 22px) clamp(10px, 1.2vw, 14px); }
 .ph-center { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 8px; }
 .ph-title { font-family: var(--serif); font-weight: 500; font-size: clamp(36px, 7vw, 90px); color: var(--text-primary); text-shadow: 0 2px 18px rgba(0, 0, 0, 0.3); }
 .ph-sub { font-size: clamp(12px, 1.4vw, 18px); letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-secondary); text-shadow: 0 1px 10px rgba(0, 0, 0, 0.25); }
@@ -282,7 +282,7 @@ html[data-scene="light"] {
 
 /* ----- Meals screen (MealsDetail) — embedded Family Table planner --------- */
 .meals-screen {
-  position: absolute; inset: 0; display: grid; grid-template-rows: auto 1fr auto;
+  position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: grid; grid-template-rows: auto 1fr auto;
   padding: clamp(10px, 1.4vw, 20px) clamp(14px, 2vw, 22px) clamp(10px, 1.2vw, 14px);
   font-family: var(--sans); color: var(--text-primary);
 }

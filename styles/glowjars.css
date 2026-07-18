@@ -40,7 +40,7 @@
 /* The asset is a square PNG with the jar centered; the box matches (1:1) and the
    image sits on TOP of the glow + fireflies so the bugs shine through the glass. */
 .gj-jar { position: relative; width: clamp(60px, 7.5vw, 94px); aspect-ratio: 581 / 998; display: block; }
-.gj-jar-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+.gj-jar-img { position: absolute; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
 
 /* Warm amber pool of light behind the bugs, centered in the glass body;
    strengthens as the jar fills. */
@@ -55,14 +55,14 @@
    (.gj-bug) drifts (translate); the inner ::before dot pulses (scale + glow), so
    the two transforms never fight. Per-bug animation-delay (set inline) staggers
    both, and nth-child tweaks vary the drift path/tempo so it reads organic. */
-.gj-swarm { position: absolute; inset: 0; pointer-events: none; }
+.gj-swarm { position: absolute; top: 0; right: 0; bottom: 0; left: 0; pointer-events: none; }
 .gj-bug {
   position: absolute; width: clamp(4px, 0.5vw, 6px); height: clamp(4px, 0.5vw, 6px);
   margin: -3px 0 0 -3px;
   animation: gj-drift 7s ease-in-out infinite;
 }
 .gj-bug::before {
-  content: ""; position: absolute; inset: 0; border-radius: 50%;
+  content: ""; position: absolute; top: 0; right: 0; bottom: 0; left: 0; border-radius: 50%;
   background: radial-gradient(circle at 40% 40%, #fff6cf, #f4c430 60%, rgba(244, 196, 48, 0) 100%);
   box-shadow: 0 0 5px 1px rgba(244, 196, 48, 0.85);
   animation: gj-pulse 2.6s ease-in-out infinite;
