@@ -184,7 +184,12 @@ html[data-scene="light"] {
 
 .dash-body { flex: 1; min-height: 0; display: flex; gap: 11.52px; gap: clamp(10px, 1.5vh, 15px); }
 /* Left column stacks the agenda (calendar) card + the meals card. */
-.dash-left { flex: none; width: 225.28px; width: clamp(220px, 22vw, 300px); min-height: 0; display: flex; flex-direction: column; gap: 11.52px; gap: clamp(10px, 1.5vh, 15px); }
+/* The fallback is a PERCENTAGE, not px. A fixed px fallback is only correct at
+   the one viewport it was computed for (1024) — at any narrower width the two
+   side columns eat the row and the Quest card, the intended focus, ends up the
+   narrowest thing on screen. A percentage is right at every width, so this stops
+   depending on knowing the device's exact size. */
+.dash-left { flex: none; width: 24%; width: clamp(220px, 22vw, 300px); min-height: 0; display: flex; flex-direction: column; gap: 11.52px; gap: clamp(10px, 1.5vh, 15px); }
 .dash-agenda { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; border-radius: var(--radius); padding: 14.34px; padding: clamp(14px, 1.4vw, 18px); }
 
 /* Meals card — sits under the agenda; taps through to the Meals tab. */
@@ -215,15 +220,15 @@ html[data-scene="light"] {
 }
 /* Family Glow Jars panel (right column). Slightly narrower than the old chores
    card so the center Quest card becomes the dominant visual focus. */
-.glowjars-card { flex: none; width: 235.52px; width: clamp(220px, 23vw, 320px); display: flex; flex-direction: column; border-radius: var(--radius); padding: 13.31px 12.29px; padding: clamp(12px, 1.3vw, 18px) clamp(10px, 1.2vw, 16px); }
+.glowjars-card { flex: none; width: 24%; width: clamp(220px, 23vw, 320px); display: flex; flex-direction: column; border-radius: var(--radius); padding: 13.31px 12.29px; padding: clamp(12px, 1.3vw, 18px) clamp(10px, 1.2vw, 16px); }
 
 /* Portrait / narrow screens. Both side columns have a 220px floor, so on a
    768px-wide iPad they claim 440px of ~727px and the Quest card — meant to be
    the dominant focus — ends up NARROWER than either of them. Trim the sides so
    the middle reads as the hero it is. */
 @media (max-width: 900px) {
-  .dash-left { width: 190px; }
-  .glowjars-card { width: 190px; }
+  .dash-left { width: 22%; }
+  .glowjars-card { width: 22%; }
 }
 
 /* eyebrow used by agenda + chores + meals */
