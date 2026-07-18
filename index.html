@@ -54,6 +54,30 @@
     })();
   </script>
 
+  <!-- Legacy Safari shims — MUST stay before every script below, and stay ES5.
+       The wall iPad runs an older iOS (~10.3–11.2) whose Safari predates a few
+       things this app uses. A missing API throws at runtime, and because the boot
+       is a chain of classic scripts, one throw blanks the whole screen. All
+       feature-detected, so current browsers skip them entirely. -->
+  <script>
+    // Promise.prototype.finally — Safari 11.1 / iOS 11.3.
+    // Used by QuestStore (clearing in-flight write count) and SettingsScreen
+    // (re-enabling the Save button). Without it the dashboard never boots.
+    if (typeof Promise === 'function' && !Promise.prototype['finally']) {
+      Promise.prototype['finally'] = function (cb) {
+        var P = this.constructor || Promise;
+        return this.then(
+          function (value) {
+            return P.resolve(cb()).then(function () { return value; });
+          },
+          function (err) {
+            return P.resolve(cb()).then(function () { throw err; });
+          }
+        );
+      };
+    }
+  </script>
+
   <!-- Config MUST load first — defines the global CONFIG used by all scripts -->
   <script src="config.js"></script>
 
