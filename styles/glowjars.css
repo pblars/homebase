@@ -42,7 +42,16 @@
 
 /* The asset is a square PNG with the jar centered; the box matches (1:1) and the
    image sits on TOP of the glow + fireflies so the bugs shine through the glass. */
-.gj-jar { position: relative; width: 76.8px; width: clamp(60px, 7.5vw, 94px); aspect-ratio: 581 / 998; display: block; }
+/* aspect-ratio needs Safari 15. Without it this box had NO height at all — the
+   jar image inside is absolutely positioned, so it contributed nothing — and the
+   jars were simply invisible on the wall iPad. The fallback states the height
+   outright: 76.8px (the width fallback below) x 998/581. A percentage
+   padding trick would not work here, because percentages resolve against the
+   containing block's width, not this element's own fixed width. */
+.gj-jar { position: relative; width: 76.8px; width: clamp(60px, 7.5vw, 94px); height: 131.93px; display: block; }
+@supports (aspect-ratio: 1) {
+  .gj-jar { height: auto; aspect-ratio: 581 / 998; }
+}
 .gj-jar-img { position: absolute; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
 
 /* Warm amber pool of light behind the bugs, centered in the glass body;

@@ -150,7 +150,10 @@
    scrolled. In the 3-column layout there is nothing to scroll, so this is inert.
    (-webkit-overflow-scrolling gives momentum on iOS before 13.) */
 .cs-grid { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12.29px; gap: clamp(8px, 1.2vw, 18px); overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
-@media (max-width: 900px) { .cs-grid { grid-template-columns: 1fr; } }
+/* 700, not 900: an iPad in portrait is 768px, which used to trip this and stack
+   the children one per row, pushing the third off the bottom. Three cards fit
+   comfortably at 768 (about 245px each against a 212px min-content). */
+@media (max-width: 700px) { .cs-grid { grid-template-columns: 1fr; } }
 
 /* Each child card is a dense HERO glass panel. */
 .cs-kid {
