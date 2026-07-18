@@ -14,25 +14,25 @@ const REWARDS = [
   {
     isoWeek: 1, questName: 'The Meadow Quest', theme: ['Kindness', 'Teamwork', 'Adventure'],
     reward: 'Movie night — kids pick the film', rewardIcon: 'movie',
-    banner: 'magical_meadow_with_enchanted_chest.webp',
+    banner: 'magical_meadow_with_enchanted_chest.jpg',
     trail: 'M250 648 C315 668 315 700 365 708 C475 724 545 736 640 748 C880 766 1080 778 1220 800 C1290 812 1330 822 1365 834',
   },
   {
     isoWeek: 2, questName: 'The Forest Quest', theme: ['Courage', 'Curiosity', 'Care'],
     reward: 'Ice cream outing', rewardIcon: 'ice-cream',
-    banner: 'forest-banner.webp',
+    banner: 'forest-banner.jpg',
     trail: 'M630 665 C720 705 760 735 830 775 C900 815 950 855 1010 858 C1090 862 1180 835 1250 820 C1300 812 1320 812 1335 815',
   },
   {
     isoWeek: 3, questName: 'The River Quest', theme: ['Patience', 'Perseverance', 'Joy'],
     reward: 'Stay up 30 min late Friday', rewardIcon: 'moon-stars',
-    banner: 'river-banner.webp',
+    banner: 'river-banner.jpg',
     trail: 'M1000 600 C1080 645 1130 675 1130 720 C1130 765 1180 795 1240 810 C1295 822 1335 815 1370 808',
   },
   {
     isoWeek: 4, questName: 'The Mountain Quest', theme: ['Strength', 'Grit', 'Together'],
     reward: 'Backyard bonfire', rewardIcon: 'flame',
-    banner: 'mountain-banner.webp',
+    banner: 'mountain-banner.jpg',
     trail: 'M900 660 C990 705 1050 760 1110 800 C1170 840 1250 850 1310 845 C1355 842 1380 840 1400 838',
   },
 ];
@@ -42,7 +42,7 @@ const DEFAULT_QUEST = {
   theme: ['Kindness', 'Courage', 'Joy'],
   reward: 'Family choice — decide together',
   rewardIcon: 'star',
-  banner: 'magical_meadow_with_enchanted_chest.webp',
+  banner: 'magical_meadow_with_enchanted_chest.jpg',
   trail: REWARDS[0].trail,
 };
 

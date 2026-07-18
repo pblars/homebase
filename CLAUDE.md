@@ -66,11 +66,20 @@ Drop illustrated images into **`/assets/sky/`** named exactly:
 
 Examples: `golden_sunny.webp`, `night_clear.png`, `midday_stormy.webp`
 
-**Format:** `.webp` and `.png` both work. `SkyManager` tries `.webp` first, then
-`.png` (see `EXTENSIONS` in `src/sky/SkyManager.js`). WebP is preferred — much
-smaller files mean faster loads and smoother crossfades on the wall tablet — but
-PNGs are fine to start with. You can mix formats; if both `foo.webp` and
-`foo.png` exist, the `.webp` wins.
+**Format:** `.webp`, `.jpg` and `.png` all work. `SkyManager` tries `.webp`
+first, then `.jpg`, then `.png` (see `EXTENSIONS` in `src/sky/SkyManager.js`).
+WebP is preferred — much smaller files mean faster loads and smoother crossfades
+on the wall tablet. You can mix formats; if several twins exist, `.webp` wins.
+
+> ⚠️ **Always generate a non-WebP twin after adding art:**
+> ```
+> python scripts/gen-image-fallbacks.py
+> ```
+> **WebP needs Safari 14 / iOS 14.** The wall iPad runs an older iOS, where a
+> lone `.webp` silently fails to decode — that shipped a black sky and an empty
+> quest card to the tablet. The script writes a `.jpg` twin (or `.png` where the
+> art has alpha) next to every `.webp`; `SkyManager`'s onerror chain then falls
+> through to it automatically. It's idempotent, so re-running is free.
 
 **No restart needed.** Just drop the file in. `SkyManager` re-resolves on the next
 slot change or weather refresh and crossfades it in. (To see it instantly, reload.)

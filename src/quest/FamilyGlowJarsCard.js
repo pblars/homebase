@@ -62,7 +62,13 @@ const FamilyGlowJarsCard = (() => {
       '<span class="gj-jar' + (count > 0 ? ' is-lit' : '') + '" style="--gj-accent:' + accent + '">' +
         '<span class="gj-jar-glow" style="opacity:' + glow.toFixed(2) + '"></span>' +
         fireflyClusterHTML(count) +
-        '<img class="gj-jar-img" src="assets/rewards/bugjar.webp" alt="" aria-hidden="true">' +
+        // WebP needs Safari 14 / iOS 14. On the older wall iPad it fails to
+        // decode, so fall through to the generated .png twin (this art has
+        // alpha, hence PNG not JPEG). Clearing onerror first avoids a loop if
+        // the fallback is missing too.
+        '<img class="gj-jar-img" src="assets/rewards/bugjar.webp" ' +
+        'onerror="this.onerror=null;this.src=\'assets/rewards/bugjar.png\';" ' +
+        'alt="" aria-hidden="true">' +
       '</span>'
     );
   }

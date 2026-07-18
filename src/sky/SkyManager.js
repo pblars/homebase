@@ -15,8 +15,12 @@
 const SkyManager = (() => {
   const ASSET_DIR = 'assets/sky/';
   // Extensions tried in order when loading a key. .webp is preferred (smaller,
-  // smoother crossfades) but .png works too — drop either into /assets/sky/.
-  const EXTENSIONS = ['.webp', '.png'];
+  // smoother crossfades) but .jpg/.png work too — drop any into /assets/sky/.
+  // .jpg matters for the wall iPad: WebP needs Safari 14 / iOS 14, and on older
+  // iOS every .webp fails to decode, so the sky stayed black. Each .webp has a
+  // generated .jpg twin (scripts/gen-image-fallbacks.py) and the onerror chain
+  // below falls through to it automatically.
+  const EXTENSIONS = ['.webp', '.jpg', '.png'];
   const DEFAULT_FADE_MS = 2500;
   const PLACEHOLDER_KEY = 'placeholder';
 

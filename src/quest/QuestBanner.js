@@ -86,7 +86,7 @@ const QuestBanner = (() => {
     const quest = getCurrentQuest();
     const layers = [];
     if (quest.banner) layers.push("url('assets/quest/" + quest.banner + "')");
-    layers.push("url('assets/quest/magical_meadow_with_enchanted_chest.webp')");
+    layers.push("url('assets/quest/magical_meadow_with_enchanted_chest.jpg')");
     els.photo.style.backgroundImage = layers.join(', ');
     els.scene.classList.add('qb-has-photo');
     _buildTrail();
