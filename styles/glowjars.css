@@ -7,13 +7,14 @@
 
 #glowjars-card { display: flex; flex-direction: column; }
 
-.gj-head-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: clamp(8px, 1.4vh, 12px); }
-.gj-hint { font-size: clamp(9px, 1vw, 11px); font-weight: 600; font-style: italic; color: var(--text-accent); }
+.gj-head-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 10.75px; margin-bottom: clamp(8px, 1.4vh, 12px); }
+.gj-hint { font-size: 10.24px; font-size: clamp(9px, 1vw, 11px); font-weight: 600; font-style: italic; color: var(--text-accent); }
 
 /* 2x2 grid for four kids; collapses to a single column when narrow. */
 .gj-grid {
   flex: 1; min-height: 0; display: grid;
   grid-template-columns: repeat(2, 1fr);
+  gap: 9.22px;
   gap: clamp(8px, 1.2vh, 14px);
   align-content: start;
 }
@@ -23,23 +24,25 @@
    the panel's glass. Just centers the head + jar + controls. */
 .gj-child {
   position: relative; display: flex; flex-direction: column; align-items: center;
-  gap: clamp(3px, 0.5vh, 6px); padding: clamp(2px, 0.4vw, 6px);
+  gap: 3.84px;
+  gap: clamp(3px, 0.5vh, 6px); padding: 4.1px; padding: clamp(2px, 0.4vw, 6px);
 }
 
 .gj-child-head { display: flex; align-items: center; gap: 6px; max-width: 100%; min-width: 0; }
 .gj-avatar {
   position: relative; overflow: hidden; flex: none;
-  width: clamp(18px, 2vw, 24px); height: clamp(18px, 2vw, 24px); border-radius: 50%;
+  width: 20.48px;
+  width: clamp(18px, 2vw, 24px); height: 20.48px; height: clamp(18px, 2vw, 24px); border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-size: clamp(10px, 1.1vw, 12px); color: #fff;
+  font-weight: 800; font-size: 11.26px; font-size: clamp(10px, 1.1vw, 12px); color: #fff;
 }
-.gj-name { min-width: 0; font-weight: 700; font-size: clamp(11px, 1.2vw, 14px); color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gj-name { min-width: 0; font-weight: 700; font-size: 12.29px; font-size: clamp(11px, 1.2vw, 14px); color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* ----- JarIllustration + FireflyCluster ---------------------------------- */
 
 /* The asset is a square PNG with the jar centered; the box matches (1:1) and the
    image sits on TOP of the glow + fireflies so the bugs shine through the glass. */
-.gj-jar { position: relative; width: clamp(60px, 7.5vw, 94px); aspect-ratio: 581 / 998; display: block; }
+.gj-jar { position: relative; width: 76.8px; width: clamp(60px, 7.5vw, 94px); aspect-ratio: 581 / 998; display: block; }
 .gj-jar-img { position: absolute; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
 
 /* Warm amber pool of light behind the bugs, centered in the glass body;
@@ -57,7 +60,7 @@
    both, and nth-child tweaks vary the drift path/tempo so it reads organic. */
 .gj-swarm { position: absolute; top: 0; right: 0; bottom: 0; left: 0; pointer-events: none; }
 .gj-bug {
-  position: absolute; width: clamp(4px, 0.5vw, 6px); height: clamp(4px, 0.5vw, 6px);
+  position: absolute; width: 5.12px; width: clamp(4px, 0.5vw, 6px); height: 5.12px; height: clamp(4px, 0.5vw, 6px);
   margin: -3px 0 0 -3px;
   animation: gj-drift 7s ease-in-out infinite;
 }
@@ -91,10 +94,10 @@
 /* ----- +/- controls + count ---------------------------------------------- */
 
 /* Compact controls: small round +/- flanking a small count. */
-.gj-controls { display: flex; align-items: center; justify-content: center; gap: clamp(5px, 0.6vw, 8px); }
+.gj-controls { display: flex; align-items: center; justify-content: center; gap: 6.14px; gap: clamp(5px, 0.6vw, 8px); }
 .gj-btn {
-  flex: none; width: clamp(16px, 1.7vw, 20px); height: clamp(16px, 1.7vw, 20px);
-  border-radius: 50%; cursor: pointer; font-size: clamp(11px, 1.1vw, 13px); line-height: 1; font-weight: 700;
+  flex: none; width: 17.41px; width: clamp(16px, 1.7vw, 20px); height: 17.41px; height: clamp(16px, 1.7vw, 20px);
+  border-radius: 50%; cursor: pointer; font-size: 11.26px; font-size: clamp(11px, 1.1vw, 13px); line-height: 1; font-weight: 700;
   display: inline-flex; align-items: center; justify-content: center;
   background: var(--field-bg); border: 1px solid var(--field-border); color: var(--text-primary);
   transition: background 0.15s ease, transform 0.1s ease;
@@ -104,4 +107,4 @@
 .gj-btn:disabled { opacity: 0.35; cursor: default; }
 .gj-plus { border-color: color-mix(in srgb, var(--gj-accent) 45%, var(--field-border)); }
 
-.gj-count { min-width: clamp(12px, 1.6vw, 18px); text-align: center; font-family: var(--serif); font-weight: 600; font-size: clamp(12px, 1.3vw, 15px); line-height: 1; color: var(--text-primary); }
+.gj-count { min-width: 16.38px; min-width: clamp(12px, 1.6vw, 18px); text-align: center; font-family: var(--serif); font-weight: 600; font-size: 13.31px; font-size: clamp(12px, 1.3vw, 15px); line-height: 1; color: var(--text-primary); }
